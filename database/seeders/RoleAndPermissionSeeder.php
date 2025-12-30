@@ -1,0 +1,141 @@
+<?php
+
+namespace Database\Seeders;
+
+use Illuminate\Database\Seeder;
+use Spatie\Permission\Models\Role;
+use Spatie\Permission\Models\Permission;
+
+class RoleAndPermissionSeeder extends Seeder
+{
+    /**
+     * Run the database seeds.
+     */
+    public function run(): void
+    {
+        // Reset cached roles and permissions
+        app()[\Spatie\Permission\PermissionRegistrar::class]->forgetCachedPermissions();
+
+        // Create permissions
+        $permissions = [
+            // Church Management
+            'view all churches',
+            'view assigned churches',
+            'view own church',
+            'create church',
+            'edit church',
+            'delete church',
+            
+            // Giving Management
+            'create giving types',
+            'edit giving types',
+            'delete giving types',
+            'enter givings',
+            'view all givings',
+            'view assigned givings',
+            'view own givings',
+            'mark diocese transfer',
+            
+            // Expense Management
+            'create expense categories',
+            'enter expenses',
+            'view all expenses',
+            'view assigned expenses',
+            'view own expenses',
+            'approve expenses',
+            
+            // Evangelism
+            'submit evangelism reports',
+            'view all evangelism',
+            'view assigned evangelism',
+            'view own evangelism',
+            
+            // Activities
+            'create activities',
+            'edit activities',
+            'view all activities',
+            'view assigned activities',
+            'view own activities',
+            'view department activities',
+            
+            // HR Management
+            'manage all workers',
+            'manage assigned workers',
+            'manage own workers',
+            'manage contracts',
+            'view retirement plans',
+            
+            // User & Permission Management
+            'manage users',
+            'assign roles',
+            'grant permissions',
+            'revoke permissions',
+            'assign archid to churches',
+            
+            // Department Management
+            'create departments',
+            'edit departments',
+            'view all departments',
+            'assign users to departments',
+        ];
+
+        foreach ($permissions as $permission) {
+            Permission::create(['name' => $permission]);
+        }
+
+        // Create roles and assign permissions
+
+        // BOSS Role (Diocese Administrator) - Full Access
+        $boss = Role::create(['name' => 'boss']);
+        $boss->givePermissionTo(Permission::all());
+
+        // ARCHID Role (Regional Supervisor) - Manages assigned churches
+        $archid = Role::create(['name' => 'archid']);
+        $archid->givePermissionTo([
+            'view assigned churches',
+            'edit church',
+            'enter givings',
+            'view assigned givings',
+            'mark diocese transfer',
+            'enter expenses',
+            'view assigned expenses',
+            'approve expenses',
+            'submit evangelism reports',
+            'view assigned evangelism',
+            'create activities',
+            'edit activities',
+            'view assigned activities',
+            'manage assigned workers',
+            'manage contracts',
+            'view retirement plans',
+            'create departments',
+            'edit departments',
+            'assign users to departments',
+        ]);
+
+        // PASTOR Role (Church Leader) - Manages own church
+        $pastor = Role::create(['name' => 'pastor']);
+        $pastor->givePermissionTo([
+            'view own church',
+            'edit church',
+            'enter givings',
+            'view own givings',
+            'enter expenses',
+            'view own expenses',
+            'submit evangelism reports',
+            'view own evangelism',
+            'create activities',
+            'edit activities',
+            'view own activities',
+            'view department activities',
+            'manage own workers',
+            'manage contracts',
+            'view retirement plans',
+            'create departments',
+            'edit departments',
+            'assign users to departments',
+        ]);
+
+        $this->command->info('Roles and permissions created successfully!');
+    }
+}
