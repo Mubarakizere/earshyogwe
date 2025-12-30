@@ -34,9 +34,18 @@ class WorkerController extends Controller
         $departments = $this->getDepartmentsForUser($user);
         
         // Stats
+        // Base query for stats (role permitted only)
+        $baseQuery = Worker::where('status', 'active');
+        if ($user->hasRole('pastor')) {
+            $baseQuery->where('church_id', $user->church_id);
+        } elseif ($user->hasRole('archid')) {
+            $churchIds = Church::where('archid_id', $user->id)->pluck('id');
+            $baseQuery->whereIn('church_id', $churchIds);
+        }
+
         $stats = [
-            'total' => Worker::active()->count(),
-            'retiring_soon' => Worker::active()->whereNotNull('birth_date')
+            'total' => (clone $baseQuery)->count(),
+            'retiring_soon' => (clone $baseQuery)->whereNotNull('birth_date')
                 ->get()->filter(fn($w) => $w->years_to_retirement !== null && $w->years_to_retirement <= 2)->count(),
         ];
         

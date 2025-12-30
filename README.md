@@ -1,59 +1,124 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# EAR Shyogwe - Church Management System
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+A comprehensive web-based management system designed for EAR Shyogwe Diocese to manage multiple churches, financial records, attendance, and reporting.
 
-## About Laravel
+## 🚀 Key Features
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+### 1. Multi-Level Access Control
+- **Boss (Diocese Admin):** Full view of all churches, aggregate analytics, and system settings.
+- **Archid (Regional Pastor):** Manages a specific group of assigned churches.
+- **Pastor:** Access limited to their specific church's data.
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+### 2. Financial Management
+*   **Giving & Tithes:**
+    *   Record weekly/daily givings by type (Tithes, Offerings, etc.)
+    *   Track transfers to Diocese (20% or custom amounts)
+    *   Generate financial reports (CSV/Print)
+*   **Expenses:**
+    *   Track church expenses by category
+    *   Receipt upload and storage
+    *   Approval workflow for large expenses
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+### 3. Church Administration
+*   **Attendance Tracking:**
+    *   Record service attendance (Men, Women, Children)
+    *   Dynamic Service Types (Sunday Service, Prayer Meeting, etc.)
+    *   Statistical analysis of church growth
+*   **Evangelism Reports:**
+    *   Monthly reporting on converts, baptisms, and new members
+    *   Discipleship tracking
+*   **Activity Logging:**
+    *   Audit trail of who created/edited/deleted records
 
-## Learning Laravel
+### 4. Department & User Management
+*   **HR Module:** Worker contracts, renewals, and retirement planing.
+*   **User Management:** Create and manage user accounts and roles.
+*   **Notifications:** Alerts for submitted expenses and contract expiries.
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework. You can also check out [Laravel Learn](https://laravel.com/learn), where you will be guided through building a modern Laravel application.
+---
 
-If you don't feel like reading, [Laracasts](https://laracasts.com) can help. Laracasts contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+## 🛠 Tech Stack
 
-## Laravel Sponsors
+- **Framework:** Laravel 9.x
+- **Language:** PHP 8.1+
+- **Database:** MySQL
+- **CSS Framework:** Tailwind CSS (via Laravel Breeze)
+- **Authentication:** Laravel Breeze & Spatie Permission
 
-We would like to extend our thanks to the following sponsors for funding Laravel development. If you are interested in becoming a sponsor, please visit the [Laravel Partners program](https://partners.laravel.com).
+---
 
-### Premium Partners
+## ⚙️ Installation & Setup
 
-- **[Vehikl](https://vehikl.com)**
-- **[Tighten Co.](https://tighten.co)**
-- **[Kirschbaum Development Group](https://kirschbaumdevelopment.com)**
-- **[64 Robots](https://64robots.com)**
-- **[Curotec](https://www.curotec.com/services/technologies/laravel)**
-- **[DevSquad](https://devsquad.com/hire-laravel-developers)**
-- **[Redberry](https://redberry.international/laravel-development)**
-- **[Active Logic](https://activelogic.com)**
+1.  **Clone the repository:**
+    ```bash
+    git clone https://github.com/your-repo/earshyogwe.git
+    cd earshyogwe
+    ```
 
-## Contributing
+2.  **Install Dependencies:**
+    ```bash
+    composer install
+    npm install && npm run build
+    ```
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+3.  **Environment Setup:**
+    ```bash
+    cp .env.example .env
+    php artisan key:generate
+    ```
+    *Configure your database credentials in `.env`*
 
-## Code of Conduct
+4.  **Database Migration & Seeding:**
+    ```bash
+    php artisan migrate --seed
+    ```
+    *This will create the default roles (Boss, Archid, Pastor) and initial data.*
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+5.  **Run the Server:**
+    ```bash
+    php artisan serve
+    ```
 
-## Security Vulnerabilities
+---
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+## 👤 User Roles & Default Credentials
 
-## License
+| Role | Access Level | Notes |
+|------|--------------|-------|
+| **Boss** | Diocese Admin | Can see everything. |
+| **Archid** | Regional Admin | Can see assigned churches. |
+| **Pastor** | Local Admin | Can only see their church. |
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+---
+
+## 📝 Usage Guide
+
+### For Pastors
+1.  **Login** using your provided credentials.
+2.  **Dashboard:** Overview of your church's finances and attendance.
+3.  **Record Data:** Use the sidebar to add Givings, Expenses, or Attendance.
+4.  **Reports:** Use the "Export CSV" button on list pages to download reports.
+
+### For Archids
+1.  **Dashboard:** Overview of all churches in your region.
+2.  **Verify:** Check submitted reports from your pastors.
+3.  **Filter:** Use the filter bar to select a specific church to view.
+
+### For Boss
+1.  **Global View:** Aggregated data for the entire diocese.
+2.  **Management:** Use "Service Types", "Giving Types", and "Users" to configure the system.
+3.  **Audit:** Check "Audit Logs" to see user activity.
+
+---
+
+## 🛡 Security
+
+- **Data Isolation:** Middleware ensures pastors cannot access data from other churches.
+- **Role Permissions:** Granular permissions controlled via Spatie Permission.
+- **Validation:** All inputs are validated; uploads are checked for file type and size.
+
+---
+
+## 📄 License
+
+Proprietary software for EAR Shyogwe Diocese.

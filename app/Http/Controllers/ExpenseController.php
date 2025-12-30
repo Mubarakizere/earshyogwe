@@ -6,13 +6,69 @@ use App\Models\Expense;
 use App\Models\ExpenseCategory;
 use App\Models\Church;
 use Illuminate\Http\Request;
+use App\Traits\LogsActivity;
 
 class ExpenseController extends Controller
 {
+    use LogsActivity;
+
     public function index(Request $request)
     {
         $user = auth()->user();
         
+        $query = $this->getFilteredQuery($request, $user);
+        
+        $expenses = $query->latest('date')->paginate(20);
+        
+        $categories = ExpenseCategory::where('is_active', true)->get();
+        $churches = $this->getChurchesForUser($user);
+        
+        // Calculate totals based on filtered query for the view
+        $totalAmount = $query->sum('amount');
+        $pendingCount = Expense::pending()->count(); // This might need to be filtered too if we want "Pending in this filter"? 
+        // For now, let's keep pendingCount global as it's an alert, or filter it?
+        // Let's filter pending count by the same query constraints EXCEPT status
+        $pendingQuery = $this->getFilteredQuery($request, $user);
+        $pendingCount = $pendingQuery->where('status', 'pending')->count();
+        
+        return view('expenses.index', compact('expenses', 'categories', 'churches', 'totalAmount', 'pendingCount'));
+    }
+
+    public function export(Request $request)
+    {
+        $user = auth()->user();
+        $query = $this->getFilteredQuery($request, $user);
+        $expenses = $query->latest('date')->get();
+
+        $filename = "expenses_export_" . date('Y-m-d_H-i') . ".csv";
+
+        return response()->streamDownload(function () use ($expenses) {
+            $file = fopen('php://output', 'w');
+            
+            // Add BOM for Excel compatibility
+            fprintf($file, chr(0xEF).chr(0xBB).chr(0xBF));
+
+            // Headers
+            fputcsv($file, ['Date', 'Church', 'Category', 'Description', 'Amount (RWF)', 'Status', 'Entered By']);
+
+            foreach ($expenses as $expense) {
+                fputcsv($file, [
+                    $expense->date->format('Y-m-d'),
+                    $expense->church->name,
+                    $expense->expenseCategory->name,
+                    $expense->description,
+                    $expense->amount,
+                    ucfirst($expense->status),
+                    $expense->enteredBy ? $expense->enteredBy->name : 'N/A'
+                ]);
+            }
+
+            fclose($file);
+        }, $filename);
+    }
+
+    private function getFilteredQuery(Request $request, $user)
+    {
         $query = Expense::with(['church', 'expenseCategory', 'enteredBy', 'approver']);
         
         // Role-based filtering
@@ -36,21 +92,21 @@ class ExpenseController extends Controller
             $query->where('status', $request->status);
         }
         
-        if ($request->filled('year')) {
-            $query->where('year', $request->year);
-        } else {
-            $query->where('year', now()->year);
+        if ($request->filled('start_date')) {
+            $query->whereDate('date', '>=', $request->start_date);
         }
-        
-        $expenses = $query->latest('date')->paginate(20);
-        
-        $categories = ExpenseCategory::where('is_active', true)->get();
-        $churches = $this->getChurchesForUser($user);
-        
-        $totalAmount = $query->sum('amount');
-        $pendingCount = Expense::pending()->count();
-        
-        return view('expenses.index', compact('expenses', 'categories', 'churches', 'totalAmount', 'pendingCount'));
+
+        if ($request->filled('end_date')) {
+            $query->whereDate('date', '<=', $request->end_date);
+        }
+
+        if (!$request->filled('start_date') && !$request->filled('end_date') && $request->filled('year')) {
+             $query->where('year', $request->year);
+        } elseif (!$request->filled('start_date') && !$request->filled('end_date')) {
+             $query->where('year', now()->year);
+        }
+
+        return $query;
     }
 
     public function create()
@@ -82,6 +138,12 @@ class ExpenseController extends Controller
         }
         
         $expense->save();
+
+        // Notify Bosses of new expense
+        $bosses = \App\Models\User::role('boss')->get();
+        \Illuminate\Support\Facades\Notification::send($bosses, new \App\Notifications\ExpenseSubmitted($expense));
+
+        $this->logActivity('created', "Created expense of {$expense->amount} for {$expense->description}", 'expenses');
 
         return redirect()->route('expenses.index')
             ->with('success', 'Expense recorded successfully!');
@@ -115,6 +177,8 @@ class ExpenseController extends Controller
         
         $expense->save();
 
+        $this->logActivity('updated', "Updated expense #{$expense->id}", 'expenses');
+
         return redirect()->route('expenses.index')
             ->with('success', 'Expense updated successfully!');
     }
@@ -122,6 +186,7 @@ class ExpenseController extends Controller
     public function destroy(Expense $expense)
     {
         $expense->delete();
+        $this->logActivity('deleted', "Deleted expense #{$expense->id}", 'expenses');
 
         return redirect()->route('expenses.index')
             ->with('success', 'Expense deleted successfully!');
@@ -136,6 +201,16 @@ class ExpenseController extends Controller
             'approval_notes' => $request->notes,
         ]);
 
+        // Notify submitter
+        if ($expense->entered_by) {
+            $submitter = \App\Models\User::find($expense->entered_by);
+            if ($submitter) {
+                $submitter->notify(new \App\Notifications\ExpenseStatusUpdated($expense, 'approved'));
+            }
+        }
+
+        $this->logActivity('approved', "Approved expense #{$expense->id}", 'expenses');
+
         return back()->with('success', 'Expense approved!');
     }
 
@@ -147,6 +222,16 @@ class ExpenseController extends Controller
             'approved_at' => now(),
             'approval_notes' => $request->notes,
         ]);
+
+        // Notify submitter
+        if ($expense->entered_by) {
+            $submitter = \App\Models\User::find($expense->entered_by);
+            if ($submitter) {
+                $submitter->notify(new \App\Notifications\ExpenseStatusUpdated($expense, 'rejected'));
+            }
+        }
+
+        $this->logActivity('rejected', "Rejected expense #{$expense->id}", 'expenses');
 
         return back()->with('success', 'Expense rejected!');
     }

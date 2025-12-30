@@ -1,126 +1,154 @@
 <x-app-layout>
     <x-slot name="header">
         <h2 class="font-semibold text-2xl text-gray-800 leading-tight">
-            {{ __('Archid Dashboard') }}
+            {{ __('Regional Dashboard (Archid)') }}
         </h2>
     </x-slot>
 
     <div class="py-12">
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
-            <!-- Welcome Section -->
-            <div class="bg-gradient-to-r from-purple-600 to-indigo-700 rounded-lg shadow-lg p-8 mb-8 text-white">
-                <h3 class="text-3xl font-bold mb-2">Welcome, {{ auth()->user()->name }}!</h3>
-                <p class="text-purple-100">Regional Supervisor - Managing {{ $stats['assigned_churches'] }} Churches</p>
+            
+            <!-- Summary Stats -->
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+                <div class="bg-white overflow-hidden shadow-lg rounded-xl p-6 border-l-4 border-green-500">
+                    <p class="text-sm font-medium text-gray-500">Regional Income (YTD)</p>
+                    <p class="text-2xl font-bold text-gray-800">{{ number_format($totalIncome) }} RWF</p>
+                </div>
+
+                <div class="bg-white overflow-hidden shadow-lg rounded-xl p-6 border-l-4 border-red-500">
+                    <p class="text-sm font-medium text-gray-500">Regional Expenses (YTD)</p>
+                    <p class="text-2xl font-bold text-gray-800">{{ number_format($totalExpenses) }} RWF</p>
+                </div>
+
+                <div class="bg-white overflow-hidden shadow-lg rounded-xl p-6 border-l-4 border-blue-500">
+                    <p class="text-sm font-medium text-gray-500">Net Balance</p>
+                    <p class="text-2xl font-bold {{ $netBalance >= 0 ? 'text-blue-800' : 'text-red-600' }}">{{ number_format($netBalance) }} RWF</p>
+                </div>
+
+                <div class="bg-white overflow-hidden shadow-lg rounded-xl p-6 border-l-4 border-purple-500">
+                    <p class="text-sm font-medium text-gray-500">Total Attendance</p>
+                    <p class="text-2xl font-bold text-gray-800">{{ number_format($totalAttendance) }}</p>
+                </div>
             </div>
 
-            <!-- Stats Cards -->
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-                <div class="bg-white overflow-hidden shadow-lg rounded-lg hover:shadow-xl transition-shadow duration-300">
-                    <div class="p-6">
-                        <div class="flex items-center">
-                            <div class="flex-shrink-0 bg-purple-500 rounded-md p-3">
-                                <svg class="h-6 w-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path>
-                                </svg>
-                            </div>
-                            <div class="ml-5 w-0 flex-1">
-                                <dl>
-                                    <dt class="text-sm font-medium text-gray-500 truncate">Assigned Churches</dt>
-                                    <dd class="text-3xl font-bold text-gray-900">{{ $stats['assigned_churches'] }}</dd>
-                                </dl>
-                            </div>
-                        </div>
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-8">
+                <!-- Financial Chart -->
+                <div class="bg-white overflow-hidden shadow-xl rounded-lg p-6 lg:col-span-2">
+                    <h3 class="text-lg font-semibold text-gray-800 mb-4">Regional Financial Overview</h3>
+                    <div class="relative h-80">
+                        <canvas id="financialChart"></canvas>
                     </div>
                 </div>
 
-                <div class="bg-white overflow-hidden shadow-lg rounded-lg hover:shadow-xl transition-shadow duration-300">
-                    <div class="p-6">
-                        <div class="flex items-center">
-                            <div class="flex-shrink-0 bg-green-500 rounded-md p-3">
-                                <svg class="h-6 w-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                                </svg>
+                <!-- Assigned Churches List -->
+                <div class="bg-white overflow-hidden shadow-xl rounded-lg p-6">
+                    <h3 class="text-lg font-semibold text-gray-800 mb-4">My Assigned Churches</h3>
+                    <div class="space-y-4">
+                        @foreach($myChurches as $church)
+                            <div class="flex items-center justify-between border-b border-gray-100 pb-2">
+                                <div>
+                                    <p class="font-medium text-gray-900">{{ $church->name }}</p>
+                                    <p class="text-xs text-gray-500">{{ $church->location }}</p>
+                                </div>
+                                <span class="font-bold text-green-600">{{ number_format($church->givings_sum_amount) }} RWF</span>
                             </div>
-                            <div class="ml-5 w-0 flex-1">
-                                <dl>
-                                    <dt class="text-sm font-medium text-gray-500 truncate">Active Churches</dt>
-                                    <dd class="text-3xl font-bold text-gray-900">{{ $stats['active_churches'] }}</dd>
-                                </dl>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="bg-white overflow-hidden shadow-lg rounded-lg hover:shadow-xl transition-shadow duration-300">
-                    <div class="p-6">
-                        <div class="flex items-center">
-                            <div class="flex-shrink-0 bg-yellow-500 rounded-md p-3">
-                                <svg class="h-6 w-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path>
-                                </svg>
-                            </div>
-                            <div class="ml-5 w-0 flex-1">
-                                <dl>
-                                    <dt class="text-sm font-medium text-gray-500 truncate">Total Departments</dt>
-                                    <dd class="text-3xl font-bold text-gray-900">{{ $stats['total_departments'] }}</dd>
-                                </dl>
-                            </div>
-                        </div>
+                        @endforeach
                     </div>
                 </div>
             </div>
 
-            <!-- Assigned Churches -->
-            <div class="bg-white overflow-hidden shadow-lg rounded-lg">
-                <div class="px-6 py-5 border-b border-gray-200">
-                    <h3 class="text-lg font-semibold text-gray-900">Your Assigned Churches</h3>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <!-- Recent Givings -->
+                <div class="bg-white overflow-hidden shadow-xl rounded-lg p-6">
+                    <div class="flex justify-between items-center mb-4">
+                        <h3 class="text-lg font-semibold text-gray-800">Recent Givings</h3>
+                    </div>
+                    <div class="overflow-x-auto">
+                        <table class="min-w-full divide-y divide-gray-200">
+                            <thead>
+                                <tr>
+                                    <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Church</th>
+                                    <th class="px-4 py-2 text-right text-xs font-medium text-gray-500 uppercase">Amount</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-gray-200">
+                                @forelse($recentGivings as $giving)
+                                    <tr>
+                                        <td class="px-4 py-3 text-sm text-gray-600 truncate max-w-xs">{{ $giving->church->name }}</td>
+                                        <td class="px-4 py-3 text-sm text-right font-medium text-green-600">{{ number_format($giving->amount) }}</td>
+                                    </tr>
+                                @empty
+                                    <tr><td colspan="2" class="px-4 py-3 text-sm text-gray-500 text-center">No recent givings</td></tr>
+                                @endforelse
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
-                <div class="p-6">
-                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                        @forelse($assignedChurches as $church)
-                        <div class="border border-gray-200 rounded-lg p-6 hover:shadow-lg transition-shadow duration-300">
-                            <div class="flex items-center justify-between mb-4">
-                                <h4 class="text-lg font-semibold text-gray-900">{{ $church->name }}</h4>
-                                @if($church->is_active)
-                                    <span class="px-2 py-1 text-xs font-semibold rounded-full bg-green-100 text-green-800">Active</span>
-                                @else
-                                    <span class="px-2 py-1 text-xs font-semibold rounded-full bg-red-100 text-red-800">Inactive</span>
-                                @endif
-                            </div>
-                            
-                            <div class="space-y-2 text-sm text-gray-600">
-                                <div class="flex items-center">
-                                    <svg class="h-4 w-4 mr-2 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path>
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path>
-                                    </svg>
-                                    {{ $church->location }}
-                                </div>
-                                <div class="flex items-center">
-                                    <svg class="h-4 w-4 mr-2 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
-                                    </svg>
-                                    Pastor: {{ $church->pastor->name ?? 'Not Assigned' }}
-                                </div>
-                                <div class="flex items-center">
-                                    <svg class="h-4 w-4 mr-2 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path>
-                                    </svg>
-                                    {{ $church->departments->count() }} Departments
-                                </div>
-                            </div>
-                        </div>
-                        @empty
-                        <div class="col-span-3 text-center py-12">
-                            <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path>
-                            </svg>
-                            <p class="mt-2 text-gray-500">No churches assigned yet</p>
-                        </div>
-                        @endforelse
+
+                <!-- Recent Expenses -->
+                <div class="bg-white overflow-hidden shadow-xl rounded-lg p-6">
+                    <div class="flex justify-between items-center mb-4">
+                        <h3 class="text-lg font-semibold text-gray-800">Recent Expenses</h3>
+                    </div>
+                    <div class="overflow-x-auto">
+                        <table class="min-w-full divide-y divide-gray-200">
+                            <thead>
+                                <tr>
+                                    <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Church</th>
+                                    <th class="px-4 py-2 text-right text-xs font-medium text-gray-500 uppercase">Amount</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-gray-200">
+                                @forelse($recentExpenses as $expense)
+                                    <tr>
+                                        <td class="px-4 py-3 text-sm text-gray-600 truncate max-w-xs">{{ $expense->church->name }}</td>
+                                        <td class="px-4 py-3 text-sm text-right font-medium text-red-600">{{ number_format($expense->amount) }}</td>
+                                    </tr>
+                                @empty
+                                    <tr><td colspan="2" class="px-4 py-3 text-sm text-gray-500 text-center">No recent expenses</td></tr>
+                                @endforelse
+                            </tbody>
+                        </table>
                     </div>
                 </div>
             </div>
         </div>
     </div>
+
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        const ctx = document.getElementById('financialChart').getContext('2d');
+        const financialChart = new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: @json($monthlyStats['labels']),
+                datasets: [
+                    {
+                        label: 'Income',
+                        data: @json($monthlyStats['income']),
+                        backgroundColor: 'rgba(34, 197, 94, 0.6)',
+                        borderColor: 'rgba(34, 197, 94, 1)',
+                        borderWidth: 1
+                    },
+                    {
+                        label: 'Expenses',
+                        data: @json($monthlyStats['expenses']),
+                        backgroundColor: 'rgba(239, 68, 68, 0.6)',
+                        borderColor: 'rgba(239, 68, 68, 1)',
+                        borderWidth: 1
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    y: {
+                        beginAtZero: true
+                    }
+                }
+            }
+        });
+    </script>
 </x-app-layout>

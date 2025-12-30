@@ -28,6 +28,13 @@ class ProfileController extends Controller
     {
         $request->user()->fill($request->validated());
 
+        if ($request->hasFile('profile_photo')) {
+            // Delete old photo if exists? Optional but good practice.
+            // For now just overwrite path.
+            $path = $request->file('profile_photo')->store('profile-photos', 'public');
+            $request->user()->profile_photo_path = $path;
+        }
+
         if ($request->user()->isDirty('email')) {
             $request->user()->email_verified_at = null;
         }

@@ -2,10 +2,12 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
+use App\Models\Attendance;
 use App\Models\Church;
-use App\Models\User;
-use App\Models\Department;
+use App\Models\Expense;
+use App\Models\Giving;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class DashboardController extends Controller
 {
@@ -13,75 +15,234 @@ class DashboardController extends Controller
     {
         $user = auth()->user();
 
-        // Route to appropriate dashboard based on role
         if ($user->hasRole('boss')) {
             return $this->bossDashboard();
         } elseif ($user->hasRole('archid')) {
-            return $this->archidDashboard();
+            return $this->archidDashboard($user);
         } elseif ($user->hasRole('pastor')) {
-            return $this->pastorDashboard();
+            return $this->pastorDashboard($user);
+        } elseif ($user->hasRole('finance')) {
+            return $this->financeDashboard();
+        } elseif ($user->hasRole('hr')) {
+            return $this->hrDashboard();
+        } elseif ($user->hasRole('evangelism')) {
+            return $this->evangelismDashboard();
+        } else {
+            return view('dashboard'); // Fallback default
         }
+    }
 
-        // Default dashboard for users without specific roles
-        return view('dashboard');
+    private function financeDashboard()
+    {
+        // Similar to Boss but focused purely on Money
+        $currentYear = now()->year;
+        
+        $totalIncome = Giving::where('year', $currentYear)->sum('amount');
+        $totalExpenses = Expense::where('year', $currentYear)->where('status', 'approved')->sum('amount');
+        $netBalance = $totalIncome - $totalExpenses;
+        
+        // Pending Expenses for Finance to review (if they have approval rights)
+        $pendingExpenses = Expense::where('status', 'pending')->count();
+
+        // Recent Transactions
+        $recentGivings = Giving::with('church', 'givingType')->latest('date')->take(10)->get();
+        $recentExpenses = Expense::with('church', 'expenseCategory')->latest('date')->take(10)->get();
+
+        $monthlyStats = $this->getMonthlyStats(); // Global stats
+
+        return view('dashboards.finance', compact(
+            'totalIncome', 
+            'totalExpenses', 
+            'netBalance', 
+            'pendingExpenses',
+            'recentGivings', 
+            'recentExpenses',
+            'monthlyStats'
+        ));
+    }
+
+    private function hrDashboard()
+    {
+        // Placeholder for HR Dashboard
+        // We'd need to fetch Workers, Contracts expiring soon, etc.
+        // Assuming models: Worker, Contract exist (from Phase 7)
+        // If not, I will mock basic counts or use User model if that's what we have.
+        // Checking task.md, Phase 7 HR is done. So models should exist.
+        
+        $totalWorkers = \App\Models\Worker::count();
+        $expiringContracts = \App\Models\Contract::where('end_date', '<=', now()->addDays(30))
+            ->where('end_date', '>=', now())
+            ->where('status', 'active')
+            ->count();
+            
+        $recentHires = \App\Models\Worker::latest('created_at')->take(5)->get();
+
+        return view('dashboards.hr', compact('totalWorkers', 'expiringContracts', 'recentHires'));
+    }
+
+    private function evangelismDashboard()
+    {
+        // Placeholder for Evangelism Dashboard
+        // Fetching Evangelism stats
+        // Assuming EvangelismReport, EvangelismImpact models exist (Phase 5)
+        
+        $totalConverts = \App\Models\EvangelismImpact::sum('converts');
+        $totalBaptized = \App\Models\EvangelismImpact::sum('baptized');
+        $totalNewMembers = \App\Models\EvangelismImpact::sum('new_members');
+        
+        $recentReports = \App\Models\EvangelismReport::with('church')->latest('report_date')->take(5)->get();
+
+        return view('dashboards.evangelism', compact('totalConverts', 'totalBaptized', 'totalNewMembers', 'recentReports'));
     }
 
     private function bossDashboard()
     {
-        $stats = [
-            'total_churches' => Church::count(),
-            'active_churches' => Church::where('is_active', true)->count(),
-            'total_pastors' => User::role('pastor')->count(),
-            'total_archids' => User::role('archid')->count(),
-            'total_departments' => Department::count(),
-        ];
+        // 1. Overview Stats (All Time or Current Year - let's do Current Year for relevance)
+        $currentYear = now()->year;
+        
+        $totalIncome = Giving::where('year', $currentYear)->sum('amount');
+        $totalExpenses = Expense::where('year', $currentYear)->where('status', 'approved')->sum('amount');
+        $netBalance = $totalIncome - $totalExpenses;
+        
+        $totalAttendance = Attendance::where('year', $currentYear)->sum('total_count');
 
-        $recentChurches = Church::with(['pastor', 'archid'])
-            ->latest()
-            ->take(5)
-            ->get();
+        // 2. Recent Transactions (Last 5 Givings and Last 5 Expenses)
+        $recentGivings = Giving::with('church', 'givingType')->latest('date')->take(5)->get();
+        $recentExpenses = Expense::with('church', 'expenseCategory')->latest('date')->take(5)->get();
 
-        return view('dashboards.boss', compact('stats', 'recentChurches'));
+        // 3. Church Performance (Top 5 by Income)
+        $topChurches = Church::withSum(['givings' => function ($query) use ($currentYear) {
+            $query->where('year', $currentYear);
+        }], 'amount')
+        ->orderByDesc('givings_sum_amount')
+        ->take(5)
+        ->get();
+
+        // 4. Monthly Trends (Income vs Expense for Chart)
+        $monthlyStats = $this->getMonthlyStats();
+
+        return view('dashboards.boss', compact(
+            'totalIncome', 
+            'totalExpenses', 
+            'netBalance', 
+            'totalAttendance', 
+            'recentGivings', 
+            'recentExpenses',
+            'topChurches',
+            'monthlyStats'
+        ));
     }
 
-    private function archidDashboard()
+    private function archidDashboard($user)
     {
-        $user = auth()->user();
+        $currentYear = now()->year;
+        $churchIds = Church::where('archid_id', $user->id)->pluck('id');
+
+        $totalIncome = Giving::whereIn('church_id', $churchIds)->where('year', $currentYear)->sum('amount');
+        $totalExpenses = Expense::whereIn('church_id', $churchIds)->where('year', $currentYear)->where('status', 'approved')->sum('amount');
+        $netBalance = $totalIncome - $totalExpenses;
         
-        $assignedChurches = Church::where('archid_id', $user->id)
-            ->with(['pastor', 'departments'])
+        $totalAttendance = Attendance::whereIn('church_id', $churchIds)->where('year', $currentYear)->sum('total_count');
+
+        $recentGivings = Giving::whereIn('church_id', $churchIds)->with('church', 'givingType')->latest('date')->take(5)->get();
+        $recentExpenses = Expense::whereIn('church_id', $churchIds)->with('church', 'expenseCategory')->latest('date')->take(5)->get();
+
+        $myChurches = Church::where('archid_id', $user->id)
+            ->withSum(['givings' => function ($query) use ($currentYear) {
+                $query->where('year', $currentYear);
+            }], 'amount')
             ->get();
 
-        $stats = [
-            'assigned_churches' => $assignedChurches->count(),
-            'active_churches' => $assignedChurches->where('is_active', true)->count(),
-            'total_departments' => $assignedChurches->sum(function($church) {
-                return $church->departments->count();
-            }),
-        ];
+        $monthlyStats = $this->getMonthlyStats($churchIds);
 
-        return view('dashboards.archid', compact('stats', 'assignedChurches'));
+        return view('dashboards.archid', compact(
+            'totalIncome', 
+            'totalExpenses', 
+            'netBalance', 
+            'totalAttendance', 
+            'recentGivings', 
+            'recentExpenses',
+            'myChurches',
+            'monthlyStats'
+        ));
     }
 
-    private function pastorDashboard()
+    private function pastorDashboard($user)
     {
-        $user = auth()->user();
-        
-        $church = Church::with(['departments', 'archid'])
-            ->find($user->church_id);
+        $currentYear = now()->year;
+        $churchId = $user->church_id;
 
-        if (!$church) {
-            return view('dashboards.pastor', [
-                'church' => null,
-                'message' => 'You are not assigned to any church yet. Please contact your administrator.'
-            ]);
+        if (!$churchId) {
+            return view('dashboard')->with('warning', 'You are not assigned to any church.');
         }
 
-        $stats = [
-            'departments' => $church->departments->count(),
-            'active_departments' => $church->departments->where('is_active', true)->count(),
-        ];
+        $totalIncome = Giving::where('church_id', $churchId)->where('year', $currentYear)->sum('amount');
+        $totalExpenses = Expense::where('church_id', $churchId)->where('year', $currentYear)->where('status', 'approved')->sum('amount');
+        $netBalance = $totalIncome - $totalExpenses;
+        
+        $totalAttendance = Attendance::where('church_id', $churchId)->where('year', $currentYear)->sum('total_count');
 
-        return view('dashboards.pastor', compact('church', 'stats'));
+        $recentGivings = Giving::where('church_id', $churchId)->with('givingType')->latest('date')->take(5)->get();
+        $recentExpenses = Expense::where('church_id', $churchId)->with('expenseCategory')->latest('date')->take(5)->get();
+
+        // Pending Approvals count (for expenses entered by this pastor)
+        $pendingExpenses = Expense::where('church_id', $churchId)->where('status', 'pending')->count();
+
+        $monthlyStats = $this->getMonthlyStats([$churchId]);
+
+        return view('dashboards.pastor', compact(
+            'totalIncome', 
+            'totalExpenses', 
+            'netBalance', 
+            'totalAttendance', 
+            'recentGivings', 
+            'recentExpenses',
+            'pendingExpenses',
+            'monthlyStats'
+        ));
+    }
+
+    private function getMonthlyStats($churchIds = null)
+    {
+        $currentYear = now()->year;
+        
+        // Initialize arrays for all 12 months
+        $incomeData = array_fill(1, 12, 0);
+        $expenseData = array_fill(1, 12, 0);
+
+        // Income Query
+        $incomeQuery = Giving::select(DB::raw('month, SUM(amount) as total'))
+            ->where('year', $currentYear)
+            ->groupBy('month');
+            
+        if ($churchIds) {
+            $incomeQuery->whereIn('church_id', $churchIds);
+        }
+        
+        $incomes = $incomeQuery->pluck('total', 'month');
+        foreach ($incomes as $month => $total) {
+            $incomeData[$month] = $total;
+        }
+
+        // Expense Query
+        $expenseQuery = Expense::select(DB::raw('month, SUM(amount) as total'))
+            ->where('year', $currentYear)
+            ->where('status', 'approved')
+            ->groupBy('month');
+
+        if ($churchIds) {
+            $expenseQuery->whereIn('church_id', $churchIds);
+        }
+
+        $expenses = $expenseQuery->pluck('total', 'month');
+        foreach ($expenses as $month => $total) {
+            $expenseData[$month] = $total;
+        }
+
+        return [
+            'labels' => ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
+            'income' => array_values($incomeData),
+            'expenses' => array_values($expenseData),
+        ];
     }
 }

@@ -13,7 +13,7 @@ class Attendance extends Model
     protected $fillable = [
         'church_id',
         'attendance_date',
-        'service_type',
+        'service_type_id',
         'service_name',
         'men_count',
         'women_count',
@@ -71,6 +71,11 @@ class Attendance extends Model
         return $this->belongsTo(User::class, 'recorded_by');
     }
 
+    public function serviceType()
+    {
+        return $this->belongsTo(ServiceType::class);
+    }
+
     // Scopes
     public function scopeForChurch($query, $churchId)
     {
@@ -89,6 +94,8 @@ class Attendance extends Model
 
     public function scopeSundayServices($query)
     {
-        return $query->where('service_type', 'sunday_service');
+        return $query->whereHas('serviceType', function($q) {
+            $q->where('name', 'Sunday Service');
+        });
     }
 }

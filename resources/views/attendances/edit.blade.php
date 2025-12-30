@@ -1,13 +1,14 @@
 <x-app-layout>
     <x-slot name="header">
-        <h2 class="font-semibold text-2xl text-gray-800 leading-tight">Record Attendance</h2>
+        <h2 class="font-semibold text-2xl text-gray-800 leading-tight">Edit Attendance</h2>
     </x-slot>
 
     <div class="py-12">
         <div class="max-w-4xl mx-auto sm:px-6 lg:px-8">
             <div class="bg-white overflow-hidden shadow-xl rounded-lg">
-                <form action="{{ route('attendances.store') }}" method="POST" class="p-8">
+                <form action="{{ route('attendances.update', $attendance) }}" method="POST" class="p-8">
                     @csrf
+                    @method('PUT')
 
                     <div class="space-y-6">
                         <div class="grid grid-cols-2 gap-4">
@@ -15,19 +16,18 @@
                                 <div>
                                     <label class="block text-sm font-medium text-gray-700 mb-2">Church <span class="text-red-500">*</span></label>
                                     <select name="church_id" required class="w-full px-4 py-3 border border-gray-300 rounded-lg">
-                                        <option value="">Select Church</option>
                                         @foreach($churches as $church)
-                                            <option value="{{ $church->id }}">{{ $church->name }}</option>
+                                            <option value="{{ $church->id }}" {{ $attendance->church_id == $church->id ? 'selected' : '' }}>{{ $church->name }}</option>
                                         @endforeach
                                     </select>
                                 </div>
                             @else
-                                <input type="hidden" name="church_id" value="{{ $churches->first()->id }}">
+                                <input type="hidden" name="church_id" value="{{ $attendance->church_id }}">
                             @endif
 
                             <div>
                                 <label class="block text-sm font-medium text-gray-700 mb-2">Date <span class="text-red-500">*</span></label>
-                                <input type="date" name="attendance_date" value="{{ date('Y-m-d') }}" required class="w-full px-4 py-3 border border-gray-300 rounded-lg">
+                                <input type="date" name="attendance_date" value="{{ $attendance->attendance_date->format('Y-m-d') }}" required class="w-full px-4 py-3 border border-gray-300 rounded-lg">
                             </div>
                         </div>
 
@@ -37,14 +37,14 @@
                                 <select name="service_type_id" required class="w-full px-4 py-3 border border-gray-300 rounded-lg">
                                     <option value="">Select Type</option>
                                     @foreach($serviceTypes as $type)
-                                        <option value="{{ $type->id }}">{{ $type->name }}</option>
+                                        <option value="{{ $type->id }}" {{ $attendance->service_type_id == $type->id ? 'selected' : '' }}>{{ $type->name }}</option>
                                     @endforeach
                                 </select>
                             </div>
 
                             <div>
                                 <label class="block text-sm font-medium text-gray-700 mb-2">Service Name (Optional)</label>
-                                <input type="text" name="service_name" placeholder="e.g., Easter Service" class="w-full px-4 py-3 border border-gray-300 rounded-lg">
+                                <input type="text" name="service_name" value="{{ $attendance->service_name }}" class="w-full px-4 py-3 border border-gray-300 rounded-lg">
                             </div>
                         </div>
 
@@ -54,29 +54,41 @@
                             <div class="grid grid-cols-3 gap-4">
                                 <div>
                                     <label class="block text-sm font-medium text-gray-700 mb-2">Men <span class="text-red-500">*</span></label>
-                                    <input type="number" name="men_count" min="0" value="0" required class="w-full px-4 py-3 border border-gray-300 rounded-lg">
+                                    <input type="number" name="men_count" min="0" value="{{ $attendance->men_count }}" required class="w-full px-4 py-3 border border-gray-300 rounded-lg">
                                 </div>
                                 <div>
                                     <label class="block text-sm font-medium text-gray-700 mb-2">Women <span class="text-red-500">*</span></label>
-                                    <input type="number" name="women_count" min="0" value="0" required class="w-full px-4 py-3 border border-gray-300 rounded-lg">
+                                    <input type="number" name="women_count" min="0" value="{{ $attendance->women_count }}" required class="w-full px-4 py-3 border border-gray-300 rounded-lg">
                                 </div>
                                 <div>
                                     <label class="block text-sm font-medium text-gray-700 mb-2">Children <span class="text-red-500">*</span></label>
-                                    <input type="number" name="children_count" min="0" value="0" required class="w-full px-4 py-3 border border-gray-300 rounded-lg">
+                                    <input type="number" name="children_count" min="0" value="{{ $attendance->children_count }}" required class="w-full px-4 py-3 border border-gray-300 rounded-lg">
                                 </div>
                             </div>
                         </div>
 
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-2">Notes</label>
-                            <textarea name="notes" rows="3" class="w-full px-4 py-3 border border-gray-300 rounded-lg"></textarea>
+                            <textarea name="notes" rows="3" class="w-full px-4 py-3 border border-gray-300 rounded-lg">{{ $attendance->notes }}</textarea>
                         </div>
 
-                        <div class="flex items-center justify-end space-x-4 pt-6 border-t border-gray-200">
-                            <a href="{{ route('attendances.index') }}" class="px-6 py-3 border border-gray-300 rounded-lg text-gray-700 font-semibold hover:bg-gray-50">Cancel</a>
-                            <button type="submit" class="px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-lg shadow-md">Record Attendance</button>
+                        <div class="flex items-center justify-between pt-6 border-t border-gray-200">
+                             <!-- Delete Button (Left Aligned) -->
+                            <button type="button" onclick="if(confirm('Are you sure?')) document.getElementById('delete-form').submit();" class="text-red-600 hover:text-red-800 font-medium">
+                                Delete Record
+                            </button>
+                            
+                            <div class="flex items-center space-x-4">
+                                <a href="{{ route('attendances.index') }}" class="px-6 py-3 border border-gray-300 rounded-lg text-gray-700 font-semibold hover:bg-gray-50">Cancel</a>
+                                <button type="submit" class="px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-lg shadow-md">Update Attendance</button>
+                            </div>
                         </div>
                     </div>
+                </form>
+                
+                <form id="delete-form" action="{{ route('attendances.destroy', $attendance) }}" method="POST" class="hidden">
+                    @csrf
+                    @method('DELETE')
                 </form>
             </div>
         </div>

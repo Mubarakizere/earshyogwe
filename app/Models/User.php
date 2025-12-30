@@ -23,6 +23,7 @@ class User extends Authenticatable
         'email',
         'password',
         'church_id',
+        'profile_photo_path',
     ];
 
     /**
@@ -54,6 +55,20 @@ class User extends Authenticatable
     public function church()
     {
         return $this->belongsTo(Church::class);
+    }
+    
+    /**
+     * Get the URL to the user's profile photo.
+     *
+     * @return string
+     */
+    public function getProfilePhotoUrlAttribute()
+    {
+        if ($this->profile_photo_path) {
+            return asset('storage/' . $this->profile_photo_path);
+        }
+
+        return 'https://ui-avatars.com/api/?name=' . urlencode($this->name) . '&color=7F9CF5&background=EBF4FF';
     }
 
     public function departments()

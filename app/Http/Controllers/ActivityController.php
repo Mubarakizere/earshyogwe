@@ -39,10 +39,22 @@ class ActivityController extends Controller
         $churches = $this->getChurchesForUser($user);
         
         // Stats
+        // Stats - clone query to respect filters but remove status/department filters for total counts if needed? 
+        // Actually, usually "Total" implies "Total visible to me regardless of current list filters". 
+        // So we need a "base role query" method.
+        
+        $baseQuery = Activity::query();
+        if ($user->hasRole('pastor')) {
+            $baseQuery->where('church_id', $user->church_id);
+        } elseif ($user->hasRole('archid')) {
+            $churchIds = Church::where('archid_id', $user->id)->pluck('id');
+            $baseQuery->whereIn('church_id', $churchIds);
+        }
+
         $stats = [
-            'total' => Activity::count(),
-            'in_progress' => Activity::where('status', 'in_progress')->count(),
-            'completed' => Activity::where('status', 'completed')->count(),
+            'total' => (clone $baseQuery)->count(),
+            'in_progress' => (clone $baseQuery)->where('status', 'in_progress')->count(),
+            'completed' => (clone $baseQuery)->where('status', 'completed')->count(),
         ];
         
         return view('activities.index', compact('activities', 'departments', 'churches', 'stats'));

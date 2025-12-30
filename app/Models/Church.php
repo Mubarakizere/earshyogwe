@@ -50,4 +50,34 @@ class Church extends Model
     {
         return $this->hasMany(Department::class);
     }
+
+    public function givings()
+    {
+        return $this->hasMany(Giving::class);
+    }
+
+    public function expenses()
+    {
+        return $this->hasMany(Expense::class);
+    }
+
+    public function attendances()
+    {
+        return $this->hasMany(Attendance::class);
+    }
+
+    public function evangelismReports()
+    {
+        return $this->hasMany(EvangelismReport::class);
+    }
+
+    public function activities()
+    {
+        return $this->hasMany(Activity::class);
+    }
+
+    public function workers()
+    {
+        return $this->hasMany(Worker::class);
+    }
 }

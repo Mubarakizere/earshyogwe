@@ -90,6 +90,7 @@ class EvangelismReportController extends Controller
 
     public function show(EvangelismReport $evangelismReport)
     {
+        $evangelismReport->load(['church', 'submitter']);
         return view('evangelism-reports.show', compact('evangelismReport'));
     }
 
