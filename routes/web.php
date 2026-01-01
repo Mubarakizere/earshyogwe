@@ -5,7 +5,7 @@ use App\Http\Controllers\DashboardController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
-    return view('welcome');
+    return redirect()->route('login');
 });
 
 Route::get('/dashboard', [\App\Http\Controllers\DashboardController::class, 'index'])
@@ -64,6 +64,9 @@ Route::middleware('auth')->group(function () {
     Route::resource('attendances', \App\Http\Controllers\AttendanceController::class);
     // Church Management
     Route::resource('churches', \App\Http\Controllers\ChurchController::class);
+    
+    // Population Census (Pastor, Archid, Boss)
+    Route::resource('population-censuses', \App\Http\Controllers\PopulationCensusController::class);
 });
 
 require __DIR__.'/auth.php';

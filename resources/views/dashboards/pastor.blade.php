@@ -10,32 +10,40 @@
             
             <!-- Quick Actions -->
             <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
-                <a href="{{ route('givings.create') }}" class="flex flex-col items-center justify-center bg-green-600 hover:bg-green-700 text-white rounded-xl p-4 shadow transition duration-150">
-                    <svg class="h-8 w-8 mb-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
-                    </svg>
-                    <span class="text-sm font-semibold">Record Giving</span>
+                <a href="{{ route('givings.create') }}" class="group flex flex-col items-center justify-center bg-white border border-gray-200 hover:border-brand-500 hover:shadow-lg rounded-xl p-6 transition duration-150">
+                    <div class="p-3 bg-red-50 text-brand-600 rounded-full mb-3 group-hover:bg-brand-600 group-hover:text-white transition">
+                        <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+                        </svg>
+                    </div>
+                    <span class="text-sm font-semibold text-gray-700 group-hover:text-brand-700">Record Giving</span>
                 </a>
                 
-                <a href="{{ route('expenses.create') }}" class="flex flex-col items-center justify-center bg-red-600 hover:bg-red-700 text-white rounded-xl p-4 shadow transition duration-150">
-                    <svg class="h-8 w-8 mb-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
-                    </svg>
-                    <span class="text-sm font-semibold">Enter Expense</span>
+                <a href="{{ route('expenses.create') }}" class="group flex flex-col items-center justify-center bg-white border border-gray-200 hover:border-brand-500 hover:shadow-lg rounded-xl p-6 transition duration-150">
+                    <div class="p-3 bg-red-50 text-brand-600 rounded-full mb-3 group-hover:bg-brand-600 group-hover:text-white transition">
+                        <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                        </svg>
+                    </div>
+                    <span class="text-sm font-semibold text-gray-700 group-hover:text-brand-700">Enter Expense</span>
                 </a>
 
-                <a href="{{ route('attendances.create') }}" class="flex flex-col items-center justify-center bg-purple-600 hover:bg-purple-700 text-white rounded-xl p-4 shadow transition duration-150">
-                    <svg class="h-8 w-8 mb-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
-                    </svg>
-                    <span class="text-sm font-semibold">Mark Attendance</span>
+                <a href="{{ route('attendances.create') }}" class="group flex flex-col items-center justify-center bg-white border border-gray-200 hover:border-brand-500 hover:shadow-lg rounded-xl p-6 transition duration-150">
+                    <div class="p-3 bg-red-50 text-brand-600 rounded-full mb-3 group-hover:bg-brand-600 group-hover:text-white transition">
+                        <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+                        </svg>
+                    </div>
+                    <span class="text-sm font-semibold text-gray-700 group-hover:text-brand-700">Mark Attendance</span>
                 </a>
 
-                <a href="{{ route('evangelism.create') }}" class="flex flex-col items-center justify-center bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl p-4 shadow transition duration-150">
-                    <svg class="h-8 w-8 mb-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" />
-                    </svg>
-                    <span class="text-sm font-semibold">Evangelism Report</span>
+                <a href="{{ route('evangelism.create') }}" class="group flex flex-col items-center justify-center bg-white border border-gray-200 hover:border-brand-500 hover:shadow-lg rounded-xl p-6 transition duration-150">
+                    <div class="p-3 bg-red-50 text-brand-600 rounded-full mb-3 group-hover:bg-brand-600 group-hover:text-white transition">
+                        <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" />
+                        </svg>
+                    </div>
+                    <span class="text-sm font-semibold text-gray-700 group-hover:text-brand-700">Evangelism Report</span>
                 </a>
             </div>
 
@@ -58,20 +66,29 @@
             @endif
 
             <!-- Summary Stats -->
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-                <div class="bg-white overflow-hidden shadow rounded-lg p-5">
-                    <p class="text-sm font-medium text-gray-500">Income (Yearly)</p>
-                    <p class="text-2xl font-bold text-green-600">{{ number_format($totalIncome) }}</p>
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+                <div class="bg-white overflow-hidden shadow-sm rounded-lg p-5 border border-gray-100">
+                    <p class="text-sm font-medium text-gray-500 uppercase tracking-widest">Income</p>
+                    <p class="text-3xl font-bold text-gray-900 mt-2">{{ number_format($totalIncome) }}</p>
+                    <p class="text-xs text-gray-400 mt-1">Yearly Total</p>
                 </div>
                 
-                <div class="bg-white overflow-hidden shadow rounded-lg p-5">
-                    <p class="text-sm font-medium text-gray-500">Expenses (Yearly)</p>
-                    <p class="text-2xl font-bold text-red-600">{{ number_format($totalExpenses) }}</p>
+                <div class="bg-white overflow-hidden shadow-sm rounded-lg p-5 border border-gray-100">
+                    <p class="text-sm font-medium text-gray-500 uppercase tracking-widest">Expenses</p>
+                    <p class="text-3xl font-bold text-gray-900 mt-2">{{ number_format($totalExpenses) }}</p>
+                    <p class="text-xs text-gray-400 mt-1">Yearly Total</p>
                 </div>
 
-                <div class="bg-white overflow-hidden shadow rounded-lg p-5">
-                    <p class="text-sm font-medium text-gray-500">Attendance (Yearly)</p>
-                    <p class="text-2xl font-bold text-purple-600">{{ number_format($totalAttendance) }}</p>
+                <div class="bg-white overflow-hidden shadow-sm rounded-lg p-5 border border-gray-100">
+                    <p class="text-sm font-medium text-gray-500 uppercase tracking-widest">Attendance</p>
+                    <p class="text-3xl font-bold text-gray-900 mt-2">{{ number_format($totalAttendance) }}</p>
+                    <p class="text-xs text-gray-400 mt-1">Yearly Total</p>
+                </div>
+
+                <div class="bg-white overflow-hidden shadow-sm rounded-lg p-5 border border-gray-100">
+                    <p class="text-sm font-medium text-gray-500 uppercase tracking-widest">Members</p>
+                    <p class="text-3xl font-bold text-brand-700 mt-2">{{ number_format($totalPopulation) }}</p>
+                    <p class="text-xs text-gray-400 mt-1">Total Population</p>
                 </div>
             </div>
 

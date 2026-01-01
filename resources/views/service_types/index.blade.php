@@ -10,11 +10,7 @@
 
     <div class="py-12">
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
-            @if(session('success'))
-                <div class="mb-6 bg-green-100 border-l-4 border-green-500 text-green-700 p-4 rounded-lg">
-                    {{ session('success') }}
-                </div>
-            @endif
+
 
             <div class="bg-white overflow-hidden shadow-xl rounded-lg">
                 <table class="min-w-full divide-y divide-gray-200">

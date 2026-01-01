@@ -121,11 +121,16 @@ class DashboardController extends Controller
         // 4. Monthly Trends (Income vs Expense for Chart)
         $monthlyStats = $this->getMonthlyStats();
 
+        // 5. Population Stats (Sum of latest census for current year)
+        $totalPopulation = \App\Models\PopulationCensus::where('year', $currentYear)
+            ->sum(DB::raw('men_count + women_count + youth_count + children_count + infants_count'));
+
         return view('dashboards.boss', compact(
             'totalIncome', 
             'totalExpenses', 
             'netBalance', 
             'totalAttendance', 
+            'totalPopulation',
             'recentGivings', 
             'recentExpenses',
             'topChurches',
@@ -155,11 +160,16 @@ class DashboardController extends Controller
 
         $monthlyStats = $this->getMonthlyStats($churchIds);
 
+        $totalPopulation = \App\Models\PopulationCensus::whereIn('church_id', $churchIds)
+            ->where('year', $currentYear)
+            ->sum(DB::raw('men_count + women_count + youth_count + children_count + infants_count'));
+
         return view('dashboards.archid', compact(
             'totalIncome', 
             'totalExpenses', 
             'netBalance', 
             'totalAttendance', 
+            'totalPopulation',
             'recentGivings', 
             'recentExpenses',
             'myChurches',
@@ -190,11 +200,16 @@ class DashboardController extends Controller
 
         $monthlyStats = $this->getMonthlyStats([$churchId]);
 
+        $totalPopulation = \App\Models\PopulationCensus::where('church_id', $churchId)
+            ->where('year', $currentYear)
+            ->sum(DB::raw('men_count + women_count + youth_count + children_count + infants_count'));
+
         return view('dashboards.pastor', compact(
             'totalIncome', 
             'totalExpenses', 
             'netBalance', 
             'totalAttendance', 
+            'totalPopulation',
             'recentGivings', 
             'recentExpenses',
             'pendingExpenses',

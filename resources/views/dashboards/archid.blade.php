@@ -9,25 +9,30 @@
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
             
             <!-- Summary Stats -->
-            <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-                <div class="bg-white overflow-hidden shadow-lg rounded-xl p-6 border-l-4 border-green-500">
-                    <p class="text-sm font-medium text-gray-500">Regional Income (YTD)</p>
-                    <p class="text-2xl font-bold text-gray-800">{{ number_format($totalIncome) }} RWF</p>
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-6 mb-8">
+                <div class="bg-white overflow-hidden shadow-sm rounded-xl p-6 border border-gray-100 hover:shadow-md transition">
+                    <p class="text-sm font-medium text-gray-500">Regional Income</p>
+                    <p class="text-2xl font-bold text-gray-900">{{ number_format($totalIncome) }}</p>
                 </div>
 
-                <div class="bg-white overflow-hidden shadow-lg rounded-xl p-6 border-l-4 border-red-500">
-                    <p class="text-sm font-medium text-gray-500">Regional Expenses (YTD)</p>
-                    <p class="text-2xl font-bold text-gray-800">{{ number_format($totalExpenses) }} RWF</p>
+                <div class="bg-white overflow-hidden shadow-sm rounded-xl p-6 border border-gray-100 hover:shadow-md transition">
+                    <p class="text-sm font-medium text-gray-500">Regional Expenses</p>
+                    <p class="text-2xl font-bold text-gray-900">{{ number_format($totalExpenses) }}</p>
                 </div>
 
-                <div class="bg-white overflow-hidden shadow-lg rounded-xl p-6 border-l-4 border-blue-500">
+                <div class="bg-white overflow-hidden shadow-sm rounded-xl p-6 border border-gray-100 hover:shadow-md transition">
                     <p class="text-sm font-medium text-gray-500">Net Balance</p>
-                    <p class="text-2xl font-bold {{ $netBalance >= 0 ? 'text-blue-800' : 'text-red-600' }}">{{ number_format($netBalance) }} RWF</p>
+                    <p class="text-2xl font-bold {{ $netBalance >= 0 ? 'text-gray-900' : 'text-red-600' }}">{{ number_format($netBalance) }}</p>
                 </div>
 
-                <div class="bg-white overflow-hidden shadow-lg rounded-xl p-6 border-l-4 border-purple-500">
+                <div class="bg-white overflow-hidden shadow-sm rounded-xl p-6 border border-gray-100 hover:shadow-md transition">
                     <p class="text-sm font-medium text-gray-500">Total Attendance</p>
-                    <p class="text-2xl font-bold text-gray-800">{{ number_format($totalAttendance) }}</p>
+                    <p class="text-2xl font-bold text-gray-900">{{ number_format($totalAttendance) }}</p>
+                </div>
+                
+                <div class="bg-white overflow-hidden shadow-sm rounded-xl p-6 border border-gray-100 hover:shadow-md transition">
+                    <p class="text-sm font-medium text-gray-500">Population</p>
+                    <p class="text-2xl font-bold text-brand-700">{{ number_format($totalPopulation) }}</p>
                 </div>
             </div>
 

@@ -10,11 +10,7 @@
 
     <div class="py-12">
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
-            @if(session('success'))
-                <div class="mb-6 bg-green-100 border-l-4 border-green-500 text-green-700 p-4 rounded-lg">
-                    {{ session('success') }}
-                </div>
-            @endif
+
 
             <!-- Stats Cards -->
             <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
@@ -84,9 +80,13 @@
                     </div>
                     <div class="mt-6">{{ $activities->links() }}</div>
                 @else
-                    <div class="text-center py-12">
-                        <p class="text-gray-500">No activities yet</p>
-                    </div>
+                    <x-empty-state 
+                        title="No activities recorded" 
+                        message="Plan and track your department activities here."
+                        action="New Activity" 
+                        url="{{ route('activities.create') }}"
+                        icon="document"
+                    />
                 @endif
             </div>
         </div>
