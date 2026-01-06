@@ -15,12 +15,16 @@ class ActivityController extends Controller
         
         $query = Activity::with(['department', 'church', 'creator']);
         
-        // Role-based filtering
-        if ($user->hasRole('pastor')) {
-            $query->where('church_id', $user->church_id);
-        } elseif ($user->hasRole('archid')) {
-            $churchIds = Church::where('archid_id', $user->id)->pluck('id');
-            $query->whereIn('church_id', $churchIds);
+        // Permission-based filtering
+        if ($user->can('view all activities')) {
+             // See all
+        } elseif ($user->can('view assigned activities') && $user->hasRole('archid')) {
+             $churchIds = Church::where('archid_id', $user->id)->pluck('id');
+             $query->whereIn('church_id', $churchIds);
+        } elseif ($user->can('view own activities') && $user->church_id) {
+             $query->where('church_id', $user->church_id);
+        } else {
+             $query->where('id', 0);
         }
         
         // Filter by status
@@ -39,16 +43,16 @@ class ActivityController extends Controller
         $churches = $this->getChurchesForUser($user);
         
         // Stats
-        // Stats - clone query to respect filters but remove status/department filters for total counts if needed? 
-        // Actually, usually "Total" implies "Total visible to me regardless of current list filters". 
-        // So we need a "base role query" method.
-        
         $baseQuery = Activity::query();
-        if ($user->hasRole('pastor')) {
-            $baseQuery->where('church_id', $user->church_id);
-        } elseif ($user->hasRole('archid')) {
+        if ($user->can('view all activities')) {
+             // all
+        } elseif ($user->can('view assigned activities') && $user->hasRole('archid')) {
             $churchIds = Church::where('archid_id', $user->id)->pluck('id');
             $baseQuery->whereIn('church_id', $churchIds);
+        } elseif ($user->can('view own activities') && $user->church_id) {
+            $baseQuery->where('church_id', $user->church_id);
+        } else {
+            $baseQuery->where('id', 0);
         }
 
         $stats = [
@@ -62,6 +66,8 @@ class ActivityController extends Controller
 
     public function create()
     {
+        $this->authorize('create activities');
+        
         $departments = $this->getDepartmentsForUser(auth()->user());
         $churches = $this->getChurchesForUser(auth()->user());
         
@@ -70,6 +76,8 @@ class ActivityController extends Controller
 
     public function store(Request $request)
     {
+        $this->authorize('create activities');
+        
         $validated = $request->validate([
             'department_id' => 'required|exists:departments,id',
             'church_id' => 'required|exists:churches,id',
@@ -118,12 +126,15 @@ class ActivityController extends Controller
 
     public function show(Activity $activity)
     {
+        // View permission check implicated? For now allow if can view index.
         $activity->load(['department', 'church', 'indicators', 'documents']);
         return view('activities.show', compact('activity'));
     }
 
     public function edit(Activity $activity)
     {
+        $this->authorize('edit activities');
+        
         $departments = $this->getDepartmentsForUser(auth()->user());
         $churches = $this->getChurchesForUser(auth()->user());
         
@@ -132,6 +143,8 @@ class ActivityController extends Controller
 
     public function update(Request $request, Activity $activity)
     {
+        $this->authorize('edit activities');
+
         $validated = $request->validate([
             'department_id' => 'required|exists:departments,id',
             'church_id' => 'required|exists:churches,id',
@@ -161,7 +174,7 @@ class ActivityController extends Controller
 
     private function getDepartmentsForUser($user)
     {
-        if ($user->hasRole('boss')) {
+        if ($user->can('view all departments')) {
             return Department::where('is_active', true)->get();
         } elseif ($user->hasRole('archid')) {
             $churchIds = Church::where('archid_id', $user->id)->pluck('id');
@@ -173,12 +186,13 @@ class ActivityController extends Controller
 
     private function getChurchesForUser($user)
     {
-        if ($user->hasRole('boss')) {
+        if ($user->can('view all churches')) {
             return Church::where('is_active', true)->get();
         } elseif ($user->hasRole('archid')) {
             return Church::where('archid_id', $user->id)->where('is_active', true)->get();
-        } else {
+        } elseif ($user->church_id) {
             return Church::where('id', $user->church_id)->get();
         }
+        return collect();
     }
 }

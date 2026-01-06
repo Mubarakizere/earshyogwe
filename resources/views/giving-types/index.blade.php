@@ -14,9 +14,7 @@
     </x-slot>
 
     <div class="py-12">
-        <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
-
-
+    <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
             <div class="bg-white overflow-hidden shadow-xl rounded-lg">
                 <div class="p-6">
                     <div class="space-y-6">
@@ -45,16 +43,38 @@
                                             <p class="mt-1 text-sm text-gray-500">Created by {{ $type->creator->name ?? 'System' }}</p>
                                         </div>
                                         <div class="flex items-center space-x-2">
-                                            <a href="{{ route('giving-types.edit', $type) }}" class="bg-yellow-500 hover:bg-yellow-600 text-white font-semibold py-2 px-4 rounded-lg transition duration-200">
-                                                Edit
-                                            </a>
-                                            <form action="{{ route('giving-types.destroy', $type) }}" method="POST" class="inline" onsubmit="return confirm('Are you sure you want to delete this giving type?');">
-                                                @csrf
-                                                @method('DELETE')
-                                                <button type="submit" class="bg-red-500 hover:bg-red-600 text-white font-semibold py-2 px-4 rounded-lg transition duration-200">
-                                                    Delete
+                                            @if($type->has_sub_types)
+                                                <button type="button" 
+                                                    @click="$dispatch('open-add-subtype-modal', { 
+                                                        action: '{{ route('giving-types.sub-types.store', $type) }}',
+                                                        name: '{{ $type->name }}' 
+                                                    })"
+                                                    class="bg-purple-600 hover:bg-purple-700 text-white font-semibold py-2 px-4 rounded-lg transition duration-200 text-sm">
+                                                    Add Sub-Type
                                                 </button>
-                                            </form>
+                                            @endif
+                                            
+                                            <button type="button" 
+                                                @click="$dispatch('open-edit-modal', { 
+                                                    action: '{{ route('giving-types.update', $type) }}',
+                                                    name: '{{ addslashes($type->name) }}',
+                                                    description: '{{ addslashes($type->description) }}',
+                                                    has_sub_types: {{ $type->has_sub_types ? 'true' : 'false' }},
+                                                    is_active: {{ $type->is_active ? 'true' : 'false' }}
+                                                })"
+                                                class="bg-yellow-500 hover:bg-yellow-600 text-white font-semibold py-2 px-4 rounded-lg transition duration-200">
+                                                Edit
+                                            </button>
+                                            
+                                            <button type="button" 
+                                                @click="$dispatch('open-delete-modal', { 
+                                                    action: '{{ route('giving-types.destroy', $type) }}',
+                                                    title: 'Delete Giving Type',
+                                                    message: 'Are you sure you want to delete this giving type? This will also delete all associated sub-types. This action cannot be undone.'
+                                                })"
+                                                class="bg-red-500 hover:bg-red-600 text-white font-semibold py-2 px-4 rounded-lg transition duration-200">
+                                                Delete
+                                            </button>
                                         </div>
                                     </div>
                                 </div>
@@ -72,21 +92,18 @@
                                                             @if($subType->description)
                                                                 <p class="mt-1 text-sm text-gray-600">{{ $subType->description }}</p>
                                                             @endif
-                                                            @if($subType->is_active)
-                                                                <span class="mt-2 inline-block px-2 py-1 text-xs font-semibold rounded-full bg-green-100 text-green-800">Active</span>
-                                                            @else
-                                                                <span class="mt-2 inline-block px-2 py-1 text-xs font-semibold rounded-full bg-gray-100 text-gray-800">Inactive</span>
-                                                            @endif
                                                         </div>
-                                                        <form action="{{ route('giving-sub-types.destroy', $subType) }}" method="POST" class="ml-2" onsubmit="return confirm('Delete this sub-type?');">
-                                                            @csrf
-                                                            @method('DELETE')
-                                                            <button type="submit" class="text-red-600 hover:text-red-800">
-                                                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
-                                                                </svg>
-                                                            </button>
-                                                        </form>
+                                                        <button type="button" 
+                                                            @click="$dispatch('open-delete-modal', { 
+                                                                action: '{{ route('giving-sub-types.destroy', $subType) }}',
+                                                                title: 'Delete Sub-Type',
+                                                                message: 'Are you sure you want to delete this sub-type? This action cannot be undone.'
+                                                            })"
+                                                            class="ml-2 text-red-600 hover:text-red-800">
+                                                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+                                                            </svg>
+                                                        </button>
                                                     </div>
                                                 </div>
                                             @endforeach
@@ -103,15 +120,170 @@
                                 <p class="mt-1 text-sm text-gray-500">Get started by creating a new giving type.</p>
                                 <div class="mt-6">
                                     <a href="{{ route('giving-types.create') }}" class="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700">
-                                        <svg class="-ml-1 mr-2 h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
-                                        </svg>
                                         Add Giving Type
                                     </a>
                                 </div>
                             </div>
                         @endforelse
                     </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Edit Modal -->
+    <div x-data="{ open: false, action: '', name: '', description: '', has_sub_types: false, is_active: false }" 
+         @keydown.escape.window="open = false"
+         x-show="open" 
+         class="fixed inset-0 z-50 overflow-y-auto" 
+         style="display: none;"
+         x-on:open-edit-modal.window="
+            open = true; 
+            action = $event.detail.action;
+            name = $event.detail.name;
+            description = $event.detail.description;
+            has_sub_types = $event.detail.has_sub_types;
+            is_active = $event.detail.is_active;
+         ">
+        <div class="flex items-center justify-center min-h-screen px-4 pt-4 pb-20 text-center sm:block sm:p-0">
+            <div x-show="open" class="fixed inset-0 transition-opacity" aria-hidden="true" @click="open = false">
+                <div class="absolute inset-0 bg-gray-500 opacity-75"></div>
+            </div>
+            <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
+            <div x-show="open" class="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
+                <div class="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
+                    <h3 class="text-lg font-bold text-gray-900 mb-4">Edit Giving Type</h3>
+                    <form :action="action" method="POST">
+                        @csrf
+                        @method('PUT')
+                        <div class="space-y-4">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700">Name</label>
+                                <input type="text" name="name" x-model="name" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700">Description</label>
+                                <textarea name="description" x-model="description" rows="3" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"></textarea>
+                            </div>
+                            <div class="flex items-center space-x-4">
+                                <label class="flex items-center">
+                                    <input type="checkbox" name="has_sub_types" x-model="has_sub_types" value="1" class="rounded border-gray-300 text-indigo-600 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50">
+                                    <span class="ml-2 text-sm text-gray-600">Has Sub-types</span>
+                                </label>
+                                <label class="flex items-center">
+                                    <input type="checkbox" name="is_active" x-model="is_active" value="1" class="rounded border-gray-300 text-green-600 shadow-sm focus:border-green-300 focus:ring focus:ring-green-200 focus:ring-opacity-50">
+                                    <span class="ml-2 text-sm text-gray-600">Active</span>
+                                </label>
+                            </div>
+                            <div class="mt-5 sm:mt-6 sm:grid sm:grid-cols-2 sm:gap-3 sm:grid-flow-row-dense">
+                                <button type="submit" class="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-blue-600 text-base font-medium text-white hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 sm:col-start-2 sm:text-sm">
+                                    Save Changes
+                                </button>
+                                <button type="button" @click="open = false" class="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:mt-0 sm:col-start-1 sm:text-sm">
+                                    Cancel
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add Sub-Type Modal -->
+    <div x-data="{ open: false, action: '', typeName: '' }" 
+         @keydown.escape.window="open = false"
+         x-show="open" 
+         class="fixed inset-0 z-50 overflow-y-auto" 
+         style="display: none;"
+         x-on:open-add-subtype-modal.window="
+            open = true; 
+            action = $event.detail.action;
+            typeName = $event.detail.name;
+         ">
+        <div class="flex items-center justify-center min-h-screen px-4 pt-4 pb-20 text-center sm:block sm:p-0">
+            <div x-show="open" class="fixed inset-0 transition-opacity" aria-hidden="true" @click="open = false">
+                <div class="absolute inset-0 bg-gray-500 opacity-75"></div>
+            </div>
+            <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
+            <div x-show="open" class="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
+                <div class="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
+                    <h3 class="text-lg font-bold text-gray-900 mb-4">Add Sub-Type for <span x-text="typeName"></span></h3>
+                    <form :action="action" method="POST">
+                        @csrf
+                        <div class="space-y-4">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700">Sub-Type Name</label>
+                                <input type="text" name="name" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700">Description</label>
+                                <input type="text" name="description" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
+                            </div>
+                            <div class="mt-5 sm:mt-6 sm:grid sm:grid-cols-2 sm:gap-3 sm:grid-flow-row-dense">
+                                <button type="submit" class="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-purple-600 text-base font-medium text-white hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500 sm:col-start-2 sm:text-sm">
+                                    Add Sub-Type
+                                </button>
+                                <button type="button" @click="open = false" class="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:mt-0 sm:col-start-1 sm:text-sm">
+                                    Cancel
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Delete Confirmation Modal -->
+    <div x-data="{ open: false, action: '', title: '', message: '' }" 
+         @keydown.escape.window="open = false"
+         x-show="open" 
+         class="fixed inset-0 z-50 overflow-y-auto" 
+         style="display: none;"
+         x-on:open-delete-modal.window="
+            open = true; 
+            action = $event.detail.action;
+            title = $event.detail.title || 'Delete Item';
+            message = $event.detail.message || 'Are you sure you want to delete this item? This action cannot be undone.';
+         ">
+        
+        <div class="flex items-center justify-center min-h-screen px-4 pt-4 pb-20 text-center sm:block sm:p-0">
+            <div x-show="open" class="fixed inset-0 transition-opacity" aria-hidden="true" @click="open = false">
+                <div class="absolute inset-0 bg-gray-500 opacity-75"></div>
+            </div>
+            <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
+            <div x-show="open" class="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
+                <div class="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
+                    <div class="sm:flex sm:items-start">
+                        <div class="mx-auto flex-shrink-0 flex items-center justify-center h-12 w-12 rounded-full bg-red-100 sm:mx-0 sm:h-10 sm:w-10">
+                            <svg class="h-6 w-6 text-red-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                            </svg>
+                        </div>
+                        <div class="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left">
+                            <h3 class="text-lg leading-6 font-medium text-gray-900" id="modal-title" x-text="title">
+                                Delete Giving Type
+                            </h3>
+                            <div class="mt-2">
+                                <p class="text-sm text-gray-500" x-text="message">
+                                    Are you sure you want to delete this giving type? This action cannot be undone.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse sm:items-center">
+                    <form :action="action" method="POST" class="w-full sm:w-auto sm:ml-3">
+                        @csrf
+                        @method('DELETE')
+                        <button type="submit" class="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-red-600 text-base font-medium text-white hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 sm:w-auto sm:text-sm">
+                            Delete
+                        </button>
+                    </form>
+                    <button type="button" @click="open = false" class="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:mt-0 sm:w-auto sm:text-sm">
+                        Cancel
+                    </button>
                 </div>
             </div>
         </div>

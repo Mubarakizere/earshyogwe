@@ -44,6 +44,11 @@ class GivingTypeController extends Controller
 
     public function update(Request $request, GivingType $givingType)
     {
+        $request->merge([
+            'has_sub_types' => $request->boolean('has_sub_types'),
+            'is_active' => $request->boolean('is_active'),
+        ]);
+
         $validated = $request->validate([
             'name' => 'required|string|max:255',
             'description' => 'nullable|string',

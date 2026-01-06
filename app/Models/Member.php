@@ -8,7 +8,7 @@ use Carbon\Carbon;
 
 class Member extends Model
 {
-    use HasFactory;
+    use HasFactory, \App\Traits\LogsActivity;
 
     protected $fillable = [
         'church_id',

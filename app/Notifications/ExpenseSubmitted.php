@@ -8,9 +8,8 @@ use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
 
-class ExpenseSubmitted extends Notification implements ShouldQueue
+class ExpenseSubmitted extends Notification
 {
-    use Queueable;
 
     public $expense;
 
@@ -55,8 +54,8 @@ class ExpenseSubmitted extends Notification implements ShouldQueue
         return [
             'expense_id' => $this->expense->id,
             'amount' => $this->expense->amount,
-            'submitter_name' => $this->expense->creator->name ?? 'Unknown', // Ensure creator relationship exists
-            'message' => 'New expense submitted by ' . ($this->expense->creator->name ?? 'Unknown') . ': ' . $this->expense->description,
+            'submitter_name' => $this->expense->enteredBy->name ?? 'Unknown',
+            'message' => 'New expense submitted by ' . ($this->expense->enteredBy->name ?? 'Unknown') . ': ' . $this->expense->description,
             'action_url' => route('expenses.show', $this->expense->id),
         ];
     }

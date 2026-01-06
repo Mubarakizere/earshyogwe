@@ -14,12 +14,16 @@ class EvangelismReportController extends Controller
         
         $query = EvangelismReport::with(['church', 'submitter']);
         
-        // Role-based filtering
-        if ($user->hasRole('pastor')) {
-            $query->where('church_id', $user->church_id);
-        } elseif ($user->hasRole('archid')) {
-            $churchIds = Church::where('archid_id', $user->id)->pluck('id');
-            $query->whereIn('church_id', $churchIds);
+        // Permission-based filtering
+        if ($user->can('view all evangelism')) {
+             // See all
+        } elseif ($user->can('view assigned evangelism') && $user->hasRole('archid')) {
+             $churchIds = Church::where('archid_id', $user->id)->pluck('id');
+             $query->whereIn('church_id', $churchIds);
+        } elseif ($user->can('view own evangelism') && $user->church_id) {
+             $query->where('church_id', $user->church_id);
+        } else {
+             $query->where('id', 0);
         }
         
         if ($request->filled('year')) {
@@ -35,11 +39,15 @@ class EvangelismReportController extends Controller
         $totalsQuery = EvangelismReport::query();
         
         // Apply same filters as main query
-        if ($user->hasRole('pastor')) {
-            $totalsQuery->where('church_id', $user->church_id);
-        } elseif ($user->hasRole('archid')) {
+        if ($user->can('view all evangelism')) {
+             // See all
+        } elseif ($user->can('view assigned evangelism') && $user->hasRole('archid')) {
             $churchIds = Church::where('archid_id', $user->id)->pluck('id');
             $totalsQuery->whereIn('church_id', $churchIds);
+        } elseif ($user->can('view own evangelism') && $user->church_id) {
+            $totalsQuery->where('church_id', $user->church_id);
+        } else {
+            $totalsQuery->where('id', 0);
         }
         
         if ($request->filled('year')) {
@@ -60,12 +68,15 @@ class EvangelismReportController extends Controller
 
     public function create()
     {
+        $this->authorize('submit evangelism reports');
         $churches = $this->getChurchesForUser(auth()->user());
         return view('evangelism-reports.create', compact('churches'));
     }
 
     public function store(Request $request)
     {
+        $this->authorize('submit evangelism reports');
+        
         $validated = $request->validate([
             'church_id' => 'required|exists:churches,id',
             'report_date' => 'required|date',
@@ -131,12 +142,13 @@ class EvangelismReportController extends Controller
 
     private function getChurchesForUser($user)
     {
-        if ($user->hasRole('boss')) {
+        if ($user->can('view all churches')) {
             return Church::where('is_active', true)->get();
         } elseif ($user->hasRole('archid')) {
             return Church::where('archid_id', $user->id)->where('is_active', true)->get();
-        } else {
+        } elseif ($user->church_id) {
             return Church::where('id', $user->church_id)->get();
         }
+        return collect();
     }
 }

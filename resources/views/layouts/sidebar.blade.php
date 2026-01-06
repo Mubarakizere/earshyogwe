@@ -100,9 +100,7 @@
     <div class="border-t border-brand-800 p-4">
         <div class="flex items-center">
             <div class="flex-shrink-0">
-                 <div class="h-10 w-10 rounded-full bg-brand-700 flex items-center justify-center text-white font-bold border border-brand-500">
-                    {{ substr(Auth::user()->name, 0, 1) }}
-                </div>
+                 <img class="h-10 w-10 rounded-full border border-brand-500 object-cover" src="{{ Auth::user()->profile_photo_url }}" alt="{{ Auth::user()->name }}">
             </div>
             <div class="ml-3">
                 <p class="text-sm font-medium text-white group-hover:text-gray-900">{{ Auth::user()->name }}</p>

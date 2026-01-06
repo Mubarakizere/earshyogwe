@@ -35,6 +35,7 @@ class RoleAndPermissionSeeder extends Seeder
             'view assigned givings',
             'view own givings',
             'mark diocese transfer',
+            'verify diocese receipt',
             
             // Expense Management
             'create expense categories',
@@ -96,10 +97,11 @@ class RoleAndPermissionSeeder extends Seeder
 
         // Create roles and assign permissions
 
-        // BOSS Role (Diocese Administrator) - Full Access
         $boss = Role::firstOrCreate(['name' => 'boss']);
         // Grant everything
         $boss->syncPermissions(Permission::all());
+        // Remove 'mark diocese transfer' so Boss acts as Receiver only (like Finance)
+        $boss->revokePermissionTo('mark diocese transfer');
 
         // ARCHID Role (Regional Supervisor) - Manages assigned churches
         $archid = Role::firstOrCreate(['name' => 'archid']);
@@ -138,6 +140,7 @@ class RoleAndPermissionSeeder extends Seeder
             'enter expenses',
             'view own expenses',
             'submit evangelism reports',
+            'mark diocese transfer',
             'view own evangelism',
             'create activities',
             'edit activities',
@@ -160,7 +163,8 @@ class RoleAndPermissionSeeder extends Seeder
             'view all givings',
             'view all expenses',
             'approve expenses',
-            'mark diocese transfer',
+            'approve expenses',
+            'verify diocese receipt',
             'create expense categories', // Finance should manage categories
             'create giving types',        // Finance should manage giving types
         ]);

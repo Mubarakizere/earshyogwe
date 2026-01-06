@@ -37,7 +37,7 @@
                     <span class="text-sm font-semibold text-gray-700 group-hover:text-brand-700">Mark Attendance</span>
                 </a>
 
-                <a href="{{ route('evangelism.create') }}" class="group flex flex-col items-center justify-center bg-white border border-gray-200 hover:border-brand-500 hover:shadow-lg rounded-xl p-6 transition duration-150">
+                <a href="{{ route('evangelism-reports.create') }}" class="group flex flex-col items-center justify-center bg-white border border-gray-200 hover:border-brand-500 hover:shadow-lg rounded-xl p-6 transition duration-150">
                     <div class="p-3 bg-red-50 text-brand-600 rounded-full mb-3 group-hover:bg-brand-600 group-hover:text-white transition">
                         <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" />
@@ -69,25 +69,25 @@
             <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
                 <div class="bg-white overflow-hidden shadow-sm rounded-lg p-5 border border-gray-100">
                     <p class="text-sm font-medium text-gray-500 uppercase tracking-widest">Income</p>
-                    <p class="text-3xl font-bold text-gray-900 mt-2">{{ number_format($totalIncome) }}</p>
+                    <p class="text-2xl xl:text-3xl font-bold text-gray-900 mt-2 truncate" title="{{ number_format($totalIncome) }}">{{ number_format($totalIncome) }}</p>
                     <p class="text-xs text-gray-400 mt-1">Yearly Total</p>
                 </div>
                 
                 <div class="bg-white overflow-hidden shadow-sm rounded-lg p-5 border border-gray-100">
                     <p class="text-sm font-medium text-gray-500 uppercase tracking-widest">Expenses</p>
-                    <p class="text-3xl font-bold text-gray-900 mt-2">{{ number_format($totalExpenses) }}</p>
+                    <p class="text-2xl xl:text-3xl font-bold text-gray-900 mt-2 truncate" title="{{ number_format($totalExpenses) }}">{{ number_format($totalExpenses) }}</p>
                     <p class="text-xs text-gray-400 mt-1">Yearly Total</p>
                 </div>
 
                 <div class="bg-white overflow-hidden shadow-sm rounded-lg p-5 border border-gray-100">
                     <p class="text-sm font-medium text-gray-500 uppercase tracking-widest">Attendance</p>
-                    <p class="text-3xl font-bold text-gray-900 mt-2">{{ number_format($totalAttendance) }}</p>
+                    <p class="text-2xl xl:text-3xl font-bold text-gray-900 mt-2 truncate" title="{{ number_format($totalAttendance) }}">{{ number_format($totalAttendance) }}</p>
                     <p class="text-xs text-gray-400 mt-1">Yearly Total</p>
                 </div>
 
                 <div class="bg-white overflow-hidden shadow-sm rounded-lg p-5 border border-gray-100">
                     <p class="text-sm font-medium text-gray-500 uppercase tracking-widest">Members</p>
-                    <p class="text-3xl font-bold text-brand-700 mt-2">{{ number_format($totalPopulation) }}</p>
+                    <p class="text-2xl xl:text-3xl font-bold text-brand-700 mt-2 truncate" title="{{ number_format($totalPopulation) }}">{{ number_format($totalPopulation) }}</p>
                     <p class="text-xs text-gray-400 mt-1">Total Population</p>
                 </div>
             </div>

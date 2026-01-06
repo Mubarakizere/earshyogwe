@@ -8,7 +8,7 @@ use Carbon\Carbon;
 
 class Giving extends Model
 {
-    use SoftDeletes;
+    use SoftDeletes, \App\Traits\LogsActivity;
 
     protected $fillable = [
         'church_id',
@@ -20,6 +20,8 @@ class Giving extends Model
         'month',
         'year',
         'sent_to_diocese',
+        'diocese_received',
+        'diocese_received_date',
         'diocese_sent_date',
         'diocese_amount',
         'notes',
@@ -31,7 +33,9 @@ class Giving extends Model
         'diocese_amount' => 'decimal:2',
         'date' => 'date',
         'diocese_sent_date' => 'date',
+        'diocese_received_date' => 'date',
         'sent_to_diocese' => 'boolean',
+        'diocese_received' => 'boolean',
     ];
 
     /**

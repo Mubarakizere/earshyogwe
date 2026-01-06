@@ -14,23 +14,50 @@ trait LogsActivity
      * @param string|null $module
      * @return void
      */
+    /**
+     * Boot the trait.
+     */
+    public static function bootLogsActivity()
+    {
+        static::created(function ($model) {
+            $model->logActivity('create', 'Created ' . class_basename($model) . ' #' . $model->id);
+        });
+
+        static::updated(function ($model) {
+            $model->logActivity('update', 'Updated ' . class_basename($model) . ' #' . $model->id);
+        });
+
+        static::deleted(function ($model) {
+            $model->logActivity('delete', 'Deleted ' . class_basename($model) . ' #' . $model->id);
+        });
+    }
+
+    /**
+     * Log an activity.
+     *
+     * @param string $action
+     * @param string $description
+     * @param string|null $module
+     * @return void
+     */
     public function logActivity($action, $description, $module = null)
     {
         // Try to determine module from class name if not provided
         if (!$module) {
-            $className = class_basename($this);
-            $module = strtolower(str_replace('Controller', '', $className));
+            $module = strtolower(class_basename($this));
         }
 
-        ActivityLog::create([
-            'user_id' => auth()->id(),
-            'action' => $action,
-            'module' => $module,
-            'description' => $description,
-            'ip_address' => request()->ip(),
-            'subject_type' => method_exists($this, 'getSubject') ? get_class($this->getSubject()) : null,
-            'subject_id' => method_exists($this, 'getSubject') ? $this->getSubject()->id : null,
-        ]);
+        if (auth()->check()) {
+            ActivityLog::create([
+                'user_id' => auth()->id(),
+                'action' => $action,
+                'module' => $module,
+                'description' => $description,
+                'ip_address' => request()->ip(),
+                'subject_type' => get_class($this),
+                'subject_id' => $this->id,
+            ]);
+        }
     }
     
     /**
@@ -38,14 +65,16 @@ trait LogsActivity
      */
     public static function log($action, $description, $module = 'system', $subject = null)
     {
-        ActivityLog::create([
-            'user_id' => auth()->id(),
-            'action' => $action,
-            'module' => $module,
-            'description' => $description,
-            'ip_address' => request()->ip(),
-            'subject_type' => $subject ? get_class($subject) : null,
-            'subject_id' => $subject ? $subject->id : null,
-        ]);
+        if (auth()->check()) {
+            ActivityLog::create([
+                'user_id' => auth()->id(),
+                'action' => $action,
+                'module' => $module,
+                'description' => $description,
+                'ip_address' => request()->ip(),
+                'subject_type' => $subject ? get_class($subject) : null,
+                'subject_id' => $subject ? $subject->id : null,
+            ]);
+        }
     }
 }

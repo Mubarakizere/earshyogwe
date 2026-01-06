@@ -8,7 +8,7 @@ use Carbon\Carbon;
 
 class Attendance extends Model
 {
-    use SoftDeletes;
+    use SoftDeletes, \App\Traits\LogsActivity;
 
     protected $fillable = [
         'church_id',

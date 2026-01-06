@@ -18,10 +18,9 @@ Route::middleware('auth')->group(function () {
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
     
     // Notifications
-    Route::post('/notifications/mark-read', function () {
-        auth()->user()->unreadNotifications->markAsRead();
-        return back();
-    })->name('notifications.markAsRead');
+    Route::get('/notifications', [\App\Http\Controllers\NotificationController::class, 'index'])->name('notifications.index');
+    Route::get('/notifications/{id}/read', [\App\Http\Controllers\NotificationController::class, 'read'])->name('notifications.read');
+    Route::post('/notifications/mark-read', [\App\Http\Controllers\NotificationController::class, 'markAllRead'])->name('notifications.markAsRead');
 
     // User Management (Boss Only - checked in controller)
     // User Management (Boss Only - checked in controller)
@@ -38,6 +37,8 @@ Route::middleware('auth')->group(function () {
     
     // Giving Entry (Pastor, Archid, Boss)
     Route::get('givings/export', [\App\Http\Controllers\GivingController::class, 'export'])->name('givings.export');
+    Route::post('givings/{giving}/mark-sent', [\App\Http\Controllers\GivingController::class, 'markAsSent'])->name('givings.markAsSent');
+    Route::post('givings/{giving}/verify-receipt', [\App\Http\Controllers\GivingController::class, 'verifyReceipt'])->name('givings.verifyReceipt');
     Route::resource('givings', \App\Http\Controllers\GivingController::class);
     
     // Expense Category Management (Boss only - controlled in views)

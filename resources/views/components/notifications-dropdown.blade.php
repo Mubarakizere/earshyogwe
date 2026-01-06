@@ -25,9 +25,9 @@
             
             <div class="max-h-64 overflow-y-auto">
                 @forelse(auth()->user()->unreadNotifications as $notification)
-                    <a href="{{ $notification->data['action_url'] ?? '#' }}" class="block px-4 py-3 hover:bg-gray-50 transition duration-150 ease-in-out">
-                        <p class="text-sm text-gray-600 font-medium">{{ $notification->data['message'] ?? 'No message' }}</p>
-                        <p class="text-xs text-gray-400 mt-1">{{ $notification->created_at->diffForHumans() }}</p>
+                    <a href="{{ route('notifications.read', $notification->id) }}" class="block px-4 py-3 hover:bg-gray-50 transition duration-150 ease-in-out border-b border-gray-50 last:border-0">
+                        <p class="text-sm text-gray-800 font-semibold">{{ $notification->data['message'] ?? 'New Notification' }}</p>
+                        <p class="text-xs text-gray-500 mt-1">{{ $notification->created_at->diffForHumans() }}</p>
                     </a>
                 @empty
                     <div class="px-4 py-3 text-center text-sm text-gray-500">
@@ -35,6 +35,10 @@
                     </div>
                 @endforelse
             </div>
+            
+            <a href="{{ route('notifications.index') }}" class="block text-center px-4 py-2 border-t border-gray-100 bg-gray-50 text-xs font-medium text-gray-600 hover:text-gray-800 hover:bg-gray-100 transition">
+                View all notifications
+            </a>
         </div>
     </div>
 </div>

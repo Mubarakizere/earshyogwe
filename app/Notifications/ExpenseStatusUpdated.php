@@ -8,9 +8,8 @@ use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
 
-class ExpenseStatusUpdated extends Notification implements ShouldQueue
+class ExpenseStatusUpdated extends Notification
 {
-    use Queueable;
 
     public $expense;
     public $status;

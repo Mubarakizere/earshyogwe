@@ -20,20 +20,53 @@
     <!-- Right Side Actions -->
     <div class="ml-4 flex items-center md:ml-6 space-x-4">
         <!-- Notification Bell -->
-        <button class="bg-white p-1 rounded-full text-gray-400 hover:text-gray-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-brand-500 relative">
-            <span class="sr-only">View notifications</span>
-            <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
-            </svg>
-            <!-- Badge -->
-            <span class="absolute top-0 right-0 block h-2 w-2 rounded-full ring-2 ring-white bg-red-500"></span>
-        </button>
+        <!-- Notification Bell -->
+        <x-dropdown align="right" width="w-72 md:w-80">
+            <x-slot name="trigger">
+                <button class="bg-white p-1 rounded-full text-gray-400 hover:text-gray-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-brand-500 relative">
+                    <span class="sr-only">View notifications</span>
+                    <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
+                    </svg>
+                    <!-- Badge -->
+                    @if(auth()->user()->unreadNotifications->count() > 0)
+                        <span class="absolute top-0 right-0 block h-2 w-2 rounded-full ring-2 ring-white bg-red-500"></span>
+                    @endif
+                </button>
+            </x-slot>
+
+            <x-slot name="content">
+                <div class="px-4 py-3 border-b border-gray-100 flex justify-between items-center bg-gray-50">
+                    <span class="text-sm font-semibold text-gray-700">Notifications ({{ auth()->user()->unreadNotifications->count() }})</span>
+                    @if(auth()->user()->unreadNotifications->count() > 0)
+                        <form method="POST" action="{{ route('notifications.markAsRead') }}">
+                            @csrf
+                            <button type="submit" class="text-xs text-brand-600 hover:text-brand-800 font-medium">Mark all read</button>
+                        </form>
+                    @endif
+                </div>
+
+                <div class="max-h-64 overflow-y-auto">
+                    @forelse(auth()->user()->unreadNotifications as $notification)
+                        <div class="px-4 py-3 border-b border-gray-50 hover:bg-gray-50 transition duration-150 ease-in-out">
+                            <p class="text-sm text-gray-800">{{ $notification->data['message'] ?? 'New Notification' }}</p>
+                            <p class="text-xs text-gray-500 mt-1">{{ $notification->created_at->diffForHumans() }}</p>
+                        </div>
+                    @empty
+                        <div class="px-4 py-6 text-center text-gray-500">
+                            <p class="text-sm">No new notifications</p>
+                        </div>
+                    @endforelse
+                </div>
+            </x-slot>
+        </x-dropdown>
 
         <!-- Profile Dropdown -->
         <x-dropdown align="right" width="48">
             <x-slot name="trigger">
                 <button class="flex items-center text-sm font-medium text-gray-500 hover:text-gray-700 hover:border-gray-300 focus:outline-none focus:text-gray-700 focus:border-gray-300 transition duration-150 ease-in-out">
-                    <div>{{ Auth::user()->name }}</div>
+                    <img class="h-8 w-8 rounded-full object-cover" src="{{ Auth::user()->profile_photo_url }}" alt="{{ Auth::user()->name }}" />
+                    <div class="ml-2">{{ Auth::user()->name }}</div>
 
                     <div class="ml-1">
                         <svg class="fill-current h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20">

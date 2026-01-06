@@ -7,6 +7,10 @@ use App\Models\ExpenseCategory;
 use App\Models\Church;
 use Illuminate\Http\Request;
 use App\Traits\LogsActivity;
+use App\Models\User;
+use Illuminate\Support\Facades\Notification;
+use App\Notifications\ExpenseSubmitted;
+use App\Notifications\ExpenseStatusUpdated;
 
 class ExpenseController extends Controller
 {
@@ -125,6 +129,162 @@ class ExpenseController extends Controller
     }
 
     // ... store ...
+
+    public function store(Request $request)
+    {
+        $this->authorize('enter expenses');
+        
+        $validated = $request->validate([
+            'church_id' => 'required|exists:churches,id',
+            'expense_category_id' => 'required|exists:expense_categories,id',
+            'amount' => 'required|numeric|min:0',
+            'date' => 'required|date',
+            'description' => 'nullable|string',
+            'receipt' => 'nullable|file|mimes:jpg,jpeg,png,pdf|max:30720', // 30MB limit
+        ]);
+
+        // Process receipt upload
+        $receiptPath = null;
+        if ($request->hasFile('receipt')) {
+            $receiptPath = $request->file('receipt')->store('receipts', 'public');
+        }
+
+        $expense = Expense::create([
+            'church_id' => $validated['church_id'],
+            'expense_category_id' => $validated['expense_category_id'],
+            'amount' => $validated['amount'],
+            'date' => $validated['date'],
+            'description' => $validated['description'],
+            'receipt_path' => $receiptPath,
+            'entered_by' => auth()->id(),
+            // Status is handled by model boot event based on category
+        ]);
+
+        if ($expense->status === 'pending') {
+            // Notify approvers
+            $approvers = User::permission('approve expenses')->get();
+            // Fallback to roles if permission query gives nothing (safety net)
+            if ($approvers->isEmpty()) {
+                $approvers = User::role(['boss', 'archid'])->get();
+            }
+            Notification::send($approvers, new ExpenseSubmitted($expense));
+        }
+
+        return redirect()->route('expenses.index')
+            ->with('success', 'Expense recorded successfully!');
+    }
+
+    public function show(Expense $expense)
+    {
+        $this->authorize('view', $expense);
+        return view('expenses.show', compact('expense'));
+    }
+
+    public function edit(Expense $expense)
+    {
+        // Allow if approver OR (owner AND pending)
+        if (!auth()->user()->can('approve expenses') && 
+            ($expense->entered_by !== auth()->id() || $expense->status !== 'pending')) {
+            abort(403);
+        }
+        
+        $categories = ExpenseCategory::where('is_active', true)->get();
+        // Include the current category even if inactive, so it displays correctly
+        if (!$categories->contains('id', $expense->expense_category_id)) {
+            $categories->push($expense->expenseCategory);
+        }
+        
+        $churches = $this->getChurchesForUser(auth()->user());
+        
+        return view('expenses.edit', compact('expense', 'categories', 'churches'));
+    }
+
+    public function update(Request $request, Expense $expense)
+    {
+        // Allow if approver OR (owner AND pending)
+        if (!auth()->user()->can('approve expenses') && 
+            ($expense->entered_by !== auth()->id() || $expense->status !== 'pending')) {
+            abort(403);
+        }
+
+        $validated = $request->validate([
+            'church_id' => 'required|exists:churches,id',
+            'expense_category_id' => 'required|exists:expense_categories,id',
+            'amount' => 'required|numeric|min:0',
+            'date' => 'required|date',
+            'description' => 'nullable|string',
+            'receipt' => 'nullable|file|mimes:jpg,jpeg,png,pdf|max:30720', // 30MB limit
+        ]);
+
+        if ($request->hasFile('receipt')) {
+            // Delete old receipt if exists (optional cleanup)
+            // if ($expense->receipt_path) Storage::disk('public')->delete($expense->receipt_path);
+            $receiptPath = $request->file('receipt')->store('receipts', 'public');
+            $expense->receipt_path = $receiptPath;
+        }
+
+        $expense->update([
+            'church_id' => $validated['church_id'],
+            'expense_category_id' => $validated['expense_category_id'],
+            'amount' => $validated['amount'],
+            'date' => $validated['date'],
+            'description' => $validated['description'],
+        ]);
+
+        return redirect()->route('expenses.index')
+            ->with('success', 'Expense updated successfully!');
+    }
+
+    public function destroy(Expense $expense)
+    {
+        // Allow if approver OR (owner AND pending)
+        if (!auth()->user()->can('approve expenses') && 
+            ($expense->entered_by !== auth()->id() || $expense->status !== 'pending')) {
+            abort(403);
+        }
+        $expense->delete();
+        
+        return redirect()->route('expenses.index')
+            ->with('success', 'Expense deleted successfully!');
+    }
+
+    public function approve(Request $request, Expense $expense)
+    {
+        $this->authorize('approve expenses');
+
+        $expense->update([
+            'status' => 'approved',
+            'approved_by' => auth()->id(),
+            'approved_at' => now(),
+            'approval_notes' => $request->input('notes'),
+        ]);
+
+        // Notify submitter
+        if ($expense->enteredBy) {
+            $expense->enteredBy->notify(new ExpenseStatusUpdated($expense, 'approved'));
+        }
+
+        return back()->with('success', 'Expense approved successfully!');
+    }
+
+    public function reject(Request $request, Expense $expense)
+    {
+        $this->authorize('approve expenses');
+
+        $expense->update([
+            'status' => 'rejected',
+            'approved_by' => auth()->id(),
+            'approved_at' => now(),
+            'approval_notes' => $request->input('notes'),
+        ]);
+
+        // Notify submitter
+        if ($expense->enteredBy) {
+            $expense->enteredBy->notify(new ExpenseStatusUpdated($expense, 'rejected'));
+        }
+
+        return back()->with('success', 'Expense rejected.');
+    }
 
     private function getChurchesForUser($user)
     {
