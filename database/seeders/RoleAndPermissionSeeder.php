@@ -77,6 +77,17 @@ class RoleAndPermissionSeeder extends Seeder
             'edit departments',
             'view all departments',
             'assign users to departments',
+            
+            // Population / Member Management
+            'create members',
+            'edit members',
+            'delete members',
+            'view all members',
+            'view assigned members',
+            'view own members',
+            
+            // Audit Logs
+            'view activity logs',
         ];
 
         foreach ($permissions as $permission) {
@@ -87,7 +98,8 @@ class RoleAndPermissionSeeder extends Seeder
 
         // BOSS Role (Diocese Administrator) - Full Access
         $boss = Role::firstOrCreate(['name' => 'boss']);
-        $boss->givePermissionTo(Permission::all());
+        // Grant everything
+        $boss->syncPermissions(Permission::all());
 
         // ARCHID Role (Regional Supervisor) - Manages assigned churches
         $archid = Role::firstOrCreate(['name' => 'archid']);
@@ -111,6 +123,9 @@ class RoleAndPermissionSeeder extends Seeder
             'create departments',
             'edit departments',
             'assign users to departments',
+            'create members',
+            'edit members',
+            'view assigned members',
         ]);
 
         // PASTOR Role (Church Leader) - Manages own church
@@ -134,6 +149,9 @@ class RoleAndPermissionSeeder extends Seeder
             'create departments',
             'edit departments',
             'assign users to departments',
+            'create members',
+            'edit members',
+            'view own members',
         ]);
 
         // FINANCE Role (Diocese Level)

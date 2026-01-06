@@ -14,34 +14,39 @@
         <!-- Scripts -->
         @vite(['resources/css/app.css', 'resources/js/app.js'])
     </head>
-    <body class="font-sans antialiased text-gray-900 bg-gray-50">
-        <div class="min-h-screen flex flex-col">
-            @include('layouts.navigation')
+    <body class="font-sans antialiased text-gray-900 bg-gray-50 h-screen overflow-hidden flex" x-data="{ sidebarOpen: false }">
+        <!-- Sidebar -->
+        @include('layouts.sidebar')
 
-            <!-- Page Heading -->
+        <!-- Main Content Wrapper -->
+        <div class="flex-1 flex flex-col overflow-hidden relative">
+            <!-- Top Navigation -->
+            @include('layouts.topbar')
+
+            <!-- Page Heading (Optional) -->
             @isset($header)
-                <header class="bg-white border-b border-gray-200">
-                    <div class="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
+                <div class="bg-white shadow-sm border-b border-gray-100 z-0 relative">
+                    <div class="max-w-7xl mx-auto py-4 px-6 sm:px-8">
                         {{ $header }}
                     </div>
-                </header>
+                </div>
             @endisset
 
-            <!-- Flash Messages -->
-            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-6">
-                @include('components.flash-messages')
+            <!-- Flash Messages Container -->
+            <div class="px-6 sm:px-8 mt-6">
+                 @include('components.flash-messages')
             </div>
 
-            <!-- Page Content -->
-            <main class="flex-grow">
+            <!-- Scrollable Main Content -->
+            <main class="flex-1 overflow-y-auto p-6 sm:p-8 scroll-smooth">
                 {{ $slot }}
-            </main>
-            
-            <footer class="bg-white border-t border-gray-200 mt-12">
-                <div class="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8 text-center text-sm text-gray-500">
-                    &copy; {{ date('Y') }} EARS HYOGWE. All rights reserved.
+
+                <div class="pb-6">
+                    <footer class="text-center text-sm text-gray-400 mt-12 border-t border-gray-200 pt-6">
+                        &copy; {{ date('Y') }} EARS HYOGWE. All rights reserved.
+                    </footer>
                 </div>
-            </footer>
+            </main>
         </div>
     </body>
 </html>

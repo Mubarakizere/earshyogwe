@@ -19,13 +19,7 @@ class UserController extends Controller
      */
     public function index(Request $request)
     {
-        // Only Boss can manage all users. Archid can manage users in their assigned churches.
-        // For MVP, limiting to Boss for full management.
-        $this->authorize('viewAny', User::class); // We'll need a UserPolicy later, or role check here
-
-        if (!auth()->user()->hasRole('boss')) {
-            abort(403);
-        }
+        $this->authorize('manage users');
 
         $query = User::with(['church', 'roles']);
 
@@ -51,9 +45,7 @@ class UserController extends Controller
      */
     public function create()
     {
-        if (!auth()->user()->hasRole('boss')) {
-            abort(403);
-        }
+        $this->authorize('manage users');
 
         $churches = Church::all();
         $roles = Role::all();
@@ -66,9 +58,7 @@ class UserController extends Controller
      */
     public function store(Request $request)
     {
-        if (!auth()->user()->hasRole('boss')) {
-            abort(403);
-        }
+        $this->authorize('manage users');
 
         $request->validate([
             'name' => ['required', 'string', 'max:255'],
@@ -104,9 +94,7 @@ class UserController extends Controller
      */
     public function show(User $user)
     {
-        if (!auth()->user()->hasRole('boss')) {
-            abort(403);
-        }
+        $this->authorize('manage users');
         
         return view('users.show', compact('user'));
     }
@@ -116,9 +104,7 @@ class UserController extends Controller
      */
     public function edit(User $user)
     {
-        if (!auth()->user()->hasRole('boss')) {
-            abort(403);
-        }
+        $this->authorize('manage users');
 
         $churches = Church::all();
         $roles = Role::all();
@@ -131,9 +117,7 @@ class UserController extends Controller
      */
     public function update(Request $request, User $user)
     {
-        if (!auth()->user()->hasRole('boss')) {
-            abort(403);
-        }
+        $this->authorize('manage users');
 
         $request->validate([
             'name' => ['required', 'string', 'max:255'],
@@ -174,9 +158,7 @@ class UserController extends Controller
      */
     public function destroy(User $user)
     {
-        if (!auth()->user()->hasRole('boss')) {
-            abort(403);
-        }
+        $this->authorize('manage users');
 
         if ($user->id === auth()->id()) {
             return back()->with('error', 'You cannot delete yourself.');

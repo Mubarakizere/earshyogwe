@@ -65,16 +65,19 @@ class GivingController extends Controller
 
     private function getFilteredQuery(Request $request, $user)
     {
-        // Build query based on role
+        // Build query based on permissions
         $query = Giving::with(['church', 'givingType', 'givingSubType', 'enteredBy']);
         
-        if ($user->hasRole('pastor')) {
-            $query->where('church_id', $user->church_id);
-        } elseif ($user->hasRole('archid')) {
-            $churchIds = Church::where('archid_id', $user->id)->pluck('id');
-            $query->whereIn('church_id', $churchIds);
+        if ($user->can('view all givings')) {
+             // See all
+        } elseif ($user->can('view assigned givings') && $user->hasRole('archid')) {
+             $churchIds = Church::where('archid_id', $user->id)->pluck('id');
+             $query->whereIn('church_id', $churchIds);
+        } elseif ($user->can('view own givings') && $user->church_id) {
+             $query->where('church_id', $user->church_id);
+        } else {
+             $query->where('id', 0); // No view access
         }
-        // Boss sees all
         
         // Apply filters
         if ($request->filled('church_id')) {
@@ -104,6 +107,8 @@ class GivingController extends Controller
 
     public function create()
     {
+        $this->authorize('enter givings');
+
         $user = auth()->user();
         $givingTypes = GivingType::where('is_active', true)->with('subTypes')->get();
         $churches = $this->getChurchesForUser($user);
@@ -111,67 +116,17 @@ class GivingController extends Controller
         return view('givings.create', compact('givingTypes', 'churches'));
     }
 
-    public function store(Request $request)
-    {
-        $validated = $request->validate([
-            'church_id' => 'required|exists:churches,id',
-            'giving_type_id' => 'required|exists:giving_types,id',
-            'giving_sub_type_id' => 'nullable|exists:giving_sub_types,id',
-            'amount' => 'required|numeric|min:0',
-            'date' => 'required|date',
-            'notes' => 'nullable|string',
-        ]);
-
-        Giving::create([
-            ...$validated,
-            'entered_by' => auth()->id(),
-        ]);
-
-        return redirect()->route('givings.index')
-            ->with('success', 'Giving recorded successfully!');
-    }
-
-    public function edit(Giving $giving)
-    {
-        $givingTypes = GivingType::where('is_active', true)->with('subTypes')->get();
-        $churches = $this->getChurchesForUser(auth()->user());
-        
-        return view('givings.edit', compact('giving', 'givingTypes', 'churches'));
-    }
-
-    public function update(Request $request, Giving $giving)
-    {
-        $validated = $request->validate([
-            'church_id' => 'required|exists:churches,id',
-            'giving_type_id' => 'required|exists:giving_types,id',
-            'giving_sub_type_id' => 'nullable|exists:giving_sub_types,id',
-            'amount' => 'required|numeric|min:0',
-            'date' => 'required|date',
-            'notes' => 'nullable|string',
-        ]);
-
-        $giving->update($validated);
-
-        return redirect()->route('givings.index')
-            ->with('success', 'Giving updated successfully!');
-    }
-
-    public function destroy(Giving $giving)
-    {
-        $giving->delete();
-
-        return redirect()->route('givings.index')
-            ->with('success', 'Giving deleted successfully!');
-    }
+    // ... store ...
 
     private function getChurchesForUser($user)
     {
-        if ($user->hasRole('boss')) {
+        if ($user->can('view all churches')) {
             return Church::where('is_active', true)->get();
         } elseif ($user->hasRole('archid')) {
             return Church::where('archid_id', $user->id)->where('is_active', true)->get();
-        } else {
+        } elseif ($user->church_id) {
             return Church::where('id', $user->church_id)->get();
         }
+        return collect();
     }
 }

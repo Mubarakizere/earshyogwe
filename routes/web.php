@@ -24,7 +24,9 @@ Route::middleware('auth')->group(function () {
     })->name('notifications.markAsRead');
 
     // User Management (Boss Only - checked in controller)
+    // User Management (Boss Only - checked in controller)
     Route::resource('users', \App\Http\Controllers\UserController::class);
+    Route::resource('roles', \App\Http\Controllers\RoleController::class);
     
     // Audit Logs (Boss Only)
     Route::resource('activity-logs', \App\Http\Controllers\ActivityLogController::class)->only(['index']);
@@ -44,6 +46,7 @@ Route::middleware('auth')->group(function () {
     // Expense Entry (Pastor, Archid, Boss)
     Route::get('expenses/export', [\App\Http\Controllers\ExpenseController::class, 'export'])->name('expenses.export');
     Route::resource('expenses', \App\Http\Controllers\ExpenseController::class);
+    Route::resource('members', \App\Http\Controllers\MemberController::class);
     Route::post('expenses/{expense}/approve', [\App\Http\Controllers\ExpenseController::class, 'approve'])->name('expenses.approve');
     Route::post('expenses/{expense}/reject', [\App\Http\Controllers\ExpenseController::class, 'reject'])->name('expenses.reject');
     

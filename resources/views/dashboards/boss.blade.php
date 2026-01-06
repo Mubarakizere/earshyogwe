@@ -136,8 +136,17 @@
                             </thead>
                             <tbody class="divide-y divide-gray-100 bg-white">
                                 @forelse($recentGivings as $giving)
-                                    <tr class="hover:bg-gray-50 transition">
-                                        <td class="px-6 py-4 text-sm text-gray-900 font-medium truncate max-w-xs">{{ $giving->church->name }}</td>
+                                    <tr class="hover:bg-gray-50 transition cursor-pointer group" 
+                                        onclick="openQuickView({
+                                            type: 'giving',
+                                            title: 'Giving Details',
+                                            church: '{{ addslashes($giving->church->name) }}',
+                                            category: '{{ addslashes($giving->givingType->name) }}',
+                                            amount: '{{ number_format($giving->amount) }} RWF',
+                                            date: '{{ $giving->created_at->format('M d, Y') }}',
+                                            user: '{{ $giving->user ? addslashes($giving->user->name) : 'System' }}'
+                                        })">
+                                        <td class="px-6 py-4 text-sm text-gray-900 font-medium truncate max-w-xs group-hover:text-brand-600">{{ $giving->church->name }}</td>
                                         <td class="px-6 py-4 text-sm text-gray-500">{{ $giving->givingType->name }}</td>
                                         <td class="px-6 py-4 text-sm text-right font-bold text-brand-700">{{ number_format($giving->amount) }}</td>
                                     </tr>
@@ -166,8 +175,17 @@
                             </thead>
                             <tbody class="divide-y divide-gray-100 bg-white">
                                 @forelse($recentExpenses as $expense)
-                                    <tr class="hover:bg-gray-50 transition">
-                                        <td class="px-6 py-4 text-sm text-gray-900 font-medium truncate max-w-xs">{{ $expense->church->name }}</td>
+                                    <tr class="hover:bg-gray-50 transition cursor-pointer group"
+                                        onclick="openQuickView({
+                                            type: 'expense',
+                                            title: 'Expense Details',
+                                            church: '{{ addslashes($expense->church->name) }}',
+                                            category: '{{ addslashes($expense->expenseCategory->name) }}',
+                                            amount: '{{ number_format($expense->amount) }} RWF',
+                                            description: '{{ addslashes($expense->description ?? '') }}',
+                                            date: '{{ $expense->created_at->format('M d, Y') }}'
+                                        })">
+                                        <td class="px-6 py-4 text-sm text-gray-900 font-medium truncate max-w-xs group-hover:text-brand-600">{{ $expense->church->name }}</td>
                                         <td class="px-6 py-4 text-sm text-gray-500">{{ $expense->expenseCategory->name }}</td>
                                         <td class="px-6 py-4 text-sm text-right font-bold text-red-600">{{ number_format($expense->amount) }}</td>
                                     </tr>
@@ -248,3 +266,86 @@
         });
     </script>
 </x-app-layout>
+
+<!-- Quick View Modal -->
+<x-modal name="quick-view" :show="false" focusable>
+    <div class="p-6" x-data="{ item: null }" x-on:open-quick-view.window="item = $event.detail">
+        <div class="flex justify-between items-start mb-4">
+            <h2 class="text-xl font-bold text-gray-900" x-text="item?.title || 'Details'"></h2>
+            <button x-on:click="$dispatch('close')" class="text-gray-400 hover:text-gray-500">
+                <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+            </button>
+        </div>
+
+        <div class="space-y-4" x-show="item">
+            <!-- Dynamic Content based on type -->
+            <template x-if="item?.type === 'giving'">
+                <div class="grid grid-cols-2 gap-4">
+                    <div class="col-span-2 p-4 bg-brand-50 rounded-lg border border-brand-100 mb-2">
+                        <p class="text-sm text-brand-600 font-medium uppercase">Amount</p>
+                        <p class="text-3xl font-bold text-brand-700" x-text="item.amount"></p>
+                    </div>
+                    <div>
+                        <p class="text-sm text-gray-500">Church</p>
+                        <p class="font-medium text-gray-900" x-text="item.church"></p>
+                    </div>
+                    <div>
+                        <p class="text-sm text-gray-500">Giving Type</p>
+                        <p class="font-medium text-gray-900" x-text="item.category"></p>
+                    </div>
+                    <div>
+                        <p class="text-sm text-gray-500">Date</p>
+                        <p class="font-medium text-gray-900" x-text="item.date"></p>
+                    </div>
+                    <div>
+                        <p class="text-sm text-gray-500">Received By</p>
+                        <p class="font-medium text-gray-900" x-text="item.user ?? 'System'"></p>
+                    </div>
+                </div>
+            </template>
+
+            <template x-if="item?.type === 'expense'">
+                 <div class="grid grid-cols-2 gap-4">
+                    <div class="col-span-2 p-4 bg-gray-100 rounded-lg border border-gray-200 mb-2">
+                        <p class="text-sm text-gray-600 font-medium uppercase">Amount</p>
+                        <p class="text-3xl font-bold text-gray-800" x-text="item.amount"></p>
+                    </div>
+                    <div>
+                        <p class="text-sm text-gray-500">Church</p>
+                        <p class="font-medium text-gray-900" x-text="item.church"></p>
+                    </div>
+                    <div>
+                        <p class="text-sm text-gray-500">Category</p>
+                        <p class="font-medium text-gray-900" x-text="item.category"></p>
+                    </div>
+                    <div>
+                        <p class="text-sm text-gray-500">Description</p>
+                        <p class="font-medium text-gray-900" x-text="item.description || 'N/A'"></p>
+                    </div>
+                     <div>
+                        <p class="text-sm text-gray-500">Date</p>
+                        <p class="font-medium text-gray-900" x-text="item.date"></p>
+                    </div>
+                </div>
+            </template>
+        </div>
+
+        <div class="mt-6 flex justify-end">
+            <x-secondary-button x-on:click="$dispatch('close')">
+                {{ __('Close') }}
+            </x-secondary-button>
+        </div>
+    </div>
+</x-modal>
+
+<!-- Trigger Script -->
+<script>
+    function openQuickView(data) {
+        window.dispatchEvent(new CustomEvent('open-modal', { detail: 'quick-view' }));
+        setTimeout(() => {
+            window.dispatchEvent(new CustomEvent('open-quick-view', { detail: data }));
+        }, 10);
+    }
+</script>
