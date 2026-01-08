@@ -36,8 +36,11 @@ class ChurchController extends Controller
     {
         // Only Boss or maybe Archid (if permitted) can create churches
         $this->authorize('create church'); 
+        
+        $archdeacons = \App\Models\User::role('archid')->get();
+        $pastors = \App\Models\User::role('pastor')->get();
 
-        return view('churches.create');
+        return view('churches.create', compact('archdeacons', 'pastors'));
     }
 
     /**
@@ -56,6 +59,8 @@ class ChurchController extends Controller
             'diocese' => 'nullable|string',
             'email' => 'nullable|email',
             'phone' => 'nullable|string',
+            'archid_id' => 'nullable|exists:users,id',
+            'pastor_id' => 'nullable|exists:users,id',
         ]);
 
         Church::create($validated);
@@ -83,7 +88,9 @@ class ChurchController extends Controller
     public function edit(Church $church)
     {
         $this->authorize('edit church'); 
-        return view('churches.edit', compact('church'));
+        $archdeacons = \App\Models\User::role('archid')->get();
+        $pastors = \App\Models\User::role('pastor')->get();
+        return view('churches.edit', compact('church', 'archdeacons', 'pastors'));
     }
 
     /**
@@ -102,6 +109,8 @@ class ChurchController extends Controller
             'location' => 'required|string|max:255',
             'email' => 'nullable|email',
             'phone' => 'nullable|string',
+            'archid_id' => 'nullable|exists:users,id',
+            'pastor_id' => 'nullable|exists:users,id',
         ]);
 
         $church->update($validated);

@@ -14,7 +14,6 @@ use App\Notifications\ExpenseStatusUpdated;
 
 class ExpenseController extends Controller
 {
-    use LogsActivity;
 
     public function index(Request $request)
     {

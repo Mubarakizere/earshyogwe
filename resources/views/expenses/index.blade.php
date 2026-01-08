@@ -38,7 +38,7 @@
 
             <!-- Filter Bar -->
             <div class="bg-white rounded-lg shadow-sm p-5 mb-8 border border-gray-100">
-                <form action="{{ route('expenses.index') }}" method="GET" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-4">
+                <form action="{{ route('expenses.index') }}" method="GET" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4">
                     <!-- Church (Visible if multiple available) -->
                     @if($churches->count() > 1 || auth()->user()->can('view all churches'))
                     <div>
@@ -85,12 +85,15 @@
                     </div>
 
                     <!-- Filter Actions -->
-                    <div class="flex items-end space-x-2">
-                        <button type="submit" class="bg-gray-800 hover:bg-gray-900 text-white text-sm font-medium py-2 px-4 rounded-md shadow transition flex-1 flex justify-center items-center">
-                            <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z"></path></svg>
-                            Filter
-                        </button>
-                        <a href="{{ route('expenses.index') }}" class="bg-white border border-gray-300 hover:bg-gray-50 text-gray-700 text-sm font-medium py-2 px-4 rounded-md shadow-sm transition">Reset</a>
+                    <div class="flex flex-col justify-end">
+                        <label class="block text-xs font-semibold text-transparent uppercase tracking-wider mb-1">Action</label>
+                        <div class="flex items-center space-x-2">
+                            <button type="submit" class="bg-gray-800 hover:bg-gray-900 text-white text-sm font-medium py-2 px-4 rounded-md shadow transition flex-1 flex justify-center items-center">
+                                <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z"></path></svg>
+                                Filter
+                            </button>
+                            <a href="{{ route('expenses.index') }}" class="bg-white border border-gray-300 hover:bg-gray-50 text-gray-700 text-sm font-medium py-2 px-4 rounded-md shadow-sm transition">Reset</a>
+                        </div>
                     </div>
                 </form>
             </div>

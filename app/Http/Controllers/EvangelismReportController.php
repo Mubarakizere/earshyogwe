@@ -26,10 +26,22 @@ class EvangelismReportController extends Controller
              $query->where('id', 0);
         }
         
-        if ($request->filled('year')) {
-            $query->where('year', $request->year);
-        } else {
-            $query->where('year', now()->year);
+        // Date Range Filtering
+        if ($request->filled('start_date')) {
+            $query->whereDate('report_date', '>=', $request->start_date);
+        }
+        if ($request->filled('end_date')) {
+            $query->whereDate('report_date', '<=', $request->end_date);
+        }
+        // Default to current year only if NO date filters provided? 
+        // Or just let it show all? Previous behavior was default to current year.
+        // Let's default to current year if no specific date range is set, to avoid loading everything.
+        if (!$request->filled('start_date') && !$request->filled('end_date')) {
+             $query->whereYear('report_date', now()->year);
+        }
+
+        if ($request->filled('church_id')) {
+            $query->where('church_id', $request->church_id);
         }
         
         $reports = $query->latest('report_date')->paginate(20);
@@ -50,10 +62,19 @@ class EvangelismReportController extends Controller
             $totalsQuery->where('id', 0);
         }
         
-        if ($request->filled('year')) {
-            $totalsQuery->where('year', $request->year);
-        } else {
-            $totalsQuery->where('year', now()->year);
+        // Date Range Filtering for Totals
+        if ($request->filled('start_date')) {
+            $totalsQuery->whereDate('report_date', '>=', $request->start_date);
+        }
+        if ($request->filled('end_date')) {
+            $totalsQuery->whereDate('report_date', '<=', $request->end_date);
+        }
+        if (!$request->filled('start_date') && !$request->filled('end_date')) {
+             $totalsQuery->whereYear('report_date', now()->year);
+        }
+
+        if ($request->filled('church_id')) {
+            $totalsQuery->where('church_id', $request->church_id);
         }
         
         $totals = $totalsQuery->selectRaw('
@@ -90,10 +111,42 @@ class EvangelismReportController extends Controller
             'notes' => 'nullable|string',
         ]);
 
-        EvangelismReport::create([
+        // Check for duplicate report (Same Church + Same Month + Same Year)
+        $date = \Carbon\Carbon::parse($validated['report_date']);
+        $exists = EvangelismReport::where('church_id', $validated['church_id'])
+            ->where('month', $date->month)
+            ->where('year', $date->year)
+            ->exists();
+
+        if ($exists) {
+            return back()->withErrors(['report_date' => 'A report for this church and month already exists. Please edit the existing report instead.'])->withInput();
+        }
+
+        $report = EvangelismReport::create([
             ...$validated,
             'submitted_by' => auth()->id(),
         ]);
+
+        // Notify Admins/Archids (anyone who can view ALL reports or ASSIGNED reports?)
+        // Let's notify anyone with 'view all evangelism' (Boss, Evangelism Head)
+        $recipients = \App\Models\User::permission('view all evangelism')->get();
+        
+        // Also notify Archid assigned to this church?
+        if ($report->church && $report->church->archid_id) {
+             $archid = \App\Models\User::find($report->church->archid_id);
+             if ($archid && !$recipients->contains($archid)) {
+                 $recipients->push($archid);
+             }
+        }
+        
+        // Filter out self so you don't notify yourself
+        $recipients = $recipients->reject(function ($user) {
+            return $user->id === auth()->id();
+        });
+
+        if ($recipients->isNotEmpty()) {
+            \Illuminate\Support\Facades\Notification::send($recipients, new \App\Notifications\EvangelismReportSubmitted($report));
+        }
 
         return redirect()->route('evangelism-reports.index')
             ->with('success', 'Evangelism report submitted successfully!');

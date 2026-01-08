@@ -86,9 +86,9 @@ class DashboardController extends Controller
         // Fetching Evangelism stats
         // Assuming EvangelismReport, EvangelismImpact models exist (Phase 5)
         
-        $totalConverts = \App\Models\EvangelismImpact::sum('converts');
-        $totalBaptized = \App\Models\EvangelismImpact::sum('baptized');
-        $totalNewMembers = \App\Models\EvangelismImpact::sum('new_members');
+        $totalConverts = \App\Models\EvangelismReport::sum('converts');
+        $totalBaptized = \App\Models\EvangelismReport::sum('baptized');
+        $totalNewMembers = \App\Models\EvangelismReport::sum('new_members');
         
         $recentReports = \App\Models\EvangelismReport::with('church')->latest('report_date')->take(5)->get();
 

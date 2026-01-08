@@ -63,6 +63,9 @@ Route::middleware('auth')->group(function () {
     // Service Type Management
     Route::resource('service-types', \App\Http\Controllers\ServiceTypeController::class)->middleware(['role:boss|archid']);
     
+    // Departments / Activity Types
+    Route::resource('departments', \App\Http\Controllers\DepartmentController::class);
+    
     // Attendance Management (Pastor, Archid, Boss)
     Route::get('attendances/export', [\App\Http\Controllers\AttendanceController::class, 'export'])->name('attendances.export');
     Route::resource('attendances', \App\Http\Controllers\AttendanceController::class);

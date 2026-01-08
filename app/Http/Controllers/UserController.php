@@ -8,11 +8,9 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rules;
 use Spatie\Permission\Models\Role;
-use App\Traits\LogsActivity;
 
 class UserController extends Controller
 {
-    use LogsActivity;
     
     /**
      * Display a listing of the resource.
@@ -84,8 +82,6 @@ class UserController extends Controller
             $user->save();
         }
 
-        $this->logActivity('created', "Created user {$user->name} ({$user->email})", 'users');
-
         return redirect()->route('users.index')->with('success', 'User created successfully.');
     }
 
@@ -148,8 +144,6 @@ class UserController extends Controller
             $user->update(['password' => Hash::make($request->password)]);
         }
 
-        $this->logActivity('updated', "Updated user {$user->name}", 'users');
-
         return redirect()->route('users.index')->with('success', 'User updated successfully.');
     }
 
@@ -165,8 +159,6 @@ class UserController extends Controller
         }
 
         $user->delete();
-
-        $this->logActivity('deleted', "Deleted user {$user->name}", 'users');
 
         return redirect()->route('users.index')->with('success', 'User deleted successfully.');
     }

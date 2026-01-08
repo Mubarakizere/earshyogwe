@@ -51,7 +51,7 @@ class RoleController extends Controller
             $role->syncPermissions($request->permissions);
         }
 
-        $this->logActivity('created', "Created role {$role->name}", 'roles');
+        self::log('created', "Created role {$role->name}", 'roles', $role);
 
         return redirect()->route('roles.index')->with('success', 'Role created successfully.');
     }
@@ -88,7 +88,7 @@ class RoleController extends Controller
             $role->syncPermissions($request->permissions);
         }
 
-        $this->logActivity('updated', "Updated role {$role->name}", 'roles');
+        self::log('updated', "Updated role {$role->name}", 'roles', $role);
 
         return redirect()->route('roles.index')->with('success', 'Role updated successfully.');
     }
@@ -102,7 +102,7 @@ class RoleController extends Controller
         }
 
         $role->delete();
-        $this->logActivity('deleted', "Deleted role {$role->name}", 'roles');
+        self::log('deleted', "Deleted role {$role->name}", 'roles', $role);
 
         return redirect()->route('roles.index')->with('success', 'Role deleted successfully.');
     }
