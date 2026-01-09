@@ -54,6 +54,8 @@ class RoleAndPermissionSeeder extends Seeder
             // Activities
             'create activities',
             'edit activities',
+            'delete activities', // NEW
+            'approve activities', // NEW
             'view all activities',
             'view assigned activities',
             'view own activities',
@@ -118,6 +120,8 @@ class RoleAndPermissionSeeder extends Seeder
             'view assigned evangelism',
             'create activities',
             'edit activities',
+            'delete activities', // NEW
+            'approve activities', // NEW
             'view assigned activities',
             'manage assigned workers',
             'manage contracts',
@@ -144,6 +148,7 @@ class RoleAndPermissionSeeder extends Seeder
             'view own evangelism',
             'create activities',
             'edit activities',
+            'delete activities', // NEW
             'view own activities',
             'view department activities',
             'manage own workers',

@@ -250,6 +250,7 @@ class GivingController extends Controller
         $giving->update([
             'sent_to_diocese' => true,
             'diocese_sent_date' => now(),
+            'receipt_status' => 'pending',
         ]);
 
         // Notify users who can verify receipt (Boss, Finance)
@@ -269,13 +270,14 @@ class GivingController extends Controller
             return back()->with('error', 'Cannot verify receipt. It has not been marked as sent yet.');
         }
 
-        if ($giving->diocese_received) {
+        if ($giving->receipt_status === 'verified') {
             return back()->with('error', 'Already verified as received.');
         }
 
         $giving->update([
-            'diocese_received' => true,
-            'diocese_received_date' => now(),
+            'receipt_status' => 'verified',
+            'verified_by' => auth()->id(),
+            'verified_at' => now(),
         ]);
 
         // Notify the pastor who entered it

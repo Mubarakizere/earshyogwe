@@ -5,13 +5,9 @@
 <div :class="sidebarOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'" class="fixed inset-y-0 left-0 z-40 w-64 bg-brand-900 border-r border-brand-800 transition-transform duration-300 ease-in-out md:static md:flex md:flex-col md:flex-shrink-0">
     <!-- Logo -->
     <div class="flex items-center justify-center h-16 bg-brand-950 shadow-sm">
-        <a href="{{ route('dashboard') }}" class="flex items-center gap-2 text-white font-bold text-xl tracking-tight">
-            <svg class="w-8 h-8 text-white fill-current" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <path d="M12 2L2 7L12 12L22 7L12 2Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                <path d="M2 17L12 22L22 17" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                <path d="M2 12L12 17L22 12" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-            </svg>
-            <span class="hidden md:block">EARS HYOGWE</span>
+        <a href="{{ route('dashboard') }}" class="flex items-center gap-2 text-white font-bold text-lg tracking-tight">
+            <img src="/storage/logo/logo.jpg" alt="Logo" class="w-8 h-8 object-contain">
+            <span class="hidden md:block truncate">EAR SHYOGWE DIOCESE</span>
         </a>
     </div>
 
@@ -33,6 +29,13 @@
              <x-sidebar-link :href="route('givings.index')" :active="request()->routeIs('givings.*')">
                 <svg class="w-5 h-5 mr-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
                 {{ __('Givings') }}
+            </x-sidebar-link>
+        @endcan
+
+        @can('verify diocese receipt')
+             <x-sidebar-link :href="route('diocese.transfers.index')" :active="request()->routeIs('diocese.transfers.*')">
+                <svg class="w-5 h-5 mr-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>
+                {{ __('Incoming Transfers') }}
             </x-sidebar-link>
         @endcan
 

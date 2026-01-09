@@ -173,36 +173,31 @@
                                                 {{ number_format($giving->amount, 0) }} RWF
                                             </td>
                                             <td class="px-6 py-4 whitespace-nowrap">
-                                                @if($giving->diocese_received)
-                                                    <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-blue-100 text-blue-800">
-                                                        Received
+                                                @if($giving->receipt_status === 'verified')
+                                                    <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
+                                                        Verified
                                                     </span>
                                                     <div class="text-xs text-gray-500 mt-1">
-                                                        {{ $giving->diocese_received_date ? $giving->diocese_received_date->format('M d') : '' }}
+                                                        {{ $giving->verified_at ? $giving->verified_at->format('M d') : '' }}
                                                     </div>
+                                                @elseif($giving->receipt_status === 'rejected')
+                                                     <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-red-100 text-red-800">
+                                                        Rejected
+                                                    </span>
                                                 @elseif($giving->sent_to_diocese)
                                                     <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-yellow-100 text-yellow-800">
-                                                        Sent
+                                                        Sent / Pending
                                                     </span>
                                                     <div class="text-xs text-gray-500 mt-1">
                                                         {{ $giving->diocese_sent_date ? $giving->diocese_sent_date->format('M d') : '' }}
                                                     </div>
-
-                                                    @can('verify diocese receipt')
-                                                        <form action="{{ route('givings.verifyReceipt', $giving) }}" method="POST" class="mt-2 inline-block">
-                                                            @csrf
-                                                            <button type="submit" class="text-xs bg-blue-600 hover:bg-blue-700 text-white px-2 py-1 rounded shadow-sm">
-                                                                Confirm Receipt
-                                                            </button>
-                                                        </form>
-                                                    @endcan
                                                 @else
                                                     <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-gray-100 text-gray-800">
-                                                        Pending
+                                                        Not Sent
                                                     </span>
 
                                                     @can('mark diocese transfer')
-                                                        <form action="{{ route('givings.markAsSent', $giving) }}" method="POST" class="mt-2 inline-block">
+                                                        <form action="{{ route('givings.markAsSent', $giving) }}" method="POST" class="mt-2 inline-block" onsubmit="return confirm('Mark this giving as transferred to Diocese?');">
                                                             @csrf
                                                             <button type="submit" class="text-xs bg-green-600 hover:bg-green-700 text-white px-2 py-1 rounded shadow-sm">
                                                                 Mark Sent

@@ -132,23 +132,226 @@
                         @endif
                     </div>
 
+                    <!-- Pro: Approval & Actions Section -->
+                    @if($activity->approval_status === 'pending' && auth()->user()->can('approve activities'))
+                        <div class="bg-yellow-50 border-l-4 border-yellow-400 p-4 mb-8">
+                            <div class="flex items-center justify-between">
+                                <div class="flex items-center">
+                                    <div class="flex-shrink-0">
+                                        <svg class="h-5 w-5 text-yellow-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd" /></svg>
+                                    </div>
+                                    <div class="ml-3">
+                                        <p class="text-sm text-yellow-700">
+                                            This activity is waiting for approval.
+                                        </p>
+                                    </div>
+                                </div>
+                                <div class="flex space-x-2">
+                                    <form action="{{ route('activities.reject', $activity) }}" method="POST" onsubmit="return confirm('Are you sure you want to reject this activity?');">
+                                        @csrf
+                                        <button type="submit" class="bg-white text-red-600 hover:bg-red-50 px-4 py-2 border border-red-200 rounded shadow-sm text-sm font-medium transition">
+                                            Reject
+                                        </button>
+                                    </form>
+                                    
+                                    <button type="button" @click="$dispatch('open-approve-modal')" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded shadow-sm text-sm font-medium transition">
+                                        Approve
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    @endif
+
+                    @if($activity->approval_status === 'rejected')
+                         <div class="bg-red-50 border-l-4 border-red-400 p-4 mb-8">
+                            <div class="flex">
+                                <div class="flex-shrink-0">
+                                    <svg class="h-5 w-5 text-red-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd" /></svg>
+                                </div>
+                                <div class="ml-3">
+                                    <p class="text-sm text-red-700">This activity was rejected.</p>
+                                </div>
+                            </div>
+                        </div>
+                    @endif
+
+                    <!-- Pro: Completion Report -->
+                    @if($activity->status === 'completed' && $activity->completion_summary)
+                        <div class="bg-green-50 rounded-lg p-6 border border-green-200 mb-8">
+                            <h4 class="text-lg font-bold text-green-900 mb-4 border-b border-green-200 pb-2 flex items-center">
+                                <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                                Completion Report
+                            </h4>
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-4">
+                                <div>
+                                    <span class="block text-xs font-semibold text-green-700 uppercase">Summary</span>
+                                    <p class="text-green-800 text-sm mt-1 whitespace-pre-line">{{ $activity->completion_summary }}</p>
+                                </div>
+                                <div class="grid grid-cols-2 gap-4">
+                                    <div class="bg-white p-3 rounded shadow-sm">
+                                        <span class="block text-xs text-gray-500">Attendance</span>
+                                        <span class="block text-xl font-bold text-gray-900">{{ number_format($activity->attendance_count) }}</span>
+                                    </div>
+                                    <div class="bg-white p-3 rounded shadow-sm">
+                                        <span class="block text-xs text-gray-500">Salvations</span>
+                                        <span class="block text-xl font-bold text-gray-900">{{ number_format($activity->salvation_count) }}</span>
+                                    </div>
+                                    <div class="bg-white p-3 rounded shadow-sm">
+                                        <span class="block text-xs text-gray-500">Budget</span>
+                                        <span class="block text-lg font-semibold text-gray-700">{{ number_format($activity->budget_estimate) }}</span>
+                                    </div>
+                                    <div class="bg-white p-3 rounded shadow-sm">
+                                        <span class="block text-xs text-gray-500">Actual Spent</span>
+                                        <span class="block text-lg font-bold {{ $activity->financial_spent > $activity->budget_estimate ? 'text-red-600' : 'text-green-600' }}">
+                                            {{ number_format($activity->financial_spent) }}
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    @endif
+
                     <!-- Action Buttons -->
                     <div class="flex items-center justify-end space-x-4 border-t border-gray-200 pt-6">
                         <a href="{{ route('activities.index') }}" class="px-6 py-2 border border-gray-300 rounded-lg text-gray-700 font-medium hover:bg-gray-50 transition">
                             Back to List
                         </a>
                         
+                        @if($activity->status === 'in_progress' && $activity->approval_status === 'approved')
+                             @can('edit activities')
+                                <button type="button" @click="completionModalOpen = true" class="px-6 py-2 bg-green-600 hover:bg-green-700 text-white font-medium rounded-lg shadow-sm transition flex items-center">
+                                    <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+                                    Mark Complete
+                                </button>
+                             @endcan
+                        @endif
+
                         @can('edit activities')
-                        <a href="{{ route('activities.edit', $activity) }}" class="px-6 py-2 bg-purple-600 hover:bg-purple-700 text-white font-medium rounded-lg shadow-sm transition">
-                            Edit Activity
-                        </a>
+                            <a href="{{ route('activities.edit', $activity) }}" class="px-6 py-2 bg-purple-600 hover:bg-purple-700 text-white font-medium rounded-lg shadow-sm transition">
+                                Edit Activity
+                            </a>
+                        @endcan
+
+                        @can('delete activities')
+                            <form action="{{ route('activities.destroy', $activity) }}" method="POST" onsubmit="return confirm('Are you sure you want to delete this activity?');">
+                                @csrf
+                                @method('DELETE')
+                                <button type="submit" class="px-6 py-2 bg-red-600 hover:bg-red-700 text-white font-medium rounded-lg shadow-sm transition">
+                                    Delete
+                                </button>
+                            </form>
                         @endcan
                     </div>
                 </div>
             </div>
         </div>
     </div>
+    
+    <!-- Completion Modal -->
+    <div x-data="{ completionModalOpen: false }"
+         x-show="completionModalOpen" 
+         class="fixed inset-0 z-50 overflow-y-auto" 
+         style="display: none;">
+        <div class="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
+             <div x-show="completionModalOpen" class="fixed inset-0 transition-opacity" aria-hidden="true" @click="completionModalOpen = false">
+                <div class="absolute inset-0 bg-gray-500 opacity-75"></div>
+            </div>
+            <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
+            
+            <div x-show="completionModalOpen" 
+                 class="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
+                <form action="{{ route('activities.complete', $activity) }}" method="POST" class="p-6">
+                    @csrf
+                    <div class="mb-4">
+                        <h3 class="text-lg font-medium leading-6 text-gray-900">Complete Activity Report</h3>
+                        <p class="text-sm text-gray-500">Please provide the final numbers and a summary.</p>
+                    </div>
+                    
+                    <div class="space-y-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700">Completion Summary <span class="text-red-500">*</span></label>
+                            <textarea name="completion_summary" rows="3" required class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-purple-500 focus:border-purple-500 sm:text-sm"></textarea>
+                        </div>
+                        <div class="grid grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700">Attendance</label>
+                                <input type="number" name="attendance_count" min="0" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-purple-500 focus:border-purple-500 sm:text-sm">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700">Salvations</label>
+                                <input type="number" name="salvation_count" min="0" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-purple-500 focus:border-purple-500 sm:text-sm">
+                            </div>
+                        </div>
+                        <div>
+                             <label class="block text-sm font-medium text-gray-700">Actual Financial Spent (RWF)</label>
+                             <input type="number" name="financial_spent" min="0" step="100" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-purple-500 focus:border-purple-500 sm:text-sm">
+                        </div>
+                    </div>
+                    
+                    <div class="mt-5 sm:mt-6 sm:grid sm:grid-cols-2 sm:gap-3 sm:grid-flow-row-dense">
+                        <button type="submit" class="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-green-600 text-base font-medium text-white hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 sm:col-start-2 sm:text-sm">
+                            Submit Report
+                        </button>
+                        <button type="button" @click="completionModalOpen = false" class="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500 sm:mt-0 sm:col-start-1 sm:text-sm">
+                            Cancel
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
 
+    <!-- Cloud be inside the main x-data, but let's add the modal code here -->
+    
+    <!-- Approval Modal -->
+    <div x-data="{ approveModalOpen: false }"
+         @keydown.escape.window="approveModalOpen = false"
+         x-show="approveModalOpen"
+         x-on:open-approve-modal.window="approveModalOpen = true" 
+         class="fixed inset-0 z-50 overflow-y-auto" 
+         style="display: none;">
+        <div class="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
+             <div x-show="approveModalOpen" class="fixed inset-0 transition-opacity" aria-hidden="true" @click="approveModalOpen = false">
+                <div class="absolute inset-0 bg-gray-500 opacity-75"></div>
+            </div>
+            <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
+            
+            <div x-show="approveModalOpen" 
+                 class="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
+                <div class="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
+                    <div class="sm:flex sm:items-start">
+                        <div class="mx-auto flex-shrink-0 flex items-center justify-center h-12 w-12 rounded-full bg-green-100 sm:mx-0 sm:h-10 sm:w-10">
+                            <svg class="h-6 w-6 text-green-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                            </svg>
+                        </div>
+                        <div class="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left">
+                            <h3 class="text-lg leading-6 font-medium text-gray-900" id="modal-title">
+                                Approve Activity
+                            </h3>
+                            <div class="mt-2">
+                                <p class="text-sm text-gray-500">
+                                    Are you sure you want to approve this activity? This will change its status to "In Progress" (or Planned) and allow it to proceed.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
+                    <form action="{{ route('activities.approve', $activity) }}" method="POST">
+                        @csrf
+                        <button type="submit" class="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-green-600 text-base font-medium text-white hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 sm:ml-3 sm:w-auto sm:text-sm">
+                            Confirm Approval
+                        </button>
+                    </form>
+                    <button type="button" @click="approveModalOpen = false" class="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm">
+                        Cancel
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
     <!-- Document Viewer Modal -->
     <div x-data="{ open: false, url: '', type: '' }" 
          @keydown.escape.window="open = false"

@@ -45,7 +45,7 @@ class DioceseTransferSent extends Notification
             'amount' => $this->giving->amount,
             'church_name' => $this->giving->church->name,
             'message' => 'New transfer of ' . number_format($this->giving->amount) . ' RWF from ' . $this->giving->church->name . ' is ready for verification.',
-            'action_url' => route('givings.index'),
+            'action_url' => route('diocese.transfers.index'),
             'sent_at' => now(),
         ];
     }

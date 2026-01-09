@@ -47,14 +47,26 @@
                         </div>
 
                         <div class="grid grid-cols-2 gap-4">
+                        <div class="grid grid-cols-3 gap-4">
                             <div>
                                 <label class="block text-sm font-medium text-gray-700 mb-2">Responsible Person</label>
                                 <input type="text" name="responsible_person" class="w-full px-4 py-3 border border-gray-300 rounded-lg">
                             </div>
 
                             <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-2">Target <span class="text-red-500">*</span></label>
-                                <input type="number" name="target" min="0" value="0" required class="w-full px-4 py-3 border border-gray-300 rounded-lg">
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Target Value <span class="text-red-500">*</span></label>
+                                <input type="number" name="target" value="{{ old('target', 0) }}" required min="0" 
+                                    class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-purple-500 focus:border-purple-500">
+                                <p class="text-xs text-gray-500 mt-1">E.g. Number of attendees, converts, etc.</p>
+                                @error('target') <p class="text-red-500 text-xs mt-1">{{ $message }}</p> @enderror
+                            </div>
+
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Budget Estimate (RWF)</label>
+                                <input type="number" name="budget_estimate" value="{{ old('budget_estimate') }}" min="0" step="100"
+                                    class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-purple-500 focus:border-purple-500">
+                                <p class="text-xs text-gray-500 mt-1">Estimated cost for this activity.</p>
+                                @error('budget_estimate') <p class="text-red-500 text-xs mt-1">{{ $message }}</p> @enderror
                             </div>
                         </div>
 

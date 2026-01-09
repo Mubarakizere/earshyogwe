@@ -102,11 +102,18 @@
                             <h3 class="text-lg font-semibold text-gray-900 mb-4">Progress Tracking</h3>
                             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                                 <div>
-                                    <label class="block text-sm font-medium text-gray-700 mb-2">Target (Goal) <span class="text-red-500">*</span></label>
-                                    <input type="number" name="target" value="{{ old('target', $activity->target) }}" required min="0"
-                                        class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-purple-500 focus:border-purple-500">
-                                    <p class="text-xs text-gray-500 mt-1">Numerical goal (e.g., attendees, visits)</p>
-                                </div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Target Value</label>
+                                <input type="number" name="target" value="{{ old('target', $activity->target) }}" required min="0" 
+                                    class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-purple-500 focus:border-purple-500">
+                                @error('target') <p class="text-red-500 text-xs mt-1">{{ $message }}</p> @enderror
+                            </div>
+
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Budget Estimate (RWF)</label>
+                                <input type="number" name="budget_estimate" value="{{ old('budget_estimate', $activity->budget_estimate) }}" min="0" step="100"
+                                    class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-purple-500 focus:border-purple-500">
+                                @error('budget_estimate') <p class="text-red-500 text-xs mt-1">{{ $message }}</p> @enderror
+                            </div>
                                 <div>
                                     <label class="block text-sm font-medium text-gray-700 mb-2">Current Progress <span class="text-red-500">*</span></label>
                                     <input type="number" name="current_progress" value="{{ old('current_progress', $activity->current_progress) }}" required min="0"

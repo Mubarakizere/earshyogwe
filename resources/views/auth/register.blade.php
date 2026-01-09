@@ -1,7 +1,7 @@
 <x-guest-layout>
     <div class="text-center lg:text-left mb-8">
         <h2 class="text-3xl font-extrabold text-gray-900 tracking-tight">Create Account</h2>
-        <p class="mt-2 text-sm text-gray-600">Join the EARS HYOGWE management system today.</p>
+        <p class="mt-2 text-sm text-gray-600">Join the EAR SHYOGWE DIOCESE management system today.</p>
     </div>
 
     <form method="POST" action="{{ route('register') }}" class="space-y-6">

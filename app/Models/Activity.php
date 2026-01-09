@@ -4,24 +4,42 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 class Activity extends Model
 {
-    use SoftDeletes;
+    use HasFactory, SoftDeletes;
+    // use \Spatie\Activitylog\Traits\LogsActivity;
 
     protected $fillable = [
-        'department_id',
         'church_id',
+        'department_id',
         'name',
         'description',
-        'responsible_person',
-        'target',
-        'current_progress',
         'start_date',
         'end_date',
-        'status',
-        'created_by',
+        'responsible_person',
+        'status', // planned, in_progress, completed, cancelled
+        'target',
+        'current_progress',
+        'approval_status', // pending, approved, rejected
+        'budget_estimate',
+        'financial_spent',
+        'completion_summary',
+        'attendance_count',
+        'salvation_count',
     ];
+
+    /*
+    public function getActivitylogOptions(): \Spatie\Activitylog\LogOptions
+    {
+        return \Spatie\Activitylog\LogOptions::defaults()
+            ->logAll()
+            ->logOnlyDirty()
+            ->dontSubmitEmptyLogs()
+            ->setDescriptionForEvent(fn(string $eventName) => "Activity has been {$eventName}");
+    }
+    */
 
     protected $casts = [
         'start_date' => 'date',
@@ -74,6 +92,16 @@ class Activity extends Model
     public function scopeByStatus($query, $status)
     {
         return $query->where('status', $status);
+    }
+
+    public function scopePendingApproval($query)
+    {
+        return $query->where('approval_status', 'pending');
+    }
+
+    public function scopeApproved($query)
+    {
+        return $query->where('approval_status', 'approved');
     }
 }
 

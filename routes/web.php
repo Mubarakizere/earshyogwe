@@ -41,6 +41,11 @@ Route::middleware('auth')->group(function () {
     Route::post('givings/{giving}/verify-receipt', [\App\Http\Controllers\GivingController::class, 'verifyReceipt'])->name('givings.verifyReceipt');
     Route::resource('givings', \App\Http\Controllers\GivingController::class);
     
+    // Diocese Validations
+    Route::get('/diocese/transfers', [\App\Http\Controllers\DioceseTransferController::class, 'index'])->name('diocese.transfers.index');
+    Route::post('/diocese/transfers/{giving}/verify', [\App\Http\Controllers\DioceseTransferController::class, 'verify'])->name('diocese.transfers.verify');
+    Route::post('/diocese/transfers/{giving}/reject', [\App\Http\Controllers\DioceseTransferController::class, 'reject'])->name('diocese.transfers.reject');
+    
     // Expense Category Management (Boss only - controlled in views)
     Route::resource('expense-categories', \App\Http\Controllers\ExpenseCategoryController::class);
     
@@ -55,6 +60,10 @@ Route::middleware('auth')->group(function () {
     Route::resource('evangelism-reports', \App\Http\Controllers\EvangelismReportController::class);
     
     // Activities (Pastor, Archid, Boss)
+    // Activities (Pastor, Archid, Boss)
+    Route::post('activities/{activity}/approve', [\App\Http\Controllers\ActivityController::class, 'approve'])->name('activities.approve');
+    Route::post('activities/{activity}/reject', [\App\Http\Controllers\ActivityController::class, 'reject'])->name('activities.reject');
+    Route::post('activities/{activity}/complete', [\App\Http\Controllers\ActivityController::class, 'markComplete'])->name('activities.complete');
     Route::resource('activities', \App\Http\Controllers\ActivityController::class);
     
     // HR Management - Workers (Pastor, Archid, Boss)

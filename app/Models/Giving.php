@@ -20,10 +20,12 @@ class Giving extends Model
         'month',
         'year',
         'sent_to_diocese',
-        'diocese_received',
-        'diocese_received_date',
         'diocese_sent_date',
         'diocese_amount',
+        'receipt_status', // New
+        'transfer_reference', // New
+        'verified_by', // New
+        'verified_at', // New
         'notes',
         'entered_by',
     ];
@@ -33,9 +35,8 @@ class Giving extends Model
         'diocese_amount' => 'decimal:2',
         'date' => 'date',
         'diocese_sent_date' => 'date',
-        'diocese_received_date' => 'date',
+        'verified_at' => 'datetime', // New
         'sent_to_diocese' => 'boolean',
-        'diocese_received' => 'boolean',
     ];
 
     /**
@@ -118,5 +119,20 @@ class Giving extends Model
     public function scopeNotSentToDiocese($query)
     {
         return $query->where('sent_to_diocese', false);
+    }
+
+    public function verifiedBy()
+    {
+        return $this->belongsTo(User::class, 'verified_by');
+    }
+
+    public function scopePendingVerification($query)
+    {
+        return $query->where('sent_to_diocese', true)->where('receipt_status', 'pending');
+    }
+
+    public function scopeVerified($query)
+    {
+        return $query->where('receipt_status', 'verified');
     }
 }
