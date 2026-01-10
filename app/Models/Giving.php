@@ -10,6 +10,44 @@ class Giving extends Model
 {
     use SoftDeletes, \App\Traits\LogsActivity;
 
+    public static function bootLogsActivity()
+    {
+        static::created(function ($model) {
+            $model->logActivity('create', "Recorded Giving: {$model->amount} RWF ({$model->givingType->name}) for {$model->church->name}");
+        });
+
+        static::updated(function ($model) {
+            // Check for specific status changes
+            if ($model->wasChanged('sent_to_diocese') && $model->sent_to_diocese) {
+                $model->logActivity('update', "Marked Giving as Sent to Diocese: {$model->amount} RWF from {$model->church->name}");
+                return;
+            }
+            if ($model->wasChanged('receipt_status') && $model->receipt_status === 'verified') {
+                $model->logActivity('update', "Verified Diocese Receipt: {$model->amount} RWF from {$model->church->name}");
+                return;
+            }
+
+            $dirty = $model->getDirty();
+            unset($dirty['updated_at']);
+            
+            $changes = [];
+            foreach ($dirty as $key => $value) {
+                $original = $model->getOriginal($key);
+                $changes[] = "$key: '$original' -> '$value'";
+            }
+
+            $description = "Updated Giving Entry";
+            if (count($changes) > 0) {
+                 $description .= '. Changes: ' . implode(', ', $changes);
+            }
+            $model->logActivity('update', $description);
+        });
+
+        static::deleted(function ($model) {
+            $model->logActivity('delete', "Deleted Giving: {$model->amount} RWF ({$model->givingType->name}) from {$model->church->name}");
+        });
+    }
+
     protected $fillable = [
         'church_id',
         'giving_type_id',

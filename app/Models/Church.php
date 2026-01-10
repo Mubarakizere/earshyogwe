@@ -9,6 +9,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 class Church extends Model
 {
     use SoftDeletes;
+    use \App\Traits\LogsActivity;
 
     protected $fillable = [
         'name',
@@ -23,6 +24,35 @@ class Church extends Model
         'pastor_id',
         'is_active',
     ];
+
+    public static function bootLogsActivity()
+    {
+        static::created(function ($model) {
+            $model->logActivity('create', 'Created Church: ' . $model->name);
+        });
+
+        static::updated(function ($model) {
+            $dirty = $model->getDirty();
+            unset($dirty['updated_at']);
+            
+            $changes = [];
+            foreach ($dirty as $key => $value) {
+                $original = $model->getOriginal($key);
+                $changes[] = "$key: '$original' -> '$value'";
+            }
+            
+            $description = 'Updated Church: ' . $model->name;
+            if (count($changes) > 0) {
+                 $description .= '. Changes: ' . implode(', ', $changes);
+            }
+            
+            $model->logActivity('update', $description);
+        });
+
+        static::deleted(function ($model) {
+            $model->logActivity('delete', 'Deleted Church: ' . $model->name);
+        });
+    }
 
     protected $casts = [
         'is_active' => 'boolean',

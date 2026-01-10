@@ -10,6 +10,35 @@ class Member extends Model
 {
     use HasFactory, \App\Traits\LogsActivity;
 
+    public static function bootLogsActivity()
+    {
+        static::created(function ($model) {
+            $model->logActivity('create', "Created Member: {$model->name} ({$model->sex}) at {$model->church->name}");
+        });
+
+        static::updated(function ($model) {
+            $dirty = $model->getDirty();
+            unset($dirty['updated_at']);
+            
+            $changes = [];
+            foreach ($dirty as $key => $value) {
+                $original = $model->getOriginal($key);
+                $changes[] = "$key: '$original' -> '$value'";
+            }
+            
+            $description = "Updated Member: {$model->name}";
+            if (count($changes) > 0) {
+                 $description .= '. Changes: ' . implode(', ', $changes);
+            }
+            
+            $model->logActivity('update', $description);
+        });
+
+        static::deleted(function ($model) {
+            $model->logActivity('delete', "Deleted Member: {$model->name} from {$model->church->name}");
+        });
+    }
+
     protected $fillable = [
         'church_id',
         'name',

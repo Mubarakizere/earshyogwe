@@ -35,7 +35,14 @@ class UserController extends Controller
         $users = $query->latest()->paginate(20);
         $roles = Role::all();
 
-        return view('users.index', compact('users', 'roles'));
+        // Calculate Stats
+        $stats = [
+            'total' => User::count(),
+            'new_this_month' => User::where('created_at', '>=', now()->startOfMonth())->count(),
+            'verified' => User::whereNotNull('email_verified_at')->count(),
+        ];
+
+        return view('users.index', compact('users', 'roles', 'stats'));
     }
 
     /**

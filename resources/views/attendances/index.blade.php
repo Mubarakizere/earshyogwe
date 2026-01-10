@@ -8,7 +8,7 @@
         </div>
     </x-slot>
 
-    <div class="py-12">
+    <div class="py-12" x-data="{ deleteRoute: '' }">
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
 
 
@@ -28,14 +28,13 @@
                     <!-- Service Type -->
                     <div>
                         <label class="block text-xs font-medium text-gray-500 mb-1">Service Type</label>
-                        <select name="service_type" class="w-full text-sm rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
+                        <select name="service_type_id" class="w-full text-sm rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
                             <option value="">All Services</option>
-                            <option value="sunday_service" {{ request('service_type') == 'sunday_service' ? 'selected' : '' }}>Sunday Service</option>
-                            <option value="prayer_meeting" {{ request('service_type') == 'prayer_meeting' ? 'selected' : '' }}>Prayer Meeting</option>
-                            <option value="bible_study" {{ request('service_type') == 'bible_study' ? 'selected' : '' }}>Bible Study</option>
-                            <option value="youth_service" {{ request('service_type') == 'youth_service' ? 'selected' : '' }}>Youth Service</option>
-                            <option value="special_event" {{ request('service_type') == 'special_event' ? 'selected' : '' }}>Special Event</option>
-                            <option value="other" {{ request('service_type') == 'other' ? 'selected' : '' }}>Other</option>
+                            @foreach($serviceTypes as $type)
+                                <option value="{{ $type->id }}" {{ request('service_type_id') == $type->id ? 'selected' : '' }}>
+                                    {{ $type->name }}
+                                </option>
+                            @endforeach
                         </select>
                     </div>
 
@@ -58,7 +57,6 @@
                     <!-- Filter Actions -->
                     <div class="flex items-end space-x-2">
                         <button type="submit" class="bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-medium py-2 px-4 rounded-md shadow-sm">
-                            <svg class="w-4 h-4 inline-block mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z"></path></svg>
                             Filter
                         </button>
                         <a href="{{ route('attendances.index') }}" class="bg-gray-200 hover:bg-gray-300 text-gray-700 text-sm font-medium py-2 px-4 rounded-md shadow-sm">Reset</a>
@@ -139,25 +137,36 @@
                                     <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Women</th>
                                     <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Children</th>
                                     <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Total</th>
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Actions</th>
+                                    <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">Actions</th>
                                 </tr>
                             </thead>
                             <tbody class="bg-white divide-y divide-gray-200">
                                 @foreach($attendances as $attendance)
                                     <tr class="hover:bg-gray-50">
-                                        <td class="px-6 py-4 whitespace-nowrap text-sm">{{ $attendance->attendance_date->format('M d, Y') }}</td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                                            <a href="{{ route('attendances.show', $attendance) }}" class="text-gray-900 hover:text-blue-600">
+                                                {{ $attendance->attendance_date->format('M d, Y') }}
+                                            </a>
+                                        </td>
                                         <td class="px-6 py-4 whitespace-nowrap text-sm">{{ $attendance->church->name }}</td>
                                         <td class="px-6 py-4 whitespace-nowrap text-sm">
                                             <span class="px-2 py-1 text-xs rounded-full bg-blue-100 text-blue-800">
-                                                {{ ucwords(str_replace('_', ' ', $attendance->service_type)) }}
+                                                {{ $attendance->serviceType ? $attendance->serviceType->name : 'N/A' }}
                                             </span>
                                         </td>
                                         <td class="px-6 py-4 whitespace-nowrap text-sm font-semibold text-blue-600">{{ $attendance->men_count }}</td>
                                         <td class="px-6 py-4 whitespace-nowrap text-sm font-semibold text-pink-600">{{ $attendance->women_count }}</td>
                                         <td class="px-6 py-4 whitespace-nowrap text-sm font-semibold text-yellow-600">{{ $attendance->children_count }}</td>
                                         <td class="px-6 py-4 whitespace-nowrap text-sm font-bold">{{ $attendance->total_count }}</td>
-                                        <td class="px-6 py-4 whitespace-nowrap text-sm space-x-2">
-                                            <a href="{{ route('attendances.edit', $attendance) }}" class="text-blue-600 hover:text-blue-900">Edit</a>
+                                        <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium space-x-2">
+                                            <a href="{{ route('attendances.show', $attendance) }}" class="text-blue-600 hover:text-blue-900">View</a>
+                                            <a href="{{ route('attendances.edit', $attendance) }}" class="text-indigo-600 hover:text-indigo-900">Edit</a>
+                                            <button 
+                                                type="button" 
+                                                x-on:click="deleteRoute = '{{ route('attendances.destroy', $attendance) }}'; $dispatch('open-modal', 'confirm-attendance-deletion')"
+                                                class="text-red-600 hover:text-red-900">
+                                                Delete
+                                            </button>
                                         </td>
                                     </tr>
                                 @endforeach
@@ -167,10 +176,43 @@
                     <div class="mt-6">{{ $attendances->links() }}</div>
                 @else
                     <div class="text-center py-12">
-                        <p class="text-gray-500">No attendance records yet</p>
+                        <x-empty-state 
+                            title="No attendance records found" 
+                            message="Get started by recording attendance for a service."
+                            action="Record Attendance" 
+                            url="{{ route('attendances.create') }}"
+                            icon="chart-bar"
+                        />
                     </div>
                 @endif
             </div>
+
+            <!-- Delete Modal -->
+            <x-modal name="confirm-attendance-deletion" focusable>
+                <div class="p-6">
+                    <h2 class="text-lg font-medium text-gray-900">
+                        Delete Attendance Record
+                    </h2>
+
+                    <p class="mt-1 text-sm text-gray-600">
+                        Are you sure you want to delete this attendance record? This action cannot be undone.
+                    </p>
+
+                    <div class="mt-6 flex justify-end">
+                        <button type="button" x-on:click="$dispatch('close')" class="inline-flex items-center px-4 py-2 bg-white border border-gray-300 rounded-md font-semibold text-xs text-gray-700 uppercase tracking-widest shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 disabled:opacity-25 transition ease-in-out duration-150">
+                            Cancel
+                        </button>
+
+                        <form :action="deleteRoute" method="POST" class="ml-3">
+                            @csrf
+                            @method('DELETE')
+                            <button type="submit" class="inline-flex items-center px-4 py-2 bg-red-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-red-500 active:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 transition ease-in-out duration-150">
+                                Delete Record
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </x-modal>
         </div>
     </div>
 </x-app-layout>

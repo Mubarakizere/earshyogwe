@@ -9,7 +9,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 class Activity extends Model
 {
     use HasFactory, SoftDeletes;
-    // use \Spatie\Activitylog\Traits\LogsActivity;
+    use \App\Traits\LogsActivity;
 
     protected $fillable = [
         'church_id',
@@ -28,18 +28,39 @@ class Activity extends Model
         'completion_summary',
         'attendance_count',
         'salvation_count',
+        'created_by',
     ];
 
-    /*
-    public function getActivitylogOptions(): \Spatie\Activitylog\LogOptions
+    public static function bootLogsActivity()
     {
-        return \Spatie\Activitylog\LogOptions::defaults()
-            ->logAll()
-            ->logOnlyDirty()
-            ->dontSubmitEmptyLogs()
-            ->setDescriptionForEvent(fn(string $eventName) => "Activity has been {$eventName}");
+        static::created(function ($model) {
+            $model->logActivity('create', 'Created Activity: ' . $model->name);
+        });
+
+        static::updated(function ($model) {
+            $dirty = $model->getDirty();
+            unset($dirty['updated_at']);
+            
+            $changes = [];
+            foreach ($dirty as $key => $value) {
+                // Get original for better context if needed, but keeping it short for view
+                $original = $model->getOriginal($key);
+                $changes[] = "$key: '$original' -> '$value'";
+            }
+            
+            $description = 'Updated Activity: ' . $model->name;
+            if (count($changes) > 0) {
+                 $description .= '. Changes: ' . implode(', ', $changes);
+            }
+            
+            $model->logActivity('update', $description);
+        });
+
+        static::deleted(function ($model) {
+            $model->logActivity('delete', 'Deleted Activity: ' . $model->name);
+        });
     }
-    */
+    
 
     protected $casts = [
         'start_date' => 'date',

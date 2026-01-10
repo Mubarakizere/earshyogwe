@@ -9,6 +9,7 @@ use Carbon\Carbon;
 class Worker extends Model
 {
     use SoftDeletes;
+    use \App\Traits\LogsActivity;
 
     protected $fillable = [
         'church_id',
@@ -23,6 +24,35 @@ class Worker extends Model
         'retirement_age',
         'status',
     ];
+
+    public static function bootLogsActivity()
+    {
+        static::created(function ($model) {
+            $model->logActivity('create', 'Created Worker: ' . $model->full_name);
+        });
+
+        static::updated(function ($model) {
+            $dirty = $model->getDirty();
+            unset($dirty['updated_at']);
+            
+            $changes = [];
+            foreach ($dirty as $key => $value) {
+                $original = $model->getOriginal($key);
+                $changes[] = "$key: '$original' -> '$value'";
+            }
+            
+            $description = 'Updated Worker: ' . $model->full_name;
+            if (count($changes) > 0) {
+                 $description .= '. Changes: ' . implode(', ', $changes);
+            }
+            
+            $model->logActivity('update', $description);
+        });
+
+        static::deleted(function ($model) {
+            $model->logActivity('delete', 'Deleted Worker: ' . $model->full_name);
+        });
+    }
 
     protected $casts = [
         'employment_date' => 'date',
@@ -60,13 +90,29 @@ class Worker extends Model
         return "{$this->first_name} {$this->last_name}";
     }
 
-    // Accessor for years to retirement
+    // Accessor for years to retirement (Signed integer: negative means overdue)
     public function getYearsToRetirementAttribute()
     {
         if (!$this->birth_date) return null;
         
         $retirementDate = $this->birth_date->copy()->addYears($this->retirement_age);
-        return now()->diffInYears($retirementDate, false);
+        return (int) now()->diffInYears($retirementDate, false);
+    }
+
+    public function getRetirementStatusAttribute()
+    {
+        $years = $this->years_to_retirement;
+        
+        if ($years === null) return 'unknown';
+        if ($years < 0) return 'overdue';
+        if ($years <= 2) return 'soon';
+        return 'safe';
+    }
+
+    public function getYearsOverdueAttribute()
+    {
+        $years = $this->years_to_retirement;
+        return ($years < 0) ? abs($years) : 0;
     }
 
     // Scopes

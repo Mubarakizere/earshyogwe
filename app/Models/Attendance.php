@@ -30,6 +30,41 @@ class Attendance extends Model
         'attendance_date' => 'date',
     ];
 
+    public static function bootLogsActivity()
+    {
+        static::created(function ($model) {
+            $serviceName = $model->service_name ? "({$model->service_name})" : '';
+            $description = "Recorded Attendance: {$model->serviceType->name} {$serviceName} at {$model->church->name} - {$model->total_count} people";
+            $model->logActivity('create', $description);
+        });
+
+        static::updated(function ($model) {
+            $dirty = $model->getDirty();
+            unset($dirty['updated_at']);
+            
+            $changes = [];
+            foreach ($dirty as $key => $value) {
+                $original = $model->getOriginal($key);
+                $changes[] = "$key: '$original' -> '$value'";
+            }
+            
+            $serviceName = $model->service_name ? "({$model->service_name})" : '';
+            $description = "Updated Attendance: {$model->serviceType->name} {$serviceName}";
+            
+            if (count($changes) > 0) {
+                 $description .= '. Changes: ' . implode(', ', $changes);
+            }
+            
+            $model->logActivity('update', $description);
+        });
+
+        static::deleted(function ($model) {
+            $serviceName = $model->service_name ? "({$model->service_name})" : '';
+            $description = "Deleted Attendance: {$model->serviceType->name} {$serviceName} at {$model->church->name}";
+            $model->logActivity('delete', $description);
+        });
+    }
+
     protected static function boot()
     {
         parent::boot();
@@ -43,7 +78,7 @@ class Attendance extends Model
             }
             
             // Auto-calculate total
-            $attendance->total_count = $attendance->men_count + $attendance->women_count + $attendance->children_count;
+            $attendance->total_count = (int)$attendance->men_count + (int)$attendance->women_count + (int)$attendance->children_count;
         });
 
         static::updating(function ($attendance) {
@@ -56,7 +91,7 @@ class Attendance extends Model
             
             // Auto-calculate total
             if ($attendance->isDirty(['men_count', 'women_count', 'children_count'])) {
-                $attendance->total_count = $attendance->men_count + $attendance->women_count + $attendance->children_count;
+                $attendance->total_count = (int)$attendance->men_count + (int)$attendance->women_count + (int)$attendance->children_count;
             }
         });
     }

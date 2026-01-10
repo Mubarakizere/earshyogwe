@@ -8,11 +8,9 @@ use Illuminate\Http\Request;
 
 class DepartmentController extends Controller
 {
-    public function index()
+    public function export()
     {
         $user = auth()->user();
-        
-        // Use permissions to decide what to show
         if ($user->can('view all departments')) {
              $departments = Department::with('church')->get();
         } elseif ($user->hasRole('archid')) {
@@ -24,7 +22,89 @@ class DepartmentController extends Controller
              $departments = collect();
         }
 
-        return view('departments.index', compact('departments'));
+        $filename = "departments_export_" . date('Y-m-d') . ".csv";
+        $handle = fopen('php://output', 'w');
+        
+        header('Content-Type: text/csv');
+        header('Content-Disposition: attachment; filename="' . $filename . '"');
+
+        fputcsv($handle, ['Name', 'Church', 'Description', 'Active', 'Created At']);
+
+        foreach ($departments as $dept) {
+            fputcsv($handle, [
+                $dept->name,
+                $dept->church->name ?? 'N/A',
+                $dept->description,
+                $dept->is_active ? 'Yes' : 'No',
+                $dept->created_at->format('Y-m-d H:i:s'),
+            ]);
+        }
+        fclose($handle);
+        exit;
+    }
+
+    public function index(Request $request)
+    {
+        $user = auth()->user();
+        
+        // 1. Build Base Query based on permissions
+        $query = Department::query()->with('church');
+
+        if ($user->can('view all departments')) {
+             // All departments
+        } elseif ($user->hasRole('archid')) {
+             $churchIds = Church::where('archid_id', $user->id)->pluck('id');
+             $query->whereIn('church_id', $churchIds);
+        } elseif ($user->church_id) {
+             $query->where('church_id', $user->church_id);
+        } else {
+             $query->where('id', 0); // No access
+        }
+
+        // 2. Apply Filters
+        if ($request->filled('search')) {
+            $query->where(function($q) use ($request) {
+                $q->where('name', 'like', "%{$request->search}%")
+                  ->orWhere('description', 'like', "%{$request->search}%");
+            });
+        }
+
+        if ($request->filled('church_id')) {
+            $query->where('church_id', $request->church_id);
+        }
+        
+        if ($request->filled('status')) {
+            if ($request->status === 'active') {
+                $query->where('is_active', true);
+            } elseif ($request->status === 'inactive') {
+                $query->where('is_active', false);
+            }
+        }
+
+        // 3. Stats Calculation (based on user scope, not filtered query except permissions)
+        $statsQuery = Department::query();
+        if ($user->can('view all departments')) {
+             // All
+        } elseif ($user->hasRole('archid')) {
+             $churchIds = Church::where('archid_id', $user->id)->pluck('id');
+             $statsQuery->whereIn('church_id', $churchIds);
+        } elseif ($user->church_id) {
+             $statsQuery->where('church_id', $user->church_id);
+        } else {
+             $statsQuery->where('id', 0);
+        }
+
+        $stats = [
+            'total' => (clone $statsQuery)->count(),
+            'active' => (clone $statsQuery)->where('is_active', true)->count(),
+            'inactive' => (clone $statsQuery)->where('is_active', false)->count(),
+        ];
+
+        // 4. Pagination
+        $departments = $query->latest()->paginate(10)->withQueryString();
+        $churches = $this->getChurchesForUser($user);
+
+        return view('departments.index', compact('departments', 'churches', 'stats'));
     }
 
     public function create()

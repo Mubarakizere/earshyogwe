@@ -8,11 +8,88 @@ use Illuminate\Http\Request;
 
 class MemberController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
         $user = auth()->user();
         
-        // Scope Check based on permissions
+        // Base Query
+        $query = Member::with('church');
+
+        // 1. Role Scoping
+        if ($user->can('view all members')) {
+             // Admin/Boss: Sees all, but can filter by church
+             if ($request->has('church_id') && $request->church_id) {
+                 $query->where('church_id', $request->church_id);
+             }
+        } elseif ($user->can('view assigned members') && $user->hasRole('archid')) {
+             // Archid: Sees their region, can filter by assigned churches
+             $assignedChurchIds = Church::where('archid_id', $user->id)->pluck('id')->toArray();
+             
+             if ($request->has('church_id') && $request->church_id && in_array($request->church_id, $assignedChurchIds)) {
+                 $query->where('church_id', $request->church_id);
+             } else {
+                 $query->whereIn('church_id', $assignedChurchIds);
+             }
+        } elseif ($user->can('view own members') && $user->church_id) {
+             // Pastor: Sees only own church
+             $query->where('church_id', $user->church_id);
+        } else {
+            abort(403, 'Unauthorized access to members.');
+        }
+
+        // 2. Search & Filters
+        if ($request->filled('search')) {
+            $search = $request->search;
+            $query->where('name', 'like', "%{$search}%");
+        }
+
+        if ($request->filled('sex')) {
+            $query->where('sex', $request->sex);
+        }
+
+        if ($request->filled('status')) {
+            $query->where('marital_status', $request->status);
+        }
+
+        // Clone query for REAL-TIME stats (based on current filters)
+        $stats = [
+            'total' => (clone $query)->count(),
+            'male' => (clone $query)->where('sex', 'Male')->count(),
+            'female' => (clone $query)->where('sex', 'Female')->count(),
+            'baptized' => (clone $query)->where('baptism_status', 'Baptized')->count(),
+        ];
+
+        $members = $query->latest()->paginate(15)->withQueryString();
+
+        // Data for Filters (Role Dependent)
+        $churches = collect();
+        if ($user->can('view all churches')) {
+            $churches = Church::orderBy('name')->get();
+        } elseif ($user->hasRole('archid')) {
+            $churches = Church::where('archid_id', $user->id)->orderBy('name')->get();
+        }
+        
+        return view('members.index', compact('members', 'stats', 'churches'));
+    }
+
+    public function show(Member $member)
+    {
+        $this->authorize('view all members'); // Or specific view permission
+        
+        $user = auth()->user();
+        // Additional scope check for show
+        if ($user->hasRole('pastor') && $user->church_id != $member->church_id) {
+             abort(403);
+        }
+        
+        return view('members.show', compact('member'));
+    }
+
+    public function export()
+    {
+        $user = auth()->user();
+        
+        // Scope Logic (Same as Index)
         if ($user->can('view all members')) {
              $query = Member::with('church');
         } elseif ($user->can('view assigned members') && $user->hasRole('archid')) {
@@ -21,12 +98,32 @@ class MemberController extends Controller
         } elseif ($user->can('view own members') && $user->church_id) {
              $query = Member::with('church')->where('church_id', $user->church_id);
         } else {
-            abort(403, 'Unauthorized access to members.');
+            abort(403);
         }
-
-        $members = $query->latest()->paginate(15);
         
-        return view('members.index', compact('members'));
+        $members = $query->latest()->get();
+        $filename = "members_export_" . date('Y-m-d_H-i') . ".csv";
+
+        return response()->streamDownload(function () use ($members) {
+            $file = fopen('php://output', 'w');
+            fprintf($file, chr(0xEF).chr(0xBB).chr(0xBF)); // BOM
+            fputcsv($file, ['Name', 'Sex', 'DOB', 'Age', 'Marital Status', 'Church', 'Group', 'Education', 'Baptism']);
+
+            foreach ($members as $member) {
+                fputcsv($file, [
+                    $member->name,
+                    $member->sex,
+                    $member->dob ? $member->dob->format('Y-m-d') : '',
+                    $member->age,
+                    $member->marital_status,
+                    $member->church->name,
+                    $member->church_group,
+                    $member->education_level,
+                    $member->baptism_status,
+                ]);
+            }
+            fclose($file);
+        }, $filename);
     }
 
     public function create()

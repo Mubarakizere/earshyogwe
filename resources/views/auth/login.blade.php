@@ -69,10 +69,10 @@
         </div>
         
         <div class="text-center pt-4">
-             <p class="text-sm text-gray-600">
+             {{-- <p class="text-sm text-gray-600">
                 New here? 
                 <a href="{{ route('register') }}" class="font-bold text-brand-700 hover:text-brand-900 transition duration-150">Create an Account</a>
-            </p>
+            </p> --}}
         </div>
     </form>
 </x-guest-layout>

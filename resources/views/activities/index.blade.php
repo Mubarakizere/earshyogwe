@@ -1,202 +1,345 @@
 <x-app-layout>
     <x-slot name="header">
-        <div class="space-y-4">
-            <!-- Header Top: Title + Actions -->
-            <div class="flex flex-col md:flex-row justify-between items-center gap-4">
-                <h1 class="text-2xl font-bold text-gray-900 flex items-center gap-3">
-                    Activities
+        <div class="flex flex-col md:flex-row justify-between items-center gap-4">
+            <div>
+                <h2 class="font-semibold text-2xl text-gray-800 leading-tight flex items-center gap-3">
+                    {{ __('Activities') }}
+                    
                     @can('view all activities')
-                        <span class="px-3 py-1 text-xs font-semibold tracking-wide uppercase bg-purple-100 text-purple-800 rounded-full border border-purple-200">
-                            Diocese Overview
+                        <span class="px-3 py-1 text-xs font-bold tracking-wider uppercase bg-purple-100 text-purple-700 rounded-full border border-purple-200">
+                            Diocese View
                         </span>
                     @elsecan('view assigned activities')
-                        <span class="px-3 py-1 text-xs font-semibold tracking-wide uppercase bg-blue-100 text-blue-800 rounded-full border border-blue-200">
-                            Archdeaconry View
+                        <span class="px-3 py-1 text-xs font-bold tracking-wider uppercase bg-blue-100 text-blue-700 rounded-full border border-blue-200">
+                            Archdeaconry
                         </span>
                     @else
-                        <span class="px-3 py-1 text-xs font-semibold tracking-wide uppercase bg-green-100 text-green-800 rounded-full border border-green-200">
+                        <span class="px-3 py-1 text-xs font-bold tracking-wider uppercase bg-green-100 text-green-700 rounded-full border border-green-200">
                             Parish View
                         </span>
                     @endcan
-                </h1>
+                </h2>
+                <p class="text-sm text-gray-500 mt-1">Manage and track church activities and progress.</p>
+            </div>
+            
+            <div class="flex gap-2">
+                <a href="{{ route('activities.export', request()->query()) }}" class="inline-flex items-center px-4 py-2 bg-white border border-gray-300 rounded-md font-semibold text-xs text-gray-700 uppercase tracking-widest shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 disabled:opacity-25 transition">
+                    <svg class="w-4 h-4 mr-2 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
+                    Export
+                </a>
 
                 @can('create activities')
-                <a href="{{ route('activities.create') }}" class="bg-purple-700 hover:bg-purple-800 text-white font-bold py-2 px-4 rounded-lg shadow-md transition flex items-center">
-                    <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
+                <a href="{{ route('activities.create') }}" class="inline-flex items-center px-4 py-2 bg-purple-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-purple-700 focus:bg-purple-700 active:bg-purple-900 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 transition">
+                    <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
                     New Activity
                 </a>
                 @endcan
             </div>
-
-            <!-- Advanced Filters -->
-            <div class="bg-white p-4 rounded-lg shadow-sm border border-gray-100">
-                <form method="GET" action="{{ route('activities.index') }}">
-                    <input type="hidden" name="tab" value="{{ request('tab') }}">
-                    <div class="grid grid-cols-1 md:grid-cols-5 gap-4">
-                        <!-- Search -->
-                        <div class="col-span-1 md:col-span-2">
-                            <label for="search" class="block text-xs font-medium text-gray-700 mb-1">Search Keywords</label>
-                            <div class="relative rounded-md shadow-sm">
-                                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                    <svg class="h-4 w-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                                    </svg>
-                                </div>
-                                <input type="text" name="search" id="search" value="{{ request('search') }}" 
-                                    class="focus:ring-purple-500 focus:border-purple-500 block w-full pl-10 sm:text-sm border-gray-300 rounded-md" 
-                                    placeholder="Name, Description...">
-                            </div>
-                        </div>
-                        
-                        <!-- Status -->
-                        <div>
-                            <label for="status" class="block text-xs font-medium text-gray-700 mb-1">Status</label>
-                            <select name="status" id="status" class="focus:ring-purple-500 focus:border-purple-500 block w-full sm:text-sm border-gray-300 rounded-md">
-                                <option value="">All Statuses</option>
-                                <option value="planned" {{ request('status') == 'planned' ? 'selected' : '' }}>Planned</option>
-                                <option value="in_progress" {{ request('status') == 'in_progress' ? 'selected' : '' }}>In Progress</option>
-                                <option value="completed" {{ request('status') == 'completed' ? 'selected' : '' }}>Completed</option>
-                                <option value="cancelled" {{ request('status') == 'cancelled' ? 'selected' : '' }}>Cancelled</option>
-                            </select>
-                        </div>
-
-                        <!-- Church Filter (if user has access to see many) -->
-                        @if($churches->count() > 1)
-                        <div>
-                            <label for="church_id" class="block text-xs font-medium text-gray-700 mb-1">Church</label>
-                            <select name="church_id" id="church_id" class="focus:ring-purple-500 focus:border-purple-500 block w-full sm:text-sm border-gray-300 rounded-md">
-                                <option value="">All Churches</option>
-                                @foreach($churches as $church)
-                                    <option value="{{ $church->id }}" {{ request('church_id') == $church->id ? 'selected' : '' }}>{{ $church->name }}</option>
-                                @endforeach
-                            </select>
-                        </div>
-                        @else
-                        <div class="hidden md:block"></div> <!-- Spacer if no church filter -->
-                        @endif
-
-                        <div class="flex items-end">
-                            <button type="submit" class="w-full bg-gray-800 border border-transparent rounded-md shadow-sm py-2 px-4 inline-flex justify-center text-sm font-medium text-white hover:bg-gray-900 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500">
-                                Filter
-                            </button>
-                            @if(request()->hasAny(['search', 'status', 'church_id', 'department_id']))
-                                <a href="{{ route('activities.index', ['tab' => request('tab')]) }}" class="ml-2 text-sm text-gray-500 hover:text-gray-700 underline">Clear</a>
-                            @endif
-                        </div>
-                    </div>
-                </form>
-            </div>
         </div>
     </x-slot>
 
-    <div class="py-12">
+    <div class="py-12" x-data="{ deleteRoute: '', deleteOpen: false }">
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
 
+            <!-- Pro Stats Cards -->
+             <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+                <!-- Total -->
+                <div class="bg-gradient-to-br from-purple-500 to-indigo-600 rounded-lg shadow-lg p-5 text-white relative overflow-hidden">
+                    <div class="relative z-10">
+                        <p class="text-purple-100 text-xs font-bold uppercase tracking-wider">Total Activities</p>
+                        <h3 class="text-3xl font-bold mt-1">{{ number_format($stats['total']) }}</h3>
+                        <p class="text-xs text-purple-200 mt-1">All time records</p>
+                    </div>
+                    <div class="absolute right-0 bottom-0 opacity-10 transform translate-x-2 translate-y-2">
+                        <svg class="w-20 h-20" fill="currentColor" viewBox="0 0 20 20">
+                            <path d="M2 11a1 1 0 011-1h2a1 1 0 011 1v5a1 1 0 01-1 1H3a1 1 0 01-1-1v-5zM8 7a1 1 0 011-1h2a1 1 0 011 1v9a1 1 0 01-1 1H9a1 1 0 01-1-1V7zM14 4a1 1 0 011-1h2a1 1 0 011 1v12a1 1 0 01-1 1h-2a1 1 0 01-1-1V4z"></path>
+                        </svg>
+                    </div>
+                </div>
 
-            <!-- Stats Cards with Filters -->
-            <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-                <!-- Tabs / Filters -->
-                 <div class="md:col-span-4 flex border-b border-gray-200 space-x-8 mb-4">
-                    <a href="{{ route('activities.index', ['tab' => 'my_activities']) }}" 
-                       class="pb-4 px-1 border-b-2 font-medium text-sm {{ request('tab', 'my_activities') == 'my_activities' ? 'border-purple-500 text-purple-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300' }}">
-                        My Activities
-                    </a>
-                    <a href="{{ route('activities.index', ['tab' => 'overview']) }}" 
-                       class="pb-4 px-1 border-b-2 font-medium text-sm {{ request('tab') == 'overview' ? 'border-purple-500 text-purple-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300' }}">
-                        All Activities
-                    </a>
-                    @can('approve activities')
-                    <a href="{{ route('activities.index', ['tab' => 'approvals']) }}" 
-                       class="pb-4 px-1 border-b-2 font-medium text-sm {{ request('tab') == 'approvals' ? 'border-purple-500 text-purple-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300' }}">
-                        Approvals <span class="ml-2 bg-yellow-100 text-yellow-800 py-0.5 px-2 rounded-full text-xs">{{ $stats['pending_approval'] ?? 0 }}</span>
-                    </a>
-                    @endcan
+                <!-- Pending -->
+                <div class="bg-gradient-to-br from-amber-400 to-orange-500 rounded-lg shadow-lg p-5 text-white relative overflow-hidden">
+                    <div class="relative z-10">
+                        <p class="text-amber-100 text-xs font-bold uppercase tracking-wider">Pending Approval</p>
+                        <h3 class="text-3xl font-bold mt-1">{{ number_format($stats['pending_approval']) }}</h3>
+                        <p class="text-xs text-amber-100 mt-1">Awaiting review</p>
+                    </div>
+                    <div class="absolute right-0 bottom-0 opacity-10 transform translate-x-2 translate-y-2">
+                        <svg class="w-20 h-20" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd" />
+                        </svg>
+                    </div>
+                </div>
+
+                <!-- Active -->
+                <div class="bg-gradient-to-br from-blue-400 to-blue-600 rounded-lg shadow-lg p-5 text-white relative overflow-hidden">
+                    <div class="relative z-10">
+                        <p class="text-blue-100 text-xs font-bold uppercase tracking-wider">In Progress</p>
+                        <h3 class="text-3xl font-bold mt-1">{{ number_format($stats['approved']) }}</h3>
+                        <p class="text-xs text-blue-100 mt-1">Currently active</p>
+                    </div>
+                    <div class="absolute right-0 bottom-0 opacity-10 transform translate-x-2 translate-y-2">
+                        <svg class="w-20 h-20" fill="currentColor" viewBox="0 0 20 20">
+                             <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" clip-rule="evenodd" />
+                        </svg>
+                    </div>
+                </div>
+
+                <!-- Completed -->
+                <div class="bg-gradient-to-br from-emerald-400 to-green-600 rounded-lg shadow-lg p-5 text-white relative overflow-hidden">
+                    <div class="relative z-10">
+                        <p class="text-green-100 text-xs font-bold uppercase tracking-wider">Completed</p>
+                        <h3 class="text-3xl font-bold mt-1">{{ number_format($stats['completed']) }}</h3>
+                        <p class="text-xs text-green-100 mt-1">Successfully finished</p>
+                    </div>
+                    <div class="absolute right-0 bottom-0 opacity-10 transform translate-x-2 translate-y-2">
+                        <svg class="w-20 h-20" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
+                        </svg>
+                    </div>
                 </div>
             </div>
-            
-            <div class="bg-white overflow-hidden shadow-xl rounded-lg p-6">
-                <!-- Activities List -->
+
+            <!-- Filters & Tabs -->
+            <div class="mb-6 space-y-4">
+                 <!-- Tabs -->
+                <div class="border-b border-gray-200">
+                    <nav class="-mb-px flex space-x-8" aria-label="Tabs">
+                        <a href="{{ route('activities.index', ['tab' => 'my_activities']) }}" 
+                           class="{{ request('tab', 'my_activities') == 'my_activities' ? 'border-purple-500 text-purple-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300' }} whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm">
+                            My Activities
+                        </a>
+                        <a href="{{ route('activities.index', ['tab' => 'overview']) }}" 
+                           class="{{ request('tab') == 'overview' ? 'border-purple-500 text-purple-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300' }} whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm">
+                            All Activities
+                        </a>
+                        @can('approve activities')
+                        <a href="{{ route('activities.index', ['tab' => 'approvals']) }}" 
+                           class="{{ request('tab') == 'approvals' ? 'border-purple-500 text-purple-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300' }} whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm flex items-center">
+                            Approvals
+                            @if($stats['pending_approval'] > 0)
+                                <span class="ml-2 bg-yellow-100 text-yellow-800 py-0.5 px-2.5 rounded-full text-xs font-semibold">{{ $stats['pending_approval'] }}</span>
+                            @endif
+                        </a>
+                        @endcan
+                    </nav>
+                </div>
+
+                <!-- Advanced Filter Bar -->
+                <div class="bg-white p-4 rounded-lg shadow-sm border border-gray-200">
+                    <form method="GET" action="{{ route('activities.index') }}">
+                        <input type="hidden" name="tab" value="{{ request('tab') }}">
+                        <div class="grid grid-cols-1 md:grid-cols-12 gap-4 items-end">
+                            
+                            <!-- Search -->
+                            <div class="md:col-span-4">
+                                <label for="search" class="block text-xs font-medium text-gray-500 mb-1">Search</label>
+                                <div class="relative rounded-md shadow-sm">
+                                    <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                        <svg class="h-4 w-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                                        </svg>
+                                    </div>
+                                    <input type="text" name="search" id="search" value="{{ request('search') }}" 
+                                        class="focus:ring-purple-500 focus:border-purple-500 block w-full pl-10 sm:text-sm border-gray-300 rounded-md" 
+                                        placeholder="Name, Description...">
+                                </div>
+                            </div>
+                            
+                            <!-- Status -->
+                            <div class="md:col-span-2">
+                                <label for="status" class="block text-xs font-medium text-gray-500 mb-1">Status</label>
+                                <select name="status" id="status" class="focus:ring-purple-500 focus:border-purple-500 block w-full sm:text-sm border-gray-300 rounded-md">
+                                    <option value="">All Statuses</option>
+                                    <option value="planned" {{ request('status') == 'planned' ? 'selected' : '' }}>Planned</option>
+                                    <option value="in_progress" {{ request('status') == 'in_progress' ? 'selected' : '' }}>In Progress</option>
+                                    <option value="completed" {{ request('status') == 'completed' ? 'selected' : '' }}>Completed</option>
+                                    <option value="cancelled" {{ request('status') == 'cancelled' ? 'selected' : '' }}>Cancelled</option>
+                                </select>
+                            </div>
+
+                            <!-- Church Filter (Dynamic) -->
+                            <div class="md:col-span-3">
+                                @if($churches->count() > 1)
+                                    <label for="church_id" class="block text-xs font-medium text-gray-500 mb-1">Church</label>
+                                    <select name="church_id" id="church_id" class="focus:ring-purple-500 focus:border-purple-500 block w-full sm:text-sm border-gray-300 rounded-md">
+                                        <option value="">All Churches</option>
+                                        @foreach($churches as $church)
+                                            <option value="{{ $church->id }}" {{ request('church_id') == $church->id ? 'selected' : '' }}>{{ $church->name }}</option>
+                                        @endforeach
+                                    </select>
+                                @else
+                                    <!-- Spacer for layout balance -->
+                                @endif
+                            </div>
+
+                            <!-- Filter & Reset Buttons -->
+                            <div class="md:col-span-3 flex space-x-2">
+                                <button type="submit" class="flex-1 bg-gray-800 border border-transparent rounded-md shadow-sm py-2 px-4 inline-flex justify-center text-sm font-medium text-white hover:bg-gray-900 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500 transition">
+                                    Filter
+                                </button>
+                                @if(request()->hasAny(['search', 'status', 'church_id', 'department_id', 'start_date']))
+                                    <a href="{{ route('activities.index', ['tab' => request('tab')]) }}" class="bg-white border border-gray-300 rounded-md shadow-sm py-2 px-3 inline-flex justify-center text-gray-700 hover:bg-gray-50 hover:text-gray-900 transition" title="Clear Filters">
+                                        <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                                    </a>
+                                @endif
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Activities Grid/List -->
+            <div class="bg-white overflow-hidden shadow-xl rounded-lg border border-gray-100">
                 @if($activities->count() > 0)
-                    <div class="space-y-4">
+                    <div class="divide-y divide-gray-100">
                         @foreach($activities as $activity)
-                            <div class="border border-gray-200 rounded-lg p-4 hover:shadow-md transition bg-white">
-                                <div class="flex justify-between items-start mb-3">
-                                    <div class="flex-1">
-                                        <div class="flex items-center gap-2 mb-1">
-                                            <h3 class="text-lg font-semibold text-gray-900">{{ $activity->name }}</h3>
+                            <div class="p-6 hover:bg-gray-50 transition duration-150 ease-in-out relative group">
+                                <div class="flex flex-col md:flex-row justify-between items-start gap-4">
+                                    
+                                    <!-- Left: Info -->
+                                    <div class="flex-1 min-w-0">
+                                        <div class="flex items-center gap-3 mb-2">
+                                            <!-- Status Badge -->
+                                            @if($activity->status === 'completed')
+                                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800 border border-green-200">
+                                                    Completed
+                                                </span>
+                                            @elseif($activity->status === 'in_progress')
+                                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800 border border-blue-200">
+                                                    In Progress
+                                                </span>
+                                            @elseif($activity->status === 'planned')
+                                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800 border border-gray-200">
+                                                    Planned
+                                                </span>
+                                            @else
+                                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800 border border-red-200">
+                                                    Cancelled
+                                                </span>
+                                            @endif
+
+                                            <!-- Approval Badge -->
                                             @if($activity->approval_status === 'pending')
-                                                <span class="px-2 py-0.5 text-xs rounded-full bg-yellow-100 text-yellow-800 border border-yellow-200">Pending Approval</span>
+                                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800 border border-yellow-200 animate-pulse">
+                                                    Pending Approval
+                                                </span>
                                             @elseif($activity->approval_status === 'rejected')
-                                                 <span class="px-2 py-0.5 text-xs rounded-full bg-red-100 text-red-800 border border-red-200">Rejected</span>
+                                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-50 text-red-600 border border-red-200">
+                                                    Rejected
+                                                </span>
+                                            @endif
+                                            
+                                            <span class="text-xs text-gray-400">|</span>
+                                            <span class="text-xs text-gray-500 font-medium">{{ $activity->department->name }}</span>
+                                        </div>
+
+                                        <h3 class="text-xl font-bold text-gray-900 group-hover:text-purple-600 transition truncate">
+                                            <a href="{{ route('activities.show', $activity) }}">{{ $activity->name }}</a>
+                                        </h3>
+                                        
+                                        <div class="flex items-center text-sm text-gray-500 mt-1 gap-4">
+                                            <span class="flex items-center">
+                                                <svg class="flex-shrink-0 mr-1.5 h-4 w-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path></svg>
+                                                {{ $activity->church->name }}
+                                            </span>
+                                            <span class="flex items-center">
+                                                <svg class="flex-shrink-0 mr-1.5 h-4 w-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
+                                                {{ $activity->start_date->format('M d, Y') }}
+                                            </span>
+                                            @if($activity->responsible_person)
+                                            <span class="flex items-center">
+                                                <svg class="flex-shrink-0 mr-1.5 h-4 w-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path></svg>
+                                                {{ $activity->responsible_person }}
+                                            </span>
                                             @endif
                                         </div>
-                                        <p class="text-sm text-gray-600">{{ $activity->department->name }} - {{ $activity->church->name }}</p>
                                     </div>
-                                    <div class="flex gap-2">
-                                        @if($activity->status === 'completed')
-                                            <span class="px-3 py-1 text-xs rounded-full bg-green-100 text-green-800">Completed</span>
-                                        @elseif($activity->status === 'in_progress')
-                                            <span class="px-3 py-1 text-xs rounded-full bg-blue-100 text-blue-800">In Progress</span>
-                                        @elseif($activity->status === 'planned')
-                                            <span class="px-3 py-1 text-xs rounded-full bg-gray-100 text-gray-800">Planned</span>
-                                        @else
-                                            <span class="px-3 py-1 text-xs rounded-full bg-red-100 text-red-800">Cancelled</span>
-                                        @endif
-                                    </div>
-                                </div>
-                                
-                                <!-- Progress Bar -->
-                                <div class="mb-3">
-                                    <div class="flex justify-between text-sm text-gray-600 mb-1">
-                                        <span>Progress: {{ number_format($activity->current_progress) }} / {{ number_format($activity->target) }}</span>
-                                        <span>{{ $activity->progress_percentage }}%</span>
-                                    </div>
-                                    <div class="w-full bg-gray-200 rounded-full h-2">
-                                        <div class="bg-indigo-600 h-2 rounded-full" style="width: {{ $activity->target > 0 ? min(round(($activity->current_progress / $activity->target) * 100), 100) : 0 }}%"></div>
-                                    </div>
-                                </div>
 
-                                <div class="flex justify-between items-center bg-gray-50 -mx-4 -mb-4 px-4 py-2 mt-4 rounded-b-lg border-t border-gray-100">
-                                    <div class="text-xs text-gray-500 flex gap-4">
-                                        <span>Start: {{ $activity->start_date->format('M d, Y') }}</span>
-                                        @if($activity->end_date)
-                                            <span>End: {{ $activity->end_date->format('M d, Y') }}</span>
-                                        @endif
-                                        @if($activity->budget_estimate > 0)
-                                            <span class="text-gray-400">|</span>
-                                            <span>Budget: {{ number_format($activity->budget_estimate) }} RWF</span>
-                                        @endif
+                                    <!-- Middle: Progress -->
+                                    <div class="w-full md:w-1/4 mt-4 md:mt-0">
+                                        <div class="flex justify-between text-xs font-semibold text-gray-500 mb-1">
+                                            <span>Progress</span>
+                                            <span>{{ $activity->progress_percentage }}%</span>
+                                        </div>
+                                        <div class="w-full bg-gray-100 rounded-full h-2">
+                                            <div class="bg-gradient-to-r from-purple-500 to-indigo-500 h-2 rounded-full transition-all duration-500" style="width: {{ $activity->progress_percentage }}%"></div>
+                                        </div>
+                                        <div class="mt-2 text-xs text-gray-400 text-right">
+                                            Target: {{ number_format($activity->target) }}
+                                        </div>
                                     </div>
-                                    <div class="flex items-center space-x-3">
-                                        <a href="{{ route('activities.show', $activity) }}" class="text-purple-600 hover:text-purple-900 text-sm font-medium">View</a>
+
+                                    <!-- Right: Actions -->
+                                    <div class="flex items-center md:flex-col justify-end gap-2 mt-4 md:mt-0 md:ml-4">
+                                        <a href="{{ route('activities.show', $activity) }}" class="text-indigo-600 hover:text-indigo-900 text-sm font-medium hover:bg-indigo-50 px-3 py-1 rounded transition">View</a>
                                         
                                         @can('edit activities')
-                                            <a href="{{ route('activities.edit', $activity) }}" class="text-gray-500 hover:text-gray-700 text-sm">Edit</a>
+                                        <a href="{{ route('activities.edit', $activity) }}" class="text-gray-600 hover:text-gray-900 text-sm font-medium hover:bg-gray-100 px-3 py-1 rounded transition">Edit</a>
                                         @endcan
 
                                         @can('delete activities')
-                                            <form action="{{ route('activities.destroy', $activity) }}" method="POST" onsubmit="return confirm('Are you sure you want to delete this activity?');" class="inline">
-                                                @csrf
-                                                @method('DELETE')
-                                                <button type="submit" class="text-red-500 hover:text-red-700 text-sm">Delete</button>
-                                            </form>
+                                        <button type="button" 
+                                            @click="deleteOpen = true; deleteRoute = '{{ route('activities.destroy', $activity) }}'"
+                                            class="text-red-500 hover:text-red-700 text-sm font-medium hover:bg-red-50 px-3 py-1 rounded transition">
+                                            Delete
+                                        </button>
                                         @endcan
                                     </div>
                                 </div>
                             </div>
                         @endforeach
                     </div>
-                    <div class="mt-6">{{ $activities->links() }}</div>
+                    <div class="px-6 py-4 bg-gray-50 border-t border-gray-200">
+                        {{ $activities->links() }}
+                    </div>
                 @else
-                    <x-empty-state 
-                        title="No activities found" 
-                        message="Change filters or create a new activity."
-                        action="New Activity" 
-                        url="{{ route('activities.create') }}"
-                        icon="document"
-                    />
+                    <div class="text-center py-12">
+                        <div class="mx-auto h-24 w-24 bg-gray-100 rounded-full flex items-center justify-center mb-4">
+                            <svg class="h-10 w-10 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"></path></svg>
+                        </div>
+                        <h3 class="text-lg font-medium text-gray-900">No activities found</h3>
+                        <p class="mt-2 text-sm text-gray-500">Get started by creating a new activity or adjusting your filters.</p>
+                        <div class="mt-6">
+                            @can('create activities')
+                            <a href="{{ route('activities.create') }}" class="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-purple-600 hover:bg-purple-700 focus:outline-none">
+                                <svg class="-ml-1 mr-2 h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
+                                Create Activity
+                            </a>
+                            @endcan
+                        </div>
+                    </div>
                 @endif
             </div>
+
+            <!-- Delete Modal -->
+            <div x-show="deleteOpen" style="display: none;" class="fixed inset-0 z-50 overflow-y-auto">
+                <div class="flex items-center justify-center min-h-screen px-4 pt-4 pb-20 text-center sm:block sm:p-0">
+                    <div x-show="deleteOpen" class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" @click="deleteOpen = false"></div>
+                    <span class="hidden sm:inline-block sm:align-middle sm:h-screen">&#8203;</span>
+                    <div x-show="deleteOpen" class="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
+                        <div class="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
+                            <div class="sm:flex sm:items-start">
+                                <div class="mx-auto flex-shrink-0 flex items-center justify-center h-12 w-12 rounded-full bg-red-100 sm:mx-0 sm:h-10 sm:w-10">
+                                    <svg class="h-6 w-6 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
+                                </div>
+                                <div class="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left">
+                                    <h3 class="text-lg leading-6 font-medium text-gray-900">Delete Activity</h3>
+                                    <div class="mt-2"><p class="text-sm text-gray-500">Are you sure you want to delete this activity? This action cannot be undone.</p></div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
+                            <form :action="deleteRoute" method="POST" class="w-full sm:w-auto sm:ml-3">
+                                @csrf @method('DELETE')
+                                <button type="submit" class="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-red-600 text-base font-medium text-white hover:bg-red-700 sm:w-auto sm:text-sm">Delete</button>
+                            </form>
+                            <button type="button" @click="deleteOpen = false" class="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 sm:mt-0 sm:w-auto sm:text-sm">Cancel</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
         </div>
     </div>
 </x-app-layout>

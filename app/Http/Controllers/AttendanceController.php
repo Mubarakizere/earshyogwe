@@ -100,6 +100,8 @@ class AttendanceController extends Controller
 
     public function create()
     {
+        $this->authorize('create attendance');
+        
         $churches = $this->getChurchesForUser(auth()->user());
         $serviceTypes = \App\Models\ServiceType::where('is_active', true)->get();
         return view('attendances.create', compact('churches', 'serviceTypes'));
@@ -107,6 +109,8 @@ class AttendanceController extends Controller
 
     public function store(Request $request)
     {
+        $this->authorize('create attendance');
+        
         $validated = $request->validate([
             'church_id' => 'required|exists:churches,id',
             'attendance_date' => 'required|date',
@@ -127,8 +131,16 @@ class AttendanceController extends Controller
             ->with('success', 'Attendance recorded successfully!');
     }
 
+    public function show(Attendance $attendance)
+    {
+        $attendance->load(['church', 'serviceType', 'recorder']);
+        return view('attendances.show', compact('attendance'));
+    }
+
     public function edit(Attendance $attendance)
     {
+        $this->authorize('edit attendance');
+        
         $churches = $this->getChurchesForUser(auth()->user());
         $serviceTypes = \App\Models\ServiceType::where('is_active', true)->get();
         return view('attendances.edit', compact('attendance', 'churches', 'serviceTypes'));
@@ -136,6 +148,8 @@ class AttendanceController extends Controller
 
     public function update(Request $request, Attendance $attendance)
     {
+        $this->authorize('edit attendance');
+        
         $validated = $request->validate([
             'church_id' => 'required|exists:churches,id',
             'attendance_date' => 'required|date',
@@ -155,6 +169,8 @@ class AttendanceController extends Controller
 
     public function destroy(Attendance $attendance)
     {
+        $this->authorize('delete attendance');
+        
         $attendance->delete();
 
         return redirect()->route('attendances.index')

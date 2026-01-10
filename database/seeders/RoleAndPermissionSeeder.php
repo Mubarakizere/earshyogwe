@@ -89,6 +89,22 @@ class RoleAndPermissionSeeder extends Seeder
             'view assigned members',
             'view own members',
             
+            // Attendance Management
+            'create attendance',
+            'edit attendance',
+            'delete attendance',
+            'view all attendance',
+            'view assigned attendance',
+            'view own attendance',
+            
+            // Population Census
+            'create census',
+            'edit census',
+            'delete census',
+            'view all census',
+            'view assigned census',
+            'view own census',
+            
             // Audit Logs
             'view activity logs',
         ];
@@ -132,6 +148,14 @@ class RoleAndPermissionSeeder extends Seeder
             'create members',
             'edit members',
             'view assigned members',
+            'create attendance',
+            'edit attendance',
+            'delete attendance',
+            'view assigned attendance',
+            'create census',
+            'edit census',
+            'delete census',
+            'view assigned census',
         ]);
 
         // PASTOR Role (Church Leader) - Manages own church
@@ -160,6 +184,12 @@ class RoleAndPermissionSeeder extends Seeder
             'create members',
             'edit members',
             'view own members',
+            'create attendance',
+            'edit attendance',
+            'view own attendance',
+            'create census',
+            'edit census',
+            'view own census',
         ]);
 
         // FINANCE Role (Diocese Level)

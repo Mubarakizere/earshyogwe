@@ -33,7 +33,36 @@
         <!-- Scripts -->
         @vite(['resources/css/app.css', 'resources/js/app.js'])
     </head>
-    <body class="font-sans antialiased text-gray-900 bg-gray-50 h-screen overflow-hidden flex" x-data="{ sidebarOpen: false }">
+    <body class="font-sans antialiased text-gray-900 bg-gray-50 h-screen overflow-hidden flex" 
+          x-data="{ sidebarOpen: false, loading: true }" 
+          x-init="window.onload = () => { setTimeout(() => loading = false, 800) }">
+
+        <!-- Global Pro Loader -->
+        <div x-show="loading" 
+             x-transition:leave="transition ease-in duration-500"
+             x-transition:leave-start="opacity-100"
+             x-transition:leave-end="opacity-0"
+             class="fixed inset-0 z-[100] flex items-center justify-center bg-gray-50">
+            <div class="relative flex flex-col items-center">
+                <!-- Branding Ring Spinner -->
+                <div class="absolute inset-0 animate-spin-slow rounded-full border-b-2 border-brand-200 w-32 h-32 opacity-20"></div>
+                
+                <!-- Logo Breathing Animation -->
+                <div class="animate-pulse-slow relative z-10 p-2 bg-white rounded-full shadow-lg border border-gray-100">
+                    <x-application-logo class="block h-20 w-auto fill-current text-gray-800" />
+                </div>
+                
+                <!-- Loading Text -->
+                <div class="mt-8 text-center animate-fade-in-up">
+                    <p class="text-brand-800 font-bold tracking-widest text-xs uppercase mb-1">EAR SHYOGWE DIOCESE</p>
+                    <div class="flex items-center justify-center space-x-1">
+                        <div class="w-1.5 h-1.5 bg-brand-400 rounded-full animate-bounce delay-75"></div>
+                        <div class="w-1.5 h-1.5 bg-brand-500 rounded-full animate-bounce delay-100"></div>
+                        <div class="w-1.5 h-1.5 bg-brand-600 rounded-full animate-bounce delay-150"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
         <!-- Sidebar -->
         @include('layouts.sidebar')
 

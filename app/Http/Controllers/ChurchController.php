@@ -12,7 +12,7 @@ class ChurchController extends Controller
      *
      * @return \Illuminate\Http\Response
      */
-    public function index()
+    public function export()
     {
         $user = auth()->user();
 
@@ -24,7 +24,77 @@ class ChurchController extends Controller
             abort(403);
         }
 
-        return view('churches.index', compact('churches'));
+        $filename = "churches_export_" . date('Y-m-d') . ".csv";
+        $handle = fopen('php://output', 'w');
+        
+        header('Content-Type: text/csv');
+        header('Content-Disposition: attachment; filename="' . $filename . '"');
+
+        fputcsv($handle, ['Name', 'Location', 'Pastor', 'Archdeacon', 'Active', 'Created At']);
+
+        foreach ($churches as $church) {
+            fputcsv($handle, [
+                $church->name,
+                $church->location,
+                $church->pastor->name ?? 'N/A',
+                $church->archid->name ?? 'N/A',
+                $church->is_active ? 'Yes' : 'No',
+                $church->created_at->format('Y-m-d H:i:s'),
+            ]);
+        }
+        fclose($handle);
+        exit;
+    }
+
+    public function index(Request $request)
+    {
+        $user = auth()->user();
+        
+        // 1. Base Query
+        $query = Church::query()->with(['pastor', 'archid']);
+
+        if ($user->hasRole('boss')) {
+            // Can see all
+        } elseif ($user->hasRole('archid')) {
+            $query->where('archid_id', $user->id);
+        } else {
+            abort(403, 'Unauthorized access to view churches.');
+        }
+
+        // 2. Filters
+        if ($request->filled('search')) {
+            $query->where(function($q) use ($request) {
+                $q->where('name', 'like', "%{$request->search}%")
+                  ->orWhere('location', 'like', "%{$request->search}%");
+            });
+        }
+
+        if ($request->filled('status')) {
+             if ($request->status === 'active') {
+                 $query->where('is_active', true);
+             } elseif ($request->status === 'inactive') {
+                 $query->where('is_active', false);
+             }
+        }
+
+        // 3. Stats (Scoped to user permissions)
+        $statsQuery = Church::query();
+        if ($user->hasRole('boss')) {
+            // All
+        } elseif ($user->hasRole('archid')) {
+            $statsQuery->where('archid_id', $user->id);
+        }
+
+        $stats = [
+            'total' => (clone $statsQuery)->count(),
+            'active' => (clone $statsQuery)->where('is_active', true)->count(),
+            'inactive' => (clone $statsQuery)->where('is_active', false)->count(),
+        ];
+
+        // 4. Pagination
+        $churches = $query->latest()->paginate(10)->withQueryString();
+
+        return view('churches.index', compact('churches', 'stats'));
     }
 
     /**

@@ -34,12 +34,16 @@ class PopulationCensusController extends Controller
 
     public function create()
     {
+        $this->authorize('create census');
+        
         $churches = $this->getChurchesForUser(auth()->user());
         return view('population-censuses.create', compact('churches'));
     }
 
     public function store(Request $request)
     {
+        $this->authorize('create census');
+        
         $validated = $request->validate([
             'church_id' => 'required|exists:churches,id',
             'year' => 'required|integer|min:2000|max:' . (date('Y') + 1),
@@ -74,6 +78,8 @@ class PopulationCensusController extends Controller
 
     public function edit(PopulationCensus $populationCensus)
     {
+        $this->authorize('edit census');
+        
         // Pastors can only edit if pending
         if (auth()->user()->hasRole('pastor') && $populationCensus->status === 'approved') {
              return redirect()->route('population-censuses.index')
@@ -86,6 +92,8 @@ class PopulationCensusController extends Controller
 
     public function update(Request $request, PopulationCensus $populationCensus)
     {
+        $this->authorize('edit census');
+        
         $validated = $request->validate([
             'men_count' => 'required|integer|min:0',
             'women_count' => 'required|integer|min:0',
@@ -102,6 +110,8 @@ class PopulationCensusController extends Controller
 
     public function destroy(PopulationCensus $populationCensus)
     {
+        $this->authorize('delete census');
+        
         if (auth()->user()->hasRole('pastor') && $populationCensus->status === 'approved') {
              return redirect()->route('population-censuses.index')
                 ->with('error', 'Cannot delete statistics after they have been approved.');
