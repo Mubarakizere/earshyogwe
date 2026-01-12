@@ -221,6 +221,16 @@ class ActivityController extends Controller
             }
         }
         
+        // Notify department head
+        $department = Department::find($validated['department_id']);
+        if ($department && $department->head_id) {
+            $departmentHead = \App\Models\User::find($department->head_id);
+            if ($departmentHead) {
+                $headMessage = "New activity '{$activity->name}' created for {$department->name} department.";
+                $departmentHead->notify(new \App\Notifications\ActivityStatusChanged($activity, $headMessage));
+            }
+        }
+        
         $msg = $approvalStatus === 'pending' ? 'Activity submitted for approval.' : 'Activity created and approved.';
         return redirect()->route('activities.index')->with('success', $msg);
     }
@@ -365,16 +375,36 @@ class ActivityController extends Controller
     private function getBaseQueryForUser($user)
     {
         $baseQuery = Activity::query();
+        
         if ($user->can('view all activities')) {
-             // all
-        } elseif ($user->can('view assigned activities')) {
+            // See all activities
+            return $baseQuery;
+        }
+        
+        // Check for department-specific permissions
+        $allowedDepartmentIds = [];
+        $departments = Department::all();
+        foreach ($departments as $dept) {
+            $permissionName = "view {$dept->slug} activities";
+            if ($user->can($permissionName)) {
+                $allowedDepartmentIds[] = $dept->id;
+            }
+        }
+        
+        // If user has department-specific permissions, filter by those
+        if (!empty($allowedDepartmentIds)) {
+            $baseQuery->whereIn('department_id', $allowedDepartmentIds);
+        }
+        // Otherwise, use church-based permissions
+        elseif ($user->can('view assigned activities')) {
             $churchIds = Church::where('archid_id', $user->id)->pluck('id');
             $baseQuery->whereIn('church_id', $churchIds);
         } elseif ($user->can('view own activities') && $user->church_id) {
             $baseQuery->where('church_id', $user->church_id);
         } else {
-            $baseQuery->where('id', 0);
+            $baseQuery->where('id', 0); // No access
         }
+        
         return $baseQuery;
     }
 
