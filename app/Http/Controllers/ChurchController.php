@@ -120,8 +120,20 @@ class ChurchController extends Controller
         // Only Boss or maybe Archid (if permitted) can create churches
         $this->authorize('create church'); 
         
-        $archdeacons = \App\Models\User::role('archid')->get();
-        $pastors = \App\Models\User::role('pastor')->get();
+        // Get users with archid or pastor roles if they exist, otherwise get all users
+        try {
+            $archdeacons = \App\Models\User::role('archid')->get();
+        } catch (\Exception $e) {
+            // Role doesn't exist yet, get users with permission instead
+            $archdeacons = \App\Models\User::permission('view assigned churches')->get();
+        }
+        
+        try {
+            $pastors = \App\Models\User::role('pastor')->get();
+        } catch (\Exception $e) {
+            // Role doesn't exist yet, get users with permission instead
+            $pastors = \App\Models\User::permission('view own church')->get();
+        }
 
         return view('churches.create', compact('archdeacons', 'pastors'));
     }
@@ -171,8 +183,19 @@ class ChurchController extends Controller
     public function edit(Church $church)
     {
         $this->authorize('edit church'); 
-        $archdeacons = \App\Models\User::role('archid')->get();
-        $pastors = \App\Models\User::role('pastor')->get();
+        
+        try {
+            $archdeacons = \App\Models\User::role('archid')->get();
+        } catch (\Exception $e) {
+            $archdeacons = \App\Models\User::permission('view assigned churches')->get();
+        }
+        
+        try {
+            $pastors = \App\Models\User::role('pastor')->get();
+        } catch (\Exception $e) {
+            $pastors = \App\Models\User::permission('view own church')->get();
+        }
+        
         return view('churches.edit', compact('church', 'archdeacons', 'pastors'));
     }
 
