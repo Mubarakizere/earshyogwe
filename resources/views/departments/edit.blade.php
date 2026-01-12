@@ -13,26 +13,29 @@
                     @method('PUT')
 
                     <div class="space-y-6">
-                        @if($churches->count() > 1)
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-2">Parish <span class="text-red-500">*</span></label>
-                                <select name="church_id" required class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-purple-500 focus:border-purple-500">
-                                    <option value="">Select Parish</option>
-                                    @foreach($churches as $church)
-                                        <option value="{{ $church->id }}" {{ $department->church_id == $church->id ? 'selected' : '' }}>{{ $church->name }}</option>
-                                    @endforeach
-                                </select>
-                                @error('church_id') <p class="text-red-500 text-xs mt-1">{{ $message }}</p> @enderror
-                            </div>
-                        @else
-                            <input type="hidden" name="church_id" value="{{ $department->church_id }}">
-                        @endif
-
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-2">Directorate Name <span class="text-red-500">*</span></label>
                             <input type="text" name="name" value="{{ old('name', $department->name) }}" required 
                                 class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-purple-500 focus:border-purple-500">
                              @error('name') <p class="text-red-500 text-xs mt-1">{{ $message }}</p> @enderror
+                        </div>
+
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Department Head</label>
+                            <select name="head_id" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-purple-500 focus:border-purple-500">
+                                <option value="">No Head Assigned</option>
+                                @foreach($users as $user)
+                                    <option value="{{ $user->id }}" {{ $department->head_id == $user->id ? 'selected' : '' }}>{{ $user-> name}}</option>
+                                @endforeach
+                            </select>
+                            @error('head_id') <p class="text-red-500 text-xs mt-1">{{ $message }}</p> @enderror
+                            <p class="text-xs text-gray-500 mt-1">Changing the head will transfer the permission automatically</p>
+                        </div>
+
+                        <div class="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                            <h4 class="text-sm font-medium text-blue-900 mb-1">Auto-Generated Permission</h4>
+                            <p class="text-sm text-blue-700"><code class="bg-blue-100 px-2 py-1 rounded">{{ $department->permission_name }}</code></p>
+                            <p class="text-xs text-blue-600 mt-1">This permission is automatically managed by the system</p>
                         </div>
 
                         <div>

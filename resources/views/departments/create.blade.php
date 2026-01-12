@@ -12,26 +12,23 @@
                     @csrf
 
                     <div class="space-y-6">
-                        @if($churches->count() > 1)
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-2">Parish <span class="text-red-500">*</span></label>
-                                <select name="church_id" required class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-purple-500 focus:border-purple-500">
-                                    <option value="">Select Parish</option>
-                                    @foreach($churches as $church)
-                                        <option value="{{ $church->id }}">{{ $church->name }}</option>
-                                    @endforeach
-                                </select>
-                                @error('church_id') <p class="text-red-500 text-xs mt-1">{{ $message }}</p> @enderror
-                            </div>
-                        @else
-                            <input type="hidden" name="church_id" value="{{ $churches->first()->id }}">
-                        @endif
-
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-2">Directorate Name <span class="text-red-500">*</span></label>
                             <input type="text" name="name" required placeholder="e.g. Youth, Women's Ministry, Choir"
                                 class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-purple-500 focus:border-purple-500">
                              @error('name') <p class="text-red-500 text-xs mt-1">{{ $message }}</p> @enderror
+                        </div>
+
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Department Head</label>
+                            <select name="head_id" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-purple-500 focus:border-purple-500">
+                                <option value="">No Head Assigned</option>
+                                @foreach($users as $user)
+                                    <option value="{{ $user->id }}">{{ $user->name }}</option>
+                                @endforeach
+                            </select>
+                            @error('head_id') <p class="text-red-500 text-xs mt-1">{{ $message }}</p> @enderror
+                            <p class="text-xs text-gray-500 mt-1">The head will automatically get permission to view this department's activities</p>
                         </div>
 
                         <div>

@@ -110,8 +110,8 @@ class DepartmentController extends Controller
     public function create()
     {
         $this->authorize('create departments');
-        $churches = $this->getChurchesForUser(auth()->user());
-        return view('departments.create', compact('churches'));
+        $users = \App\Models\User::orderBy('name')->get(); // All users for head selection
+        return view('departments.create', compact('users'));
     }
 
     public function store(Request $request)
@@ -120,12 +120,24 @@ class DepartmentController extends Controller
 
         $validated = $request->validate([
             'name' => 'required|string|max:255',
-            'church_id' => 'required|exists:churches,id',
+            'head_id' => 'nullable|exists:users,id',
             'description' => 'nullable|string',
         ]);
 
+        // Generate slug from name
+        $slug = \Illuminate\Support\Str::slug($validated['name']);
+        
+        // Ensure slug is unique
+        $originalSlug = $slug;
+        $counter = 1;
+        while (Department::where('slug', $slug)->exists()) {
+            $slug = $originalSlug . '-' . $counter++;
+        }
+
         Department::create([
             ...$validated,
+            'slug' => $slug,
+            'church_id' => null, // Global departments
             'is_active' => true,
         ]);
 
@@ -135,8 +147,8 @@ class DepartmentController extends Controller
     public function edit(Department $department)
     {
         $this->authorize('edit departments');
-        $churches = $this->getChurchesForUser(auth()->user());
-        return view('departments.edit', compact('department', 'churches'));
+        $users = \App\Models\User::orderBy('name')->get();
+        return view('departments.edit', compact('department', 'users'));
     }
 
     public function update(Request $request, Department $department)
@@ -145,10 +157,21 @@ class DepartmentController extends Controller
 
         $validated = $request->validate([
             'name' => 'required|string|max:255',
-            'church_id' => 'required|exists:churches,id',
+            'head_id' => 'nullable|exists:users,id',
             'description' => 'nullable|string',
             'is_active' => 'boolean',
         ]);
+        
+        // If name changed, update slug
+        if ($department->name !== $validated['name']) {
+            $slug = \Illuminate\Support\Str::slug($validated['name']);
+            $originalSlug = $slug;
+            $counter = 1;
+            while (Department::where('slug',  $slug)->where('id', '!=', $department->id)->exists()) {
+                $slug = $originalSlug . '-' . $counter++;
+            }
+            $validated['slug'] = $slug;
+        }
 
         $department->update($validated);
 
