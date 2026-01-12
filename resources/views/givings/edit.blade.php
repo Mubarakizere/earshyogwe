@@ -2,7 +2,7 @@
     <x-slot name="header">
         <div class="flex justify-between items-center">
             <h2 class="font-semibold text-2xl text-gray-800 leading-tight">
-                {{ __('Edit Giving') }}
+                {{ __('Edit Offering') }}
             </h2>
         </div>
     </x-slot>
@@ -44,11 +44,11 @@
                         <!-- Giving Type -->
                         <div>
                             <label for="giving_type_id" class="block text-sm font-medium text-gray-700 mb-2">
-                                Giving Type <span class="text-red-500">*</span>
+                                Offering Type <span class="text-red-500">*</span>
                             </label>
                             <select name="giving_type_id" id="giving_type_id" required onchange="updateSubTypes()"
                                 class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 @error('giving_type_id') border-red-500 @enderror">
-                                <option value="">Select Giving Type</option>
+                                <option value="">Select Offering Type</option>
                                 @foreach($givingTypes as $type)
                                     <option value="{{ $type->id }}" 
                                         data-has-subtypes="{{ $type->has_sub_types }}" 
@@ -115,7 +115,7 @@
                                 Cancel
                             </a>
                             <button type="submit" class="px-6 py-3 bg-brand-600 hover:bg-brand-700 text-white font-semibold rounded-lg shadow-md">
-                                Update Giving
+                                Update Offering
                             </button>
                         </div>
                     </div>

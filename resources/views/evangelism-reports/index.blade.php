@@ -179,7 +179,7 @@
                                                 <a href="{{ route('evangelism-reports.show', $report) }}" class="text-gray-500 hover:text-gray-900 bg-gray-100 hover:bg-gray-200 px-3 py-1.5 rounded-lg transition-colors">
                                                     View
                                                 </a>
-                                                @if(auth()->id() == $report->submitted_by || auth()->user()->can('view all evangelism'))
+                                                @can('submit evangelism reports')
                                                     <a href="{{ route('evangelism-reports.edit', $report) }}" class="text-indigo-600 hover:text-indigo-900 bg-indigo-50 hover:bg-indigo-100 px-3 py-1.5 rounded-lg transition-colors">
                                                         Edit
                                                     </a>
@@ -216,7 +216,7 @@
                                                             </div>
                                                         </form>
                                                     </x-modal>
-                                                @endif
+                                                @endcan
                                             </div>
                                         </td>
                                     </tr>

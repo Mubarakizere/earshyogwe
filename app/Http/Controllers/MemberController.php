@@ -21,7 +21,7 @@ class MemberController extends Controller
              if ($request->has('church_id') && $request->church_id) {
                  $query->where('church_id', $request->church_id);
              }
-        } elseif ($user->can('view assigned members') && $user->hasRole('archid')) {
+        } elseif ($user->can('view assigned members')) {
              // Archid: Sees their region, can filter by assigned churches
              $assignedChurchIds = Church::where('archid_id', $user->id)->pluck('id')->toArray();
              
@@ -65,7 +65,7 @@ class MemberController extends Controller
         $churches = collect();
         if ($user->can('view all churches')) {
             $churches = Church::orderBy('name')->get();
-        } elseif ($user->hasRole('archid')) {
+        } elseif ($user->can('view assigned churches')) {
             $churches = Church::where('archid_id', $user->id)->orderBy('name')->get();
         }
         
@@ -78,7 +78,7 @@ class MemberController extends Controller
         
         $user = auth()->user();
         // Additional scope check for show
-        if ($user->hasRole('pastor') && $user->church_id != $member->church_id) {
+        if ($user->can('view own members') && !$user->can('view all members') && !$user->can('view assigned members') && $user->church_id != $member->church_id) {
              abort(403);
         }
         
@@ -92,7 +92,7 @@ class MemberController extends Controller
         // Scope Logic (Same as Index)
         if ($user->can('view all members')) {
              $query = Member::with('church');
-        } elseif ($user->can('view assigned members') && $user->hasRole('archid')) {
+        } elseif ($user->can('view assigned members')) {
              $churchIds = Church::where('archid_id', $user->id)->pluck('id');
              $query = Member::with('church')->whereIn('church_id', $churchIds);
         } elseif ($user->can('view own members') && $user->church_id) {
@@ -135,7 +135,7 @@ class MemberController extends Controller
 
         if ($user->can('view all churches')) {
             $churches = Church::all();
-        } elseif ($user->hasRole('archid')) {
+        } elseif ($user->can('view assigned churches')) {
             $churches = Church::where('archid_id', $user->id)->get();
         } elseif ($user->church_id) {
              $churches = Church::where('id', $user->church_id)->get();
@@ -172,7 +172,7 @@ class MemberController extends Controller
         
         // Check scope for edit (e.g. Pastor can only edit own members)
         $user = auth()->user();
-        if ($user->hasRole('pastor') && $user->church_id != $member->church_id) {
+        if ($user->can('edit members') && !$user->can('view all members') && !$user->can('view assigned members') && $user->church_id != $member->church_id) {
              abort(403);
         }
 

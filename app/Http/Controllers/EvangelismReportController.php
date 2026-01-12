@@ -160,6 +160,7 @@ class EvangelismReportController extends Controller
 
     public function edit(EvangelismReport $evangelismReport)
     {
+        $this->authorize('submit evangelism reports');
         $churches = $this->getChurchesForUser(auth()->user());
         return view('evangelism-reports.edit', compact('evangelismReport', 'churches'));
     }
@@ -187,6 +188,7 @@ class EvangelismReportController extends Controller
 
     public function destroy(EvangelismReport $evangelismReport)
     {
+        $this->authorize('submit evangelism reports');
         $evangelismReport->delete();
 
         return redirect()->route('evangelism-reports.index')

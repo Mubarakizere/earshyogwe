@@ -28,7 +28,8 @@ class DashboardController extends Controller
         } elseif ($user->hasRole('evangelism')) {
             return $this->evangelismDashboard();
         } else {
-            return view('dashboard'); // Fallback default
+            // Permission-based dashboard for custom roles
+            return $this->defaultDashboard($user);
         }
     }
 
@@ -215,6 +216,100 @@ class DashboardController extends Controller
             'pendingExpenses',
             'monthlyStats'
         ));
+    }
+
+    private function defaultDashboard($user)
+    {
+        $currentYear = now()->year;
+        $data = [];
+
+        // Determine what data to show based on permissions
+        $canViewAllChurches = $user->can('view all churches');
+        $canViewAssignedChurches = $user->can('view assigned churches');
+        $canViewOwnChurch = $user->can('view own church');
+        
+        // Determine church scope
+        $churchIds = null;
+        if ($canViewAllChurches) {
+            // Show all data
+            $churchIds = null;
+        } elseif ($canViewAssignedChurches && $user->hasRole('archid')) {
+            // Show assigned churches
+            $churchIds = Church::where('archid_id', $user->id)->pluck('id');
+        } elseif ($canViewOwnChurch && $user->church_id) {
+            // Show own church only
+            $churchIds = [$user->church_id];
+        }
+
+        // Financial data (if user has any giving or expense permissions)
+        if ($user->can('view all givings') || $user->can('view assigned givings') || $user->can('view own givings')) {
+            $givingQuery = Giving::where('year', $currentYear);
+            if ($churchIds !== null) {
+                $givingQuery->whereIn('church_id', $churchIds);
+            }
+            $data['totalIncome'] = $givingQuery->sum('amount');
+            $data['recentGivings'] = $givingQuery->with('church', 'givingType')->latest('date')->take(5)->get();
+        }
+
+        if ($user->can('view all expenses') || $user->can('view assigned expenses') || $user->can('view own expenses')) {
+            $expenseQuery = Expense::where('year', $currentYear)->where('status', 'approved');
+            if ($churchIds !== null) {
+                $expenseQuery->whereIn('church_id', $churchIds);
+            }
+            $data['totalExpenses'] = $expenseQuery->sum('amount');
+            $data['recentExpenses'] = $expenseQuery->with('church', 'expenseCategory')->latest('date')->take(5)->get();
+        }
+
+        if (isset($data['totalIncome']) && isset($data['totalExpenses'])) {
+            $data['netBalance'] = $data['totalIncome'] - $data['totalExpenses'];
+        }
+
+        // Attendance data
+        if ($user->can('view all attendance') || $user->can('view assigned attendance') || $user->can('view own attendance')) {
+            $attendanceQuery = Attendance::where('year', $currentYear);
+            if ($churchIds !== null) {
+                $attendanceQuery->whereIn('church_id', $churchIds);
+            }
+            $data['totalAttendance'] = $attendanceQuery->sum('total_count');
+        }
+
+        // Population/Member data
+        if ($user->can('view all members') || $user->can('view assigned members') || $user->can('view own members')) {
+            $censusQuery = \App\Models\PopulationCensus::where('year', $currentYear);
+            if ($churchIds !== null) {
+                $censusQuery->whereIn('church_id', $churchIds);
+            }
+            $data['totalPopulation'] = $censusQuery->sum(DB::raw('men_count + women_count + youth_count + children_count + infants_count'));
+        }
+
+        // Evangelism data
+        if ($user->can('view all evangelism') || $user->can('view assigned evangelism') || $user->can('view own evangelism')) {
+            $data['totalConverts'] = \App\Models\EvangelismReport::sum('converts');
+            $data['recentReports'] = \App\Models\EvangelismReport::with('church')->latest('report_date')->take(5)->get();
+        }
+
+        // Monthly stats for charts
+        if (isset($data['totalIncome']) || isset($data['totalExpenses'])) {
+            $data['monthlyStats'] = $this->getMonthlyStats($churchIds);
+        }
+
+        // Churches list if applicable
+        if ($canViewAllChurches) {
+            $data['churches'] = Church::withSum(['givings' => function ($query) use ($currentYear) {
+                $query->where('year', $currentYear);
+            }], 'amount')->orderByDesc('givings_sum_amount')->take(5)->get();
+        } elseif ($churchIds && count($churchIds) > 1) {
+            $data['churches'] = Church::whereIn('id', $churchIds)
+                ->withSum(['givings' => function ($query) use ($currentYear) {
+                    $query->where('year', $currentYear);
+                }], 'amount')
+                ->get();
+        }
+
+        $data['userRole'] = $user->roles->first()->name ?? 'User';
+        $data['hasData'] = count($data) > 1; // More than just userRole
+
+        return view('dashboards.default', $data);
     }
 
     private function getMonthlyStats($churchIds = null)

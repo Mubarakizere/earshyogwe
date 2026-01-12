@@ -21,14 +21,12 @@ class FixMemberPermissionsSeeder extends Seeder
         $archid = Role::where('name', 'archid')->first();
         if ($archid) {
             $archid->givePermissionTo($deletePermission);
-            $this->command->info('Granted "delete members" to Archid.');
         }
 
         // 3. Assign to Pastor
         $pastor = Role::where('name', 'pastor')->first();
         if ($pastor) {
             $pastor->givePermissionTo($deletePermission);
-            $this->command->info('Granted "delete members" to Pastor.');
         }
         
         // 4. Ensure Boss has it (should already, but safe to check)
@@ -37,7 +35,5 @@ class FixMemberPermissionsSeeder extends Seeder
             $boss->givePermissionTo($deletePermission);
             $boss->givePermissionTo($viewAll);
         }
-
-        $this->command->info('Member permissions fixed successfully.');
     }
 }

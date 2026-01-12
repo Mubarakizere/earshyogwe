@@ -66,9 +66,9 @@ class AttendanceController extends Controller
     {
         $query = Attendance::with(['church', 'recorder', 'serviceType']);
         
-        if ($user->hasRole('pastor')) {
+        if ($user->can('view own attendance') && !$user->can('view all attendance') && !$user->can('view assigned attendance')) {
             $query->where('church_id', $user->church_id);
-        } elseif ($user->hasRole('archid')) {
+        } elseif ($user->can('view assigned attendance')) {
             $churchIds = Church::where('archid_id', $user->id)->pluck('id');
             $query->whereIn('church_id', $churchIds);
         }
@@ -77,7 +77,7 @@ class AttendanceController extends Controller
             $query->where('service_type_id', $request->service_type_id);
         }
 
-        if ($request->filled('church_id') && ($user->hasRole('boss') || $user->hasRole('archid'))) {
+        if ($request->filled('church_id') && ($user->can('view all attendance') || $user->can('view assigned attendance'))) {
             $query->where('church_id', $request->church_id);
         }
         
@@ -179,9 +179,9 @@ class AttendanceController extends Controller
 
     private function getChurchesForUser($user)
     {
-        if ($user->hasRole('boss')) {
+        if ($user->can('view all churches')) {
             return Church::where('is_active', true)->get();
-        } elseif ($user->hasRole('archid')) {
+        } elseif ($user->can('view assigned churches')) {
             return Church::where('archid_id', $user->id)->where('is_active', true)->get();
         } else {
             return Church::where('id', $user->church_id)->get();

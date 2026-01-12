@@ -2,12 +2,14 @@
     <x-slot name="header">
         <div class="flex justify-between items-center">
             <h2 class="font-semibold text-2xl text-gray-800 leading-tight">Expenses</h2>
+            @can('enter expenses')
             <a href="{{ route('expenses.create') }}" class="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded-lg shadow-md transition duration-200 flex items-center">
                 <svg class="w-5 h-5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
                 </svg>
                 Record Expense
             </a>
+            @endcan
         </div>
     </x-slot>
 
@@ -169,7 +171,7 @@
                                     @endif
                                 </div>
 
-                                @if($expense->status === 'pending' && (auth()->user()->can('approve expenses') || auth()->user()->hasRole('boss') || auth()->user()->hasRole('archid')))
+                                @if($expense->status === 'pending' && auth()->user()->can('approve expenses'))
                                     <div class="flex space-x-2">
                                         <form action="{{ route('expenses.reject', $expense) }}" method="POST">
                                             @csrf
@@ -202,9 +204,11 @@
                     </div>
                     <h3 class="text-lg font-medium text-gray-900">No expenses found</h3>
                     <p class="text-gray-500 mt-1 mb-6">Start by recording a new expense or adjust your filters.</p>
+                    @can('enter expenses')
                     <a href="{{ route('expenses.create') }}" class="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700">
                         Record Expense
                     </a>
+                    @endcan
                 </div>
             @endif
         </div>

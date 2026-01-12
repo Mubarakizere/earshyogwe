@@ -16,12 +16,14 @@ class ChurchController extends Controller
     {
         $user = auth()->user();
 
-        if ($user->hasRole('boss')) {
+        if ($user->can('view all churches')) {
             $churches = Church::with(['pastor', 'archid'])->get();
-        } elseif ($user->hasRole('archid')) {
+        } elseif ($user->can('view assigned churches')) {
             $churches = Church::where('archid_id', $user->id)->with('pastor')->get();
+        } elseif ($user->can('view own church') && $user->church_id) {
+            $churches = Church::where('id', $user->church_id)->with('pastor', 'archid')->get();
         } else {
-            abort(403);
+            abort(403, 'Unauthorized access to export churches.');
         }
 
         $filename = "churches_export_" . date('Y-m-d') . ".csv";
@@ -50,13 +52,22 @@ class ChurchController extends Controller
     {
         $user = auth()->user();
         
-        // 1. Base Query
+        // 1. Base Query with permission-based scoping
         $query = Church::query()->with(['pastor', 'archid']);
 
-        if ($user->hasRole('boss')) {
-            // Can see all
-        } elseif ($user->hasRole('archid')) {
+        if ($user->can('view all churches')) {
+            // Can see all churches
+        } elseif ($user->can('view assigned churches')) {
+            // See only churches assigned to this archid
             $query->where('archid_id', $user->id);
+        } elseif ($user->can('view own church')) {
+            // See only own church (pastor)
+            if ($user->church_id) {
+                $query->where('id', $user->church_id);
+            } else {
+                // No church assigned, show empty result
+                $query->whereRaw('1 = 0');
+            }
         } else {
             abort(403, 'Unauthorized access to view churches.');
         }
@@ -79,10 +90,12 @@ class ChurchController extends Controller
 
         // 3. Stats (Scoped to user permissions)
         $statsQuery = Church::query();
-        if ($user->hasRole('boss')) {
-            // All
-        } elseif ($user->hasRole('archid')) {
+        if ($user->can('view all churches')) {
+            // All churches
+        } elseif ($user->can('view assigned churches')) {
             $statsQuery->where('archid_id', $user->id);
+        } elseif ($user->can('view own church') && $user->church_id) {
+            $statsQuery->where('id', $user->church_id);
         }
 
         $stats = [
@@ -135,7 +148,7 @@ class ChurchController extends Controller
 
         Church::create($validated);
 
-        return redirect()->route('churches.index')->with('success', 'Church created successfully.');
+        return redirect()->route('churches.index')->with('success', 'Parish created successfully.');
     }
 
     /**
@@ -185,7 +198,7 @@ class ChurchController extends Controller
 
         $church->update($validated);
 
-        return redirect()->route('churches.index')->with('success', 'Church updated successfully.');
+        return redirect()->route('churches.index')->with('success', 'Parish updated successfully.');
     }
 
     /**
@@ -199,6 +212,6 @@ class ChurchController extends Controller
         $this->authorize('delete church');
         $church->delete();
 
-        return redirect()->route('churches.index')->with('success', 'Church deleted successfully.');
+        return redirect()->route('churches.index')->with('success', 'Parish deleted successfully.');
     }
 }

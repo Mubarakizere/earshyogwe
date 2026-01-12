@@ -17,11 +17,11 @@
                         {{ __('Dashboard') }}
                     </x-nav-link>
                     
-                    @hasrole('boss')
+                    @can('manage giving types')
                         <x-nav-link :href="route('giving-types.index')" :active="request()->routeIs('giving-types.*')" class="text-brand-100 hover:text-white border-transparent hover:border-white transition duration-150 ease-in-out">
                             {{ __('Giving Types') }}
                         </x-nav-link>
-                    @endhasrole
+                    @endcan
                     
                     @can('enter givings')
                         <x-nav-link :href="route('givings.index')" :active="request()->routeIs('givings.*')" class="text-brand-100 hover:text-white border-transparent hover:border-white transition duration-150 ease-in-out">
@@ -29,11 +29,11 @@
                         </x-nav-link>
                     @endcan
                     
-                    @hasrole('boss')
+                    @can('manage expense categories')
                         <x-nav-link :href="route('expense-categories.index')" :active="request()->routeIs('expense-categories.*')" class="text-brand-100 hover:text-white border-transparent hover:border-white transition duration-150 ease-in-out">
                             {{ __('Categories') }}
                         </x-nav-link>
-                    @endhasrole
+                    @endcan
                     
                     <x-nav-link :href="route('expenses.index')" :active="request()->routeIs('expenses.*')" class="text-brand-100 hover:text-white border-transparent hover:border-white transition duration-150 ease-in-out">
                         {{ __('Expenses') }}
@@ -67,12 +67,16 @@
                     <x-notifications-dropdown /> 
                 </div>
 
-                @hasrole('boss')
+                @canany(['manage users', 'view activity logs'])
                     <div class="hidden sm:flex sm:items-center sm:ms-6 border-l border-brand-600 pl-6 h-8 my-auto">
-                        <a href="{{ route('users.index') }}" class="text-sm font-medium text-brand-100 hover:text-white mr-4 transition duration-150 ease-in-out">Users</a>
-                        <a href="{{ route('activity-logs.index') }}" class="text-sm font-medium text-brand-100 hover:text-white transition duration-150 ease-in-out">Logs</a>
+                        @can('manage users')
+                            <a href="{{ route('users.index') }}" class="text-sm font-medium text-brand-100 hover:text-white mr-4 transition duration-150 ease-in-out">Users</a>
+                        @endcan
+                        @can('view activity logs')
+                            <a href="{{ route('activity-logs.index') }}" class="text-sm font-medium text-brand-100 hover:text-white transition duration-150 ease-in-out">Logs</a>
+                        @endcan
                     </div>
-                @endhasrole
+                @endcanany
                 
                 <x-dropdown align="right" width="48">
                     <x-slot name="trigger">
@@ -123,11 +127,11 @@
                 {{ __('Dashboard') }}
             </x-responsive-nav-link>
             
-            @hasrole('boss')
+            @can('manage giving types')
                 <x-responsive-nav-link :href="route('giving-types.index')" :active="request()->routeIs('giving-types.*')" class="text-brand-100 hover:text-white hover:bg-brand-700">
                     {{ __('Giving Types') }}
                 </x-responsive-nav-link>
-            @endhasrole
+            @endcan
             
             @can('enter givings')
                 <x-responsive-nav-link :href="route('givings.index')" :active="request()->routeIs('givings.*')" class="text-brand-100 hover:text-white hover:bg-brand-700">

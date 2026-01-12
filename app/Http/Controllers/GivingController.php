@@ -86,7 +86,7 @@ class GivingController extends Controller
         
         if ($user->can('view all givings')) {
              // See all
-        } elseif ($user->can('view assigned givings') && $user->hasRole('archid')) {
+        } elseif ($user->can('view assigned givings')) {
              $churchIds = Church::where('archid_id', $user->id)->pluck('id');
              $query->whereIn('church_id', $churchIds);
         } elseif ($user->can('view own givings') && $user->church_id) {
@@ -168,7 +168,7 @@ class GivingController extends Controller
             'month' => Carbon::parse($validated['date'])->month,
         ]);
 
-        return redirect()->route('givings.index')->with('success', 'Giving entry recorded successfully.');
+        return redirect()->route('givings.index')->with('success', 'Offering entry recorded successfully.');
     }
 
     public function edit(Giving $giving)
@@ -223,7 +223,7 @@ class GivingController extends Controller
             'month' => Carbon::parse($validated['date'])->month,
         ]);
 
-        return redirect()->route('givings.index')->with('success', 'Giving entry updated successfully.');
+        return redirect()->route('givings.index')->with('success', 'Offering entry updated successfully.');
     }
 
     public function destroy(Giving $giving)
@@ -236,7 +236,7 @@ class GivingController extends Controller
 
         $giving->delete();
 
-        return redirect()->route('givings.index')->with('success', 'Giving entry deleted successfully.');
+        return redirect()->route('givings.index')->with('success', 'Offering entry deleted successfully.');
     }
 
     public function markAsSent(Giving $giving)
@@ -292,7 +292,7 @@ class GivingController extends Controller
     {
         $user = auth()->user();
         if ($user->can('view all givings')) return true;
-        if ($user->can('view assigned givings') && $user->hasRole('archid')) {
+        if ($user->can('view assigned givings')) {
              // Check if giving church is assigned
              $churchIds = Church::where('archid_id', $user->id)->pluck('id')->toArray();
              return in_array($giving->church_id, $churchIds);
@@ -306,7 +306,7 @@ class GivingController extends Controller
     {
         if ($user->can('view all churches')) {
             return Church::where('is_active', true)->get();
-        } elseif ($user->hasRole('archid')) {
+        } elseif ($user->can('view assigned churches')) {
             return Church::where('archid_id', $user->id)->where('is_active', true)->get();
         } elseif ($user->church_id) {
             return Church::where('id', $user->church_id)->get();

@@ -13,7 +13,10 @@ class ServiceTypeController extends Controller
      */
     public function index()
     {
-        //
+        $this->authorize('manage service types');
+        
+        $serviceTypes = ServiceType::latest()->get();
+        return view('service-types.index', compact('serviceTypes'));
     }
 
     /**
@@ -21,7 +24,9 @@ class ServiceTypeController extends Controller
      */
     public function create()
     {
-        //
+        $this->authorize('manage service types');
+        
+        return view('service-types.create');
     }
 
     /**
@@ -29,38 +34,58 @@ class ServiceTypeController extends Controller
      */
     public function store(Request $request)
     {
-        //
-    }
+        $this->authorize('manage service types');
+        
+        $validated = $request->validate([
+            'name' => 'required|string|max:255',
+            'description' => 'nullable|string',
+        ]);
 
-    /**
-     * Display the specified resource.
-     */
-    public function show(string $id)
-    {
-        //
+        ServiceType::create($validated);
+
+        return redirect()->route('service-types.index')
+            ->with('success', 'Service type created successfully!');
     }
 
     /**
      * Show the form for editing the specified resource.
      */
-    public function edit(string $id)
+    public function edit(ServiceType $serviceType)
     {
-        //
+        $this->authorize('manage service types');
+        
+        return view('service-types.edit', compact('serviceType'));
     }
 
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, string $id)
+    public function update(Request $request, ServiceType $serviceType)
     {
-        //
+        $this->authorize('manage service types');
+        
+        $validated = $request->validate([
+            'name' => 'required|string|max:255',
+            'description' => 'nullable|string',
+            'is_active' => 'boolean',
+        ]);
+
+        $serviceType->update($validated);
+
+        return redirect()->route('service-types.index')
+            ->with('success', 'Service type updated successfully!');
     }
 
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(string $id)
+    public function destroy(ServiceType $serviceType)
     {
-        //
+        $this->authorize('manage service types');
+        
+        $serviceType->delete();
+
+        return redirect()->route('service-types.index')
+            ->with('success', 'Service type deleted successfully!');
     }
 }

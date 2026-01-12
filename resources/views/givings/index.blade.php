@@ -2,13 +2,13 @@
     <x-slot name="header">
         <div class="flex justify-between items-center">
             <h2 class="font-semibold text-2xl text-gray-800 leading-tight">
-                {{ __('Givings Management') }}
+                {{ __('Offerings Management') }}
             </h2>
             <a href="{{ route('givings.create') }}" class="bg-gradient-to-r from-emerald-500 to-green-600 hover:from-emerald-600 hover:to-green-700 text-white font-semibold py-2 px-4 rounded-lg shadow-md transition duration-200 flex items-center">
                 <svg class="w-5 h-5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
                 </svg>
-                Record New Giving
+                Record New Offering
             </a>
         </div>
     </x-slot>
@@ -143,7 +143,7 @@
 
                     <!-- Church Filter (Role Based) (Col 8-10) -->
                     <div class="md:col-span-3">
-                        @if(auth()->user()->hasRole('boss') || auth()->user()->hasRole('archid'))
+                        @if($churches->count() > 1)
                             <label class="block text-xs font-medium text-gray-500 mb-1">Church</label>
                             <select name="church_id" class="w-full text-sm rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
                                 <option value="">All Churches</option>
@@ -203,10 +203,10 @@
                                             <td class="px-6 py-4 whitespace-nowrap">
                                                 <div class="flex items-center">
                                                     <div class="flex-shrink-0 h-8 w-8 rounded-full bg-indigo-100 flex items-center justify-center text-indigo-700 font-bold text-xs ring-2 ring-white">
-                                                        {{ substr($giving->church->name, 0, 2) }}
+                                                        {{ $giving->church ? substr($giving->church->name, 0, 2) : '??' }}
                                                     </div>
                                                     <div class="ml-3">
-                                                        <div class="text-sm font-medium text-gray-900">{{ $giving->church->name }}</div>
+                                                        <div class="text-sm font-medium text-gray-900">{{ $giving->church ? $giving->church->name : 'Church Not Found' }}</div>
                                                     </div>
                                                 </div>
                                             </td>
@@ -269,6 +269,7 @@
                                                 @endif
 
                                                 <!-- Edit -->
+                                                @can('enter givings')
                                                 <button type="button" 
                                                     @click="initEdit({ 
                                                         action: '{{ route('givings.update', $giving) }}',
@@ -282,13 +283,16 @@
                                                     class="text-indigo-600 hover:text-indigo-900">
                                                     <svg class="w-4 h-4 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path></svg>
                                                 </button>
+                                                @endcan
                                                 
                                                 <!-- Delete -->
+                                                @can('enter givings')
                                                 <button type="button" 
                                                     @click="deleteOpen = true; deleteAction = '{{ route('givings.destroy', $giving) }}'" 
                                                     class="text-red-400 hover:text-red-600">
                                                     <svg class="w-4 h-4 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
                                                 </button>
+                                                @endcan
                                             </td>
                                         </tr>
                                     @endforeach
@@ -305,14 +309,14 @@
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
                                 </svg>
                             </div>
-                            <h3 class="mt-2 text-sm font-medium text-gray-900">No givings found</h3>
-                            <p class="mt-1 text-sm text-gray-500">Try adjusting your filters or record a new giving.</p>
+                            <h3 class="mt-2 text-sm font-medium text-gray-900">No offerings found</h3>
+                            <p class="mt-1 text-sm text-gray-500">Try adjusting your filters or record a new offering.</p>
                             <div class="mt-6">
                                 <a href="{{ route('givings.create') }}" class="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-green-600 hover:bg-green-700">
                                     <svg class="-ml-1 mr-2 h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
                                     </svg>
-                                    Record Giving
+                                    Record Offering
                                 </a>
                             </div>
                         </div>
@@ -415,7 +419,7 @@
                 <div x-show="editOpen" class="inline-block align-bottom bg-white rounded-lg text-left overflow-visible shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-xl sm:w-full">
                     <div class="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
                         <div class="mb-4 pb-4 border-b border-gray-100">
-                            <h3 class="text-xl font-bold text-gray-900">Edit Giving Record</h3>
+                            <h3 class="text-xl font-bold text-gray-900">Edit Offering Record</h3>
                         </div>
                         <form :action="editAction" method="POST">
                             @csrf @method('PUT')

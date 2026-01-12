@@ -7,31 +7,39 @@
 
         <title>{{ config('app.name', 'Laravel') }}</title>
 
+        <!-- SEO Meta Tags -->
+        <meta name="description" content="EAR Shyogwe Diocese Enterprise Management System">
+        <meta name="keywords" content="church, diocese, management, EAR Shyogwe">
+        <meta name="author" content="EAR Shyogwe Diocese">
+
         <!-- Fonts -->
         <link rel="preconnect" href="https://fonts.bunny.net">
         <link href="https://fonts.bunny.net/css?family=figtree:400,500,600&display=swap" rel="stylesheet" />
 
-        <!-- Favicons -->
-        <link rel="apple-touch-icon" sizes="57x57" href="/apple-icon-57x57.png">
-        <link rel="apple-touch-icon" sizes="60x60" href="/apple-icon-60x60.png">
-        <link rel="apple-touch-icon" sizes="72x72" href="/apple-icon-72x72.png">
-        <link rel="apple-touch-icon" sizes="76x76" href="/apple-icon-76x76.png">
-        <link rel="apple-touch-icon" sizes="114x114" href="/apple-icon-114x114.png">
-        <link rel="apple-touch-icon" sizes="120x120" href="/apple-icon-120x120.png">
-        <link rel="apple-touch-icon" sizes="144x144" href="/apple-icon-144x144.png">
-        <link rel="apple-touch-icon" sizes="152x152" href="/apple-icon-152x152.png">
-        <link rel="apple-touch-icon" sizes="180x180" href="/apple-icon-180x180.png">
-        <link rel="icon" type="image/png" sizes="192x192"  href="/android-icon-192x192.png">
-        <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
-        <link rel="icon" type="image/png" sizes="96x96" href="/favicon-96x96.png">
-        <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
-        <link rel="manifest" href="/manifest.json">
-        <meta name="msapplication-TileColor" content="#ffffff">
-        <meta name="msapplication-TileImage" content="/ms-icon-144x144.png">
-        <meta name="theme-color" content="#ffffff">
+        <!-- Favicon & PWA Icons -->
+        <link rel="icon" type="image/jpeg" href="{{ asset('storage/logo/logo.jpg') }}">
+        <link rel="apple-touch-icon" href="{{ asset('storage/logo/logo.jpg') }}">
+        
+        <!-- PWA Meta Tags -->
+        <meta name="theme-color" content="#1e3a8a">
+        <meta name="apple-mobile-web-app-capable" content="yes">
+        <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+        <meta name="apple-mobile-web-app-title" content="EAR Shyogwe">
+        <link rel="manifest" href="{{ asset('manifest.json') }}">
 
         <!-- Scripts -->
         @vite(['resources/css/app.css', 'resources/js/app.js'])
+        
+        <!-- PWA Service Worker Registration -->
+        <script>
+            if ('serviceWorker' in navigator) {
+                window.addEventListener('load', () => {
+                    navigator.serviceWorker.register('/sw.js')
+                        .then((reg) => console.log('Service Worker registered', reg))
+                        .catch((err) => console.log('Service Worker registration failed', err));
+                });
+            }
+        </script>
     </head>
     <body class="font-sans antialiased text-gray-900 bg-white">
         <div class="min-h-screen flex">

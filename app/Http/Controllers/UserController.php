@@ -83,6 +83,9 @@ class UserController extends Controller
 
         $user->assignRole($request->role);
 
+    // Clear permission cache so changes take effect immediately
+    app()[\Spatie\Permission\PermissionRegistrar::class]->forgetCachedPermissions();
+
         if ($request->hasFile('profile_photo')) {
             $path = $request->file('profile_photo')->store('profile-photos', 'public');
             $user->profile_photo_path = $path;
@@ -137,6 +140,9 @@ class UserController extends Controller
         ]);
 
         $user->syncRoles([$request->role]);
+
+    // Clear permission cache so changes take effect immediately
+    app()[\Spatie\Permission\PermissionRegistrar::class]->forgetCachedPermissions();
 
         if ($request->hasFile('profile_photo')) {
             $path = $request->file('profile_photo')->store('profile-photos', 'public');

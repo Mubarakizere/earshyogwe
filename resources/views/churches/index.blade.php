@@ -3,20 +3,18 @@
         <div class="flex flex-col md:flex-row justify-between items-center gap-4">
             <div>
                 <h2 class="font-semibold text-2xl text-gray-800 leading-tight flex items-center gap-3">
-                    {{ __('Churches') }}
-                    @hasrole('boss')
+                    {{ __('Parishes') }}
+                    @can('view all churches')
                         <span class="px-3 py-1 text-xs font-bold tracking-wider uppercase bg-blue-100 text-blue-700 rounded-full border border-blue-200">
                             Diocese View
                         </span>
-                    @else
-                        @hasrole('archid')
-                            <span class="px-3 py-1 text-xs font-bold tracking-wider uppercase bg-purple-100 text-purple-700 rounded-full border border-purple-200">
-                                Archdeaconry
-                            </span>
-                        @endhasrole
-                    @endhasrole
+                    @elsecan('view assigned churches')
+                        <span class="px-3 py-1 text-xs font-bold tracking-wider uppercase bg-purple-100 text-purple-700 rounded-full border border-purple-200">
+                            Archdeaconry
+                        </span>
+                    @endcan
                 </h2>
-                <p class="text-sm text-gray-500 mt-1">Manage network of churches, locations, and assignments.</p>
+                <p class="text-sm text-gray-500 mt-1">Manage network of parishes, locations, and assignments.</p>
             </div>
             
             <div class="flex gap-2">
@@ -28,7 +26,7 @@
                 @can('create church')
                 <a href="{{ route('churches.create') }}" class="inline-flex items-center px-4 py-2 bg-blue-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-blue-700 focus:bg-blue-700 active:bg-blue-900 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 transition">
                     <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
-                    Add Church
+                    Add parish
                 </a>
                 @endcan
             </div>
@@ -43,7 +41,7 @@
                 <!-- Total -->
                 <div class="bg-gradient-to-br from-blue-600 to-indigo-700 rounded-lg shadow-lg p-5 text-white relative overflow-hidden">
                     <div class="relative z-10">
-                        <p class="text-blue-100 text-xs font-bold uppercase tracking-wider">Total Churches</p>
+                        <p class="text-blue-100 text-xs font-bold uppercase tracking-wider">Total Parishes</p>
                         <h3 class="text-3xl font-bold mt-1">{{ number_format($stats['total']) }}</h3>
                         <p class="text-xs text-blue-200 mt-1">In your jurisdiction</p>
                     </div>
@@ -59,7 +57,7 @@
                     <div class="relative z-10">
                         <p class="text-cyan-100 text-xs font-bold uppercase tracking-wider">Active</p>
                         <h3 class="text-3xl font-bold mt-1">{{ number_format($stats['active']) }}</h3>
-                        <p class="text-xs text-cyan-200 mt-1">Operational churches</p>
+                        <p class="text-xs text-cyan-200 mt-1">Operational parishes</p>
                     </div>
                     <div class="absolute right-0 bottom-0 opacity-10 transform translate-x-2 translate-y-2">
                         <svg class="w-24 h-24" fill="currentColor" viewBox="0 0 20 20">
@@ -133,7 +131,7 @@
                         <table class="min-w-full divide-y divide-gray-200">
                             <thead class="bg-gray-50">
                                 <tr>
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Church Name</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Parish Name</th>
                                     <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Location</th>
                                     <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Leadership</th>
                                     <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
@@ -205,13 +203,13 @@
                          <div class="mx-auto h-24 w-24 bg-gray-50 rounded-full flex items-center justify-center mb-4">
                             <svg class="h-10 w-10 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path></svg>
                         </div>
-                        <h3 class="mt-2 text-sm font-medium text-gray-900">No churches found</h3>
-                        <p class="mt-1 text-sm text-gray-500">Get started by adding a new church.</p>
+                        <h3 class="mt-2 text-sm font-medium text-gray-900">No parishes found</h3>
+                        <p class="mt-1 text-sm text-gray-500">Get started by adding a new parish.</p>
                         <div class="mt-6">
                             @can('create church')
                             <a href="{{ route('churches.create') }}" class="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
                                 <svg class="-ml-1 mr-2 h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
-                                Add Church
+                                Add Parish
                             </a>
                             @endcan
                         </div>
@@ -231,8 +229,8 @@
                                     <svg class="h-6 w-6 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
                                 </div>
                                 <div class="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left">
-                                    <h3 class="text-lg leading-6 font-medium text-gray-900">Delete Church</h3>
-                                    <div class="mt-2"><p class="text-sm text-gray-500">Are you sure you want to delete this church? This action cannot be undone.</p></div>
+                                    <h3 class="text-lg leading-6 font-medium text-gray-900">Delete Parish</h3>
+                                    <div class="mt-2"><p class="text-sm text-gray-500">Are you sure you want to delete this parish? This action cannot be undone.</p></div>
                                 </div>
                             </div>
                         </div>

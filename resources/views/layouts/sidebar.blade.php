@@ -31,12 +31,12 @@
             <div x-show="open" x-collapse class="space-y-1 pl-9">
                 @canany(['view all churches', 'view assigned churches'])
                     <a href="{{ route('churches.index') }}" class="group flex items-center px-2 py-2 text-sm font-medium rounded-md hover:text-white hover:bg-brand-800 {{ request()->routeIs('churches.*') ? 'text-white bg-brand-800' : 'text-brand-200' }}">
-                        Churches
+                        Parishes
                     </a>
                 @endcanany
                 @canany(['view all departments', 'create departments'])
                     <a href="{{ route('departments.index') }}" class="group flex items-center px-2 py-2 text-sm font-medium rounded-md hover:text-white hover:bg-brand-800 {{ request()->routeIs('departments.*') ? 'text-white bg-brand-800' : 'text-brand-200' }}">
-                        Departments
+                        Directorates
                     </a>
                 @endcanany
                 @canany(['view all activities', 'view assigned activities', 'view own activities'])
@@ -74,7 +74,7 @@
             <div x-show="open" x-collapse class="space-y-1 pl-9">
                 @can('enter givings')
                     <a href="{{ route('givings.index') }}" class="group flex items-center px-2 py-2 text-sm font-medium rounded-md hover:text-white hover:bg-brand-800 {{ request()->routeIs('givings.*') ? 'text-white bg-brand-800' : 'text-brand-200' }}">
-                        Givings
+                        Offerings
                     </a>
                 @endcan
                 @can('verify diocese receipt')
@@ -91,7 +91,7 @@
         </div>
 
         <!-- Administration Dropdown -->
-        <div x-data="{ open: {{ request()->routeIs('workers.*') || request()->routeIs('users.*') || request()->routeIs('roles.*') || request()->routeIs('activity-logs.*') || request()->routeIs('giving-types.*') || request()->routeIs('expense-categories.*') ? 'true' : 'false' }} }" class="space-y-1">
+        <div x-data="{ open: {{ request()->routeIs('workers.*') || request()->routeIs('users.*') || request()->routeIs('roles.*') || request()->routeIs('activity-logs.*') || request()->routeIs('giving-types.*') || request()->routeIs('expense-categories.*') || request()->routeIs('service-types.*') ? 'true' : 'false' }} }" class="space-y-1">
              <button @click="open = !open" class="flex items-center w-full px-2 py-2 text-sm font-medium rounded-md hover:bg-brand-800 hover:text-white group transition-colors focus:outline-none" :class="{ 'bg-brand-800 text-white': open, 'text-brand-200': !open }">
                 <svg class="w-5 h-5 mr-3 text-brand-400 group-hover:text-white transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" /><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
                 <span class="flex-1 text-left">Administration</span>
@@ -106,23 +106,36 @@
                     </a>
                 @endcanany
 
-                @hasrole('boss')
+                 @can('manage users')
                     <a href="{{ route('users.index') }}" class="group flex items-center px-2 py-2 text-sm font-medium rounded-md hover:text-white hover:bg-brand-800 {{ request()->routeIs('users.*') ? 'text-white bg-brand-800' : 'text-brand-200' }}">
                         Users
                     </a>
+                @endcan
+                @can('manage roles')
                     <a href="{{ route('roles.index') }}" class="group flex items-center px-2 py-2 text-sm font-medium rounded-md hover:text-white hover:bg-brand-800 {{ request()->routeIs('roles.*') ? 'text-white bg-brand-800' : 'text-brand-200' }}">
                         Roles
                     </a>
+                @endcan
+                @can('view activity logs')
                     <a href="{{ route('activity-logs.index') }}" class="group flex items-center px-2 py-2 text-sm font-medium rounded-md hover:text-white hover:bg-brand-800 {{ request()->routeIs('activity-logs.*') ? 'text-white bg-brand-800' : 'text-brand-200' }}">
                         Audit Logs
                     </a>
+                @endcan
+                @can('manage giving types')
                      <a href="{{ route('giving-types.index') }}" class="group flex items-center px-2 py-2 text-sm font-medium rounded-md hover:text-white hover:bg-brand-800 {{ request()->routeIs('giving-types.*') ? 'text-white bg-brand-800' : 'text-brand-200' }}">
-                        Giving Types
+                        Offerings Types
                     </a>
+                @endcan
+                @can('manage expense categories')
                      <a href="{{ route('expense-categories.index') }}" class="group flex items-center px-2 py-2 text-sm font-medium rounded-md hover:text-white hover:bg-brand-800 {{ request()->routeIs('expense-categories.*') ? 'text-white bg-brand-800' : 'text-brand-200' }}">
                         Expense Cats
                     </a>
-                @endhasrole
+                @endcan
+                @can('manage service types')
+                     <a href="{{ route('service-types.index') }}" class="group flex items-center px-2 py-2 text-sm font-medium rounded-md hover:text-white hover:bg-brand-800 {{ request()->routeIs('service-types.*') ? 'text-white bg-brand-800' : 'text-brand-200' }}">
+                        Service Types
+                    </a>
+                @endcan
             </div>
         </div>
 

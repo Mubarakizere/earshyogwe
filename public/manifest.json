@@ -1,0 +1,24 @@
+{
+    "name": "EAR Shyogwe Diocese Portal",
+    "short_name": "EAR Shyogwe",
+    "description": "Enterprise Management System for EAR Shyogwe Diocese",
+    "start_url": "/dashboard",
+    "display": "standalone",
+    "background_color": "#ffffff",
+    "theme_color": "#1e3a8a",
+    "orientation": "portrait-primary",
+    "icons": [
+        {
+            "src": "/storage/logo/logo.png",
+            "sizes": "192x192",
+            "type": "image/png",
+            "purpose": "any"
+        },
+        {
+            "src": "/storage/logo/logo.png",
+            "sizes": "512x512",
+            "type": "image/png",
+            "purpose": "any"
+        }
+    ]
+}

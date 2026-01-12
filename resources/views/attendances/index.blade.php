@@ -2,9 +2,11 @@
     <x-slot name="header">
         <div class="flex justify-between items-center">
             <h2 class="font-semibold text-2xl text-gray-800 leading-tight">Attendance Management</h2>
+            @can('create attendance')
             <a href="{{ route('attendances.create') }}" class="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded-lg">
                 + Record Attendance
             </a>
+            @endcan
         </div>
     </x-slot>
 
@@ -39,7 +41,7 @@
                     </div>
 
                     <!-- Church Filter (if user has access to multiple) -->
-                    @if(auth()->user()->hasRole('boss') || auth()->user()->hasRole('archid'))
+                    @if($churches->count() > 1)
                     <div>
                         <label class="block text-xs font-medium text-gray-500 mb-1">Church</label>
                         <select name="church_id" class="w-full text-sm rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
@@ -50,7 +52,7 @@
                         </select>
                     </div>
                     @else
-                        <!-- Spacer for alignment if not admin -->
+                        <!-- Spacer for alignment if single church -->
                         <div class="hidden md:block"></div> 
                     @endif
 
@@ -160,13 +162,17 @@
                                         <td class="px-6 py-4 whitespace-nowrap text-sm font-bold">{{ $attendance->total_count }}</td>
                                         <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium space-x-2">
                                             <a href="{{ route('attendances.show', $attendance) }}" class="text-blue-600 hover:text-blue-900">View</a>
+                                            @can('edit attendance')
                                             <a href="{{ route('attendances.edit', $attendance) }}" class="text-indigo-600 hover:text-indigo-900">Edit</a>
+                                            @endcan
+                                            @can('delete attendance')
                                             <button 
                                                 type="button" 
                                                 x-on:click="deleteRoute = '{{ route('attendances.destroy', $attendance) }}'; $dispatch('open-modal', 'confirm-attendance-deletion')"
                                                 class="text-red-600 hover:text-red-900">
                                                 Delete
                                             </button>
+                                            @endcan
                                         </td>
                                     </tr>
                                 @endforeach
@@ -176,6 +182,7 @@
                     <div class="mt-6">{{ $attendances->links() }}</div>
                 @else
                     <div class="text-center py-12">
+                        @can('create attendance')
                         <x-empty-state 
                             title="No attendance records found" 
                             message="Get started by recording attendance for a service."
@@ -183,6 +190,9 @@
                             url="{{ route('attendances.create') }}"
                             icon="chart-bar"
                         />
+                        @else
+                        <p class="text-sm text-gray-500">No attendance records found.</p>
+                        @endcan
                     </div>
                 @endif
             </div>

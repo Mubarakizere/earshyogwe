@@ -3,10 +3,10 @@
         <div class="flex flex-col md:flex-row justify-between items-center gap-4">
             <div>
                 <h2 class="font-semibold text-2xl text-gray-800 leading-tight flex items-center gap-3">
-                    {{ __('Departments') }}
+                    {{ __('Directorates') }}
                     @can('view all departments')
                         <span class="px-3 py-1 text-xs font-bold tracking-wider uppercase bg-purple-100 text-purple-700 rounded-full border border-purple-200">
-                            All Churches
+                            All Parishes
                         </span>
                     @elsecan('view assigned departments')
                         <span class="px-3 py-1 text-xs font-bold tracking-wider uppercase bg-blue-100 text-blue-700 rounded-full border border-blue-200">
@@ -30,7 +30,7 @@
                 @can('create departments')
                 <a href="{{ route('departments.create') }}" class="inline-flex items-center px-4 py-2 bg-purple-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-purple-700 focus:bg-purple-700 active:bg-purple-900 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 transition">
                     <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
-                    Add Department
+                    Add Directorate
                 </a>
                 @endcan
             </div>
@@ -45,9 +45,9 @@
                 <!-- Total -->
                 <div class="bg-gradient-to-br from-fuchsia-600 to-purple-700 rounded-lg shadow-lg p-5 text-white relative overflow-hidden">
                     <div class="relative z-10">
-                        <p class="text-fuchsia-100 text-xs font-bold uppercase tracking-wider">Total Departments</p>
+                        <p class="text-fuchsia-100 text-xs font-bold uppercase tracking-wider">Total Directorates</p>
                         <h3 class="text-3xl font-bold mt-1">{{ number_format($stats['total']) }}</h3>
-                        <p class="text-xs text-fuchsia-200 mt-1">Across all filtered churches</p>
+                        <p class="text-xs text-fuchsia-200 mt-1">Across all filtered parishes</p>
                     </div>
                     <div class="absolute right-0 bottom-0 opacity-10 transform translate-x-2 translate-y-2">
                         <svg class="w-24 h-24" fill="currentColor" viewBox="0 0 20 20">
@@ -116,9 +116,9 @@
                         <!-- Church Filter (Dynamic) -->
                         <div class="md:col-span-3">
                             @if($churches->count() > 1)
-                                <label for="church_id" class="block text-xs font-medium text-gray-500 mb-1">Church</label>
+                                <label for="church_id" class="block text-xs font-medium text-gray-500 mb-1">Parish</label>
                                 <select name="church_id" id="church_id" class="focus:ring-purple-500 focus:border-purple-500 block w-full sm:text-sm border-gray-300 rounded-md">
-                                    <option value="">All Churches</option>
+                                    <option value="">All Parishes</option>
                                     @foreach($churches as $church)
                                         <option value="{{ $church->id }}" {{ request('church_id') == $church->id ? 'selected' : '' }}>{{ $church->name }}</option>
                                     @endforeach
@@ -151,7 +151,7 @@
                             <thead class="bg-gray-50">
                                 <tr>
                                     <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Name / Description</th>
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Church</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Parish</th>
                                     <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
                                     <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
                                 </tr>
@@ -171,9 +171,15 @@
                                             </div>
                                         </td>
                                         <td class="px-6 py-4 whitespace-nowrap">
-                                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
-                                                {{ $department->church->name }}
-                                            </span>
+                                            @if($department->church)
+                                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
+                                                    {{ $department->church->name }}
+                                                </span>
+                                            @else
+                                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">
+                                                    No Parish
+                                                </span>
+                                            @endif
                                         </td>
                                         <td class="px-6 py-4 whitespace-nowrap">
                                             @if($department->is_active)
@@ -193,7 +199,7 @@
                                                 <a href="{{ route('departments.edit', $department) }}" class="text-indigo-600 hover:text-indigo-900 font-medium">Edit</a>
                                             @endcan
                                             
-                                            @if(auth()->user()->hasRole('boss'))
+                                            @can('edit departments')
                                                 <span class="text-gray-300">|</span>
                                                 <button 
                                                     type="button" 
@@ -201,7 +207,7 @@
                                                     class="text-red-500 hover:text-red-700 font-medium">
                                                     Delete
                                                 </button>
-                                            @endif
+                                            @endcan
                                         </td>
                                     </tr>
                                 @endforeach
@@ -216,13 +222,13 @@
                          <div class="mx-auto h-24 w-24 bg-gray-50 rounded-full flex items-center justify-center mb-4">
                             <svg class="h-10 w-10 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path></svg>
                         </div>
-                        <h3 class="mt-2 text-sm font-medium text-gray-900">No departments found</h3>
-                        <p class="mt-1 text-sm text-gray-500">Get started by adding a new department.</p>
+                        <h3 class="mt-2 text-sm font-medium text-gray-900">No directorates found</h3>
+                        <p class="mt-1 text-sm text-gray-500">Get started by adding a new directorate.</p>
                         <div class="mt-6">
                             @can('create departments')
                             <a href="{{ route('departments.create') }}" class="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-purple-600 hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500">
                                 <svg class="-ml-1 mr-2 h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
-                                Add Department
+                                Add Directorate
                             </a>
                             @endcan
                         </div>
@@ -242,8 +248,8 @@
                                     <svg class="h-6 w-6 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
                                 </div>
                                 <div class="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left">
-                                    <h3 class="text-lg leading-6 font-medium text-gray-900">Delete Department</h3>
-                                    <div class="mt-2"><p class="text-sm text-gray-500">Are you sure you want to delete this department? This action cannot be undone.</p></div>
+                                    <h3 class="text-lg leading-6 font-medium text-gray-900">Delete Directorate</h3>
+                                    <div class="mt-2"><p class="text-sm text-gray-500">Are you sure you want to delete this directorate? This action cannot be undone.</p></div>
                                 </div>
                             </div>
                         </div>

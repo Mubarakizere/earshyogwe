@@ -51,6 +51,9 @@ class RoleController extends Controller
             $role->syncPermissions($request->permissions);
         }
 
+        // Clear permission cache so changes take effect immediately
+        app()[\Spatie\Permission\PermissionRegistrar::class]->forgetCachedPermissions();
+
         self::log('created', "Created role {$role->name}", 'roles', $role);
 
         return redirect()->route('roles.index')->with('success', 'Role created successfully.');
@@ -87,6 +90,9 @@ class RoleController extends Controller
         if ($request->has('permissions')) {
             $role->syncPermissions($request->permissions);
         }
+
+        // Clear permission cache so changes take effect immediately
+        app()[\Spatie\Permission\PermissionRegistrar::class]->forgetCachedPermissions();
 
         self::log('updated', "Updated role {$role->name}", 'roles', $role);
 

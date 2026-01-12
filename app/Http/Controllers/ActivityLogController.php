@@ -12,10 +12,8 @@ class ActivityLogController extends Controller
      */
     public function index(Request $request)
     {
-        // Only Boss can view audit logs
-        if (!auth()->user()->hasRole('boss')) {
-            abort(403);
-        }
+        // Only users with 'view audit logs' permission can access
+        $this->authorize('view activity logs');
 
         $query = ActivityLog::with('user');
 

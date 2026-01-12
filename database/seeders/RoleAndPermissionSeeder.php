@@ -27,6 +27,7 @@ class RoleAndPermissionSeeder extends Seeder
             'delete church',
             
             // Giving Management
+            'manage giving types',
             'create giving types',
             'edit giving types',
             'delete giving types',
@@ -38,6 +39,7 @@ class RoleAndPermissionSeeder extends Seeder
             'verify diocese receipt',
             
             // Expense Management
+            'manage expense categories',
             'create expense categories',
             'enter expenses',
             'view all expenses',
@@ -65,11 +67,15 @@ class RoleAndPermissionSeeder extends Seeder
             'manage all workers',
             'manage assigned workers',
             'manage own workers',
+            'create worker',
+            'edit worker',
+            'delete worker',
             'manage contracts',
             'view retirement plans',
             
             // User & Permission Management
             'manage users',
+            'manage roles',
             'assign roles',
             'grant permissions',
             'revoke permissions',
@@ -107,6 +113,9 @@ class RoleAndPermissionSeeder extends Seeder
             
             // Audit Logs
             'view activity logs',
+            
+            // Service Types
+            'manage service types',
         ];
 
         foreach ($permissions as $permission) {
@@ -198,16 +207,21 @@ class RoleAndPermissionSeeder extends Seeder
             'view all givings',
             'view all expenses',
             'approve expenses',
-            'approve expenses',
             'verify diocese receipt',
+            'manage expense categories',
             'create expense categories', // Finance should manage categories
+            'manage giving types',
             'create giving types',        // Finance should manage giving types
+            'manage service types',
         ]);
 
         // HR Role (Diocese Level)
         $hr = Role::firstOrCreate(['name' => 'hr']);
         $hr->syncPermissions([
             'manage all workers',
+            'create worker',
+            'edit worker',
+            'delete worker',
             'manage contracts',
             'view retirement plans',
         ]);
@@ -218,7 +232,5 @@ class RoleAndPermissionSeeder extends Seeder
             'view all evangelism',
             'submit evangelism reports', // Maybe they want to submit too?
         ]);
-
-        $this->command->info('Roles and permissions created successfully!');
     }
 }

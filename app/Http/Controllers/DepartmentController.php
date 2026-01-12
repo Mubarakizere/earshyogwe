@@ -129,7 +129,7 @@ class DepartmentController extends Controller
             'is_active' => true,
         ]);
 
-        return redirect()->route('departments.index')->with('success', 'Department created successfully.');
+        return redirect()->route('departments.index')->with('success', 'Directorate created successfully.');
     }
 
     public function edit(Department $department)
@@ -152,7 +152,7 @@ class DepartmentController extends Controller
 
         $department->update($validated);
 
-        return redirect()->route('departments.index')->with('success', 'Department updated successfully.');
+        return redirect()->route('departments.index')->with('success', 'Directorate updated successfully.');
     }
 
     public function destroy(Department $department)
@@ -166,7 +166,7 @@ class DepartmentController extends Controller
         
         if (auth()->user()->hasRole('boss')) {
             $department->delete();
-            return redirect()->route('departments.index')->with('success', 'Department deleted successfully.');
+            return redirect()->route('departments.index')->with('success', 'Directorate deleted successfully.');
         }
 
         abort(403, 'Unauthorized action.');

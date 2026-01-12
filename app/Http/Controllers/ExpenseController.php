@@ -77,7 +77,7 @@ class ExpenseController extends Controller
         // Permission-based filtering
         if ($user->can('view all expenses')) {
              // See all
-        } elseif ($user->can('view assigned expenses') && $user->hasRole('archid')) {
+        } elseif ($user->can('view assigned expenses')) {
              $churchIds = Church::where('archid_id', $user->id)->pluck('id');
              $query->whereIn('church_id', $churchIds);
         } elseif ($user->can('view own expenses') && $user->church_id) {
@@ -289,7 +289,7 @@ class ExpenseController extends Controller
     {
         if ($user->can('view all churches')) {
             return Church::where('is_active', true)->get();
-        } elseif ($user->hasRole('archid')) {
+        } elseif ($user->can('view assigned churches')) {
             return Church::where('archid_id', $user->id)->where('is_active', true)->get();
         } elseif ($user->church_id) {
              return Church::where('id', $user->church_id)->get();

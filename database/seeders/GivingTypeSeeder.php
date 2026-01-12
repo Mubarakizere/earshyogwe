@@ -14,13 +14,14 @@ class GivingTypeSeeder extends Seeder
     public function run(): void
     {
         $boss = User::role('boss')->first();
+        $createdBy = $boss ? $boss->id : null; // Handle case when boss doesn't exist yet
 
         // Tithes (no sub-types)
         GivingType::create([
             'name' => 'Tithes',
             'description' => 'Regular tithes - 10% of income',
             'has_sub_types' => false,
-            'created_by' => $boss->id,
+            'created_by' => $createdBy,
         ]);
 
         // Offerings (with sub-types)
@@ -28,7 +29,7 @@ class GivingTypeSeeder extends Seeder
             'name' => 'Offerings',
             'description' => 'Various church offerings',
             'has_sub_types' => true,
-            'created_by' => $boss->id,
+            'created_by' => $createdBy,
         ]);
 
         $offerings->subTypes()->createMany([
@@ -43,7 +44,7 @@ class GivingTypeSeeder extends Seeder
             'name' => 'Special Collections',
             'description' => 'Special purpose collections',
             'has_sub_types' => true,
-            'created_by' => $boss->id,
+            'created_by' => $createdBy,
         ]);
 
         $special->subTypes()->createMany([
@@ -58,7 +59,7 @@ class GivingTypeSeeder extends Seeder
             'name' => 'First Fruits',
             'description' => 'First fruits offerings',
             'has_sub_types' => false,
-            'created_by' => $boss->id,
+            'created_by' => $createdBy,
         ]);
 
         // Pledges (with sub-types)
@@ -66,14 +67,12 @@ class GivingTypeSeeder extends Seeder
             'name' => 'Pledges',
             'description' => 'Committed pledges',
             'has_sub_types' => true,
-            'created_by' => $boss->id,
+            'created_by' => $createdBy,
         ]);
 
         $pledges->subTypes()->createMany([
             ['name' => 'Annual Pledge', 'description' => 'Yearly commitment'],
             ['name' => 'Project Pledge', 'description' => 'Specific project commitments'],
         ]);
-
-        $this->command->info('Giving types and sub-types created successfully!');
     }
 }

@@ -13,17 +13,21 @@ class Giving extends Model
     public static function bootLogsActivity()
     {
         static::created(function ($model) {
-            $model->logActivity('create', "Recorded Giving: {$model->amount} RWF ({$model->givingType->name}) for {$model->church->name}");
+            $churchName = $model->church ? $model->church->name : 'Unknown Church';
+            $typeName = $model->givingType ? $model->givingType->name : 'Unknown Type';
+            $model->logActivity('create', "Recorded Giving: {$model->amount} RWF ({$typeName}) for {$churchName}");
         });
 
         static::updated(function ($model) {
             // Check for specific status changes
             if ($model->wasChanged('sent_to_diocese') && $model->sent_to_diocese) {
-                $model->logActivity('update', "Marked Giving as Sent to Diocese: {$model->amount} RWF from {$model->church->name}");
+                $churchName = $model->church ? $model->church->name : 'Unknown Church';
+                $model->logActivity('update', "Marked Giving as Sent to Diocese: {$model->amount} RWF from {$churchName}");
                 return;
             }
             if ($model->wasChanged('receipt_status') && $model->receipt_status === 'verified') {
-                $model->logActivity('update', "Verified Diocese Receipt: {$model->amount} RWF from {$model->church->name}");
+                $churchName = $model->church ? $model->church->name : 'Unknown Church';
+                $model->logActivity('update', "Verified Diocese Receipt: {$model->amount} RWF from {$churchName}");
                 return;
             }
 
@@ -44,7 +48,9 @@ class Giving extends Model
         });
 
         static::deleted(function ($model) {
-            $model->logActivity('delete', "Deleted Giving: {$model->amount} RWF ({$model->givingType->name}) from {$model->church->name}");
+            $churchName = $model->church ? $model->church->name : 'Unknown Church';
+            $typeName = $model->givingType ? $model->givingType->name : 'Unknown Type';
+            $model->logActivity('delete', "Deleted Giving: {$model->amount} RWF ({$typeName}) from {$churchName}");
         });
     }
 

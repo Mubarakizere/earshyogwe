@@ -11,6 +11,7 @@ class ExpenseCategorySeeder extends Seeder
     public function run(): void
     {
         $boss = User::role('boss')->first();
+        $createdBy = $boss ? $boss->id : null; // Handle case when boss doesn't exist yet
 
         $categories = [
             ['name' => 'Utilities', 'description' => 'Electricity, water, internet, phone bills', 'requires_approval' => false],
@@ -26,10 +27,8 @@ class ExpenseCategorySeeder extends Seeder
         foreach ($categories as $category) {
             ExpenseCategory::create([
                 ...$category,
-                'created_by' => $boss->id,
+                'created_by' => $createdBy,
             ]);
         }
-
-        $this->command->info('Expense categories created successfully!');
     }
 }

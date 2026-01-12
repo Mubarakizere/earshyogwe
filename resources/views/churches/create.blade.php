@@ -1,7 +1,7 @@
 <x-app-layout>
     <x-slot name="header">
         <h2 class="font-semibold text-2xl text-gray-800 leading-tight">
-            {{ __('Add New Church') }}
+            {{ __('Add New Parish') }}
         </h2>
     </x-slot>
 
@@ -15,7 +15,7 @@
                         <!-- Name & Location -->
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                             <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-2">Church Name <span class="text-red-500">*</span></label>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Parish Name <span class="text-red-500">*</span></label>
                                 <input type="text" name="name" value="{{ old('name') }}" required placeholder="e.g. St. Peter's Parish"
                                     class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-purple-500 focus:border-purple-500">
                                 @error('name') <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
@@ -56,7 +56,7 @@
                                             </option>
                                         @endforeach
                                     </select>
-                                    <p class="text-xs text-gray-500 mt-1">Oversees this church's activities (Regional).</p>
+                                    <p class="text-xs text-gray-500 mt-1">Oversees this parish's activities (Regional).</p>
                                 </div>
                                 <div>
                                     <label class="block text-sm font-medium text-gray-700 mb-2">Assigned Pastor</label>
@@ -68,14 +68,14 @@
                                             </option>
                                         @endforeach
                                     </select>
-                                    <p class="text-xs text-gray-500 mt-1">Directly leads this church.</p>
+                                    <p class="text-xs text-gray-500 mt-1">Directly leads this parish.</p>
                                 </div>
                             </div>
                         </div>
 
                         <div class="flex items-center justify-end space-x-4 pt-6 border-t border-gray-200">
                             <a href="{{ route('churches.index') }}" class="px-6 py-3 border border-gray-300 rounded-lg text-gray-700 font-semibold hover:bg-gray-50">Cancel</a>
-                            <button type="submit" class="px-6 py-3 bg-purple-600 hover:bg-purple-700 text-white font-semibold rounded-lg shadow-md">Create Church</button>
+                            <button type="submit" class="px-6 py-3 bg-purple-600 hover:bg-purple-700 text-white font-semibold rounded-lg shadow-md">Create Parish</button>
                         </div>
                     </div>
                 </form>

@@ -113,12 +113,5 @@ class TestUserSeeder extends Seeder
                 ]);
             }
         }
-
-        $this->command->info('Test users and churches created successfully!');
-        $this->command->info('Boss: boss@church.rw / password');
-        $this->command->info('Archid: archid@church.rw / password');
-        $this->command->info('Pastor 1: pastor1@church.rw / password');
-        $this->command->info('Pastor 2: pastor2@church.rw / password');
-        $this->command->info('Pastor 3: pastor3@church.rw / password');
     }
 }
