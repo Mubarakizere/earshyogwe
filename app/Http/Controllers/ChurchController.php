@@ -158,7 +158,14 @@ class ChurchController extends Controller
             'pastor_id' => 'nullable|exists:users,id',
         ]);
 
-        Church::create($validated);
+        $church = Church::create($validated);
+        
+        // Automatically assign church_id to the pastor
+        if ($request->pastor_id) {
+            \App\Models\User::where('id', $request->pastor_id)->update(['church_id' => $church->id]);
+        }
+        
+        // Note: Archids typically oversee multiple churches, so we don't set church_id for them
 
         return redirect()->route('churches.index')->with('success', 'Parish created successfully.');
     }
@@ -218,8 +225,24 @@ class ChurchController extends Controller
             'archid_id' => 'nullable|exists:users,id',
             'pastor_id' => 'nullable|exists:users,id',
         ]);
+        
+        // Get the old pastor before updating
+        $oldPastorId = $church->pastor_id;
 
         $church->update($validated);
+        
+        // If pastor changed, update church_id assignments
+        if ($oldPastorId != $request->pastor_id) {
+            // Remove church_id from old pastor
+            if ($oldPastorId) {
+                \App\Models\User::where('id', $oldPastorId)->update(['church_id' => null]);
+            }
+            
+            // Assign church_id to new pastor
+            if ($request->pastor_id) {
+                \App\Models\User::where('id', $request->pastor_id)->update(['church_id' => $church->id]);
+            }
+        }
 
         return redirect()->route('churches.index')->with('success', 'Parish updated successfully.');
     }
