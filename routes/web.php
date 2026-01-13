@@ -39,6 +39,8 @@ Route::middleware('auth')->group(function () {
     Route::get('givings/export', [\App\Http\Controllers\GivingController::class, 'export'])->name('givings.export');
     Route::post('givings/{giving}/mark-sent', [\App\Http\Controllers\GivingController::class, 'markAsSent'])->name('givings.markAsSent');
     Route::post('givings/{giving}/verify-receipt', [\App\Http\Controllers\GivingController::class, 'verifyReceipt'])->name('givings.verifyReceipt');
+    Route::get('givings/details/{date}/{church_id}', [\App\Http\Controllers\GivingController::class, 'details'])->name('givings.details');
+    Route::delete('givings/bulk/{date}/{church_id}', [\App\Http\Controllers\GivingController::class, 'destroyBulk'])->name('givings.destroyBulk');
     Route::resource('givings', \App\Http\Controllers\GivingController::class);
     
     // Diocese Validations
