@@ -84,16 +84,7 @@
                             <h3 class="text-lg font-semibold text-gray-900 mb-4 border-b pb-2">Employment Information</h3>
                             
                             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                <div>
-                                    <label class="block text-sm font-medium text-gray-700 mb-2">Church <span class="text-red-500">*</span></label>
-                                    <select name="church_id" required class="w-full px-4 py-3 border border-gray-300 rounded-lg">
-                                        <option value="">Select Church</option>
-                                        @foreach($churches as $church)
-                                            <option value="{{ $church->id }}" {{ old('church_id', $worker->church_id) == $church->id ? 'selected' : '' }}>{{ $church->name }}</option>
-                                        @endforeach
-                                    </select>
-                                </div>
-
+                                <!-- Institution -->
                                 <div>
                                     <label class="block text-sm font-medium text-gray-700 mb-2">Institution</label>
                                     <select name="institution_id" class="w-full px-4 py-3 border border-gray-300 rounded-lg">
@@ -104,16 +95,19 @@
                                     </select>
                                 </div>
 
+                                <!-- Job Title -->
                                 <div>
                                     <label class="block text-sm font-medium text-gray-700 mb-2">Job Title <span class="text-red-500">*</span></label>
                                     <input type="text" name="job_title" value="{{ old('job_title', $worker->job_title) }}" required class="w-full px-4 py-3 border border-gray-300 rounded-lg">
                                 </div>
 
+                                <!-- Employment Date -->
                                 <div>
                                     <label class="block text-sm font-medium text-gray-700 mb-2">Employment Date <span class="text-red-500">*</span></label>
                                     <input type="date" name="employment_date" value="{{ old('employment_date', $worker->employment_date?->format('Y-m-d')) }}" required class="w-full px-4 py-3 border border-gray-300 rounded-lg">
                                 </div>
 
+                                <!-- Status -->
                                 <div>
                                     <label class="block text-sm font-medium text-gray-700 mb-2">Status <span class="text-red-500">*</span></label>
                                     <select name="status" required class="w-full px-4 py-3 border border-gray-300 rounded-lg">

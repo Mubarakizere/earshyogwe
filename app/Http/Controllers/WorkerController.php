@@ -54,7 +54,7 @@ class WorkerController extends Controller
         $user = auth()->user();
         
         // 1. Base Query with Relations
-        $query = Worker::with(['church', 'department', 'activeContract']);
+        $query = Worker::with(['institution', 'activeContract']);
         
         // 2. Role-based Scope
         if ($user->hasRole('pastor')) {
@@ -118,17 +118,15 @@ class WorkerController extends Controller
     public function create()
     {
         $this->authorize('create worker');
-        $churches = $this->getChurchesForUser(auth()->user());
         $institutions = \App\Models\Institution::active()->orderBy('name')->get();
         
-        return view('workers.create', compact('churches', 'institutions'));
+        return view('workers.create', compact('institutions'));
     }
 
     public function store(Request $request)
     {
         $this->authorize('create worker');
         $validated = $request->validate([
-            'church_id' => 'required|exists:churches,id',
             'institution_id' => 'nullable|exists:institutions,id',
             'first_name' => 'required|string|max:255',
             'last_name' => 'required|string|max:255',
@@ -169,26 +167,22 @@ class WorkerController extends Controller
 
     public function show(Worker $worker)
     {
-        // Add scope check if needed, but for now assuming 'view workers' covers list/show
-        // $this->authorize('view worker'); 
-        $worker->load(['church', 'department', 'contracts', 'retirementPlan']);
+        $worker->load(['institution', 'documents']);
         return view('workers.show', compact('worker'));
     }
 
     public function edit(Worker $worker)
     {
         $this->authorize('edit worker');
-        $churches = $this->getChurchesForUser(auth()->user());
         $institutions = \App\Models\Institution::active()->orderBy('name')->get();
         
-        return view('workers.edit', compact('worker', 'churches', 'institutions'));
+        return view('workers.edit', compact('worker', 'institutions'));
     }
 
     public function update(Request $request, Worker $worker)
     {
         $this->authorize('edit worker');
         $validated = $request->validate([
-            'church_id' => 'required|exists:churches,id',
             'institution_id' => 'nullable|exists:institutions,id',
             'first_name' => 'required|string|max:255',
             'last_name' => 'required|string|max:255',
@@ -243,6 +237,13 @@ class WorkerController extends Controller
         $document->delete();
 
         return back()->with('success', 'Document deleted successfully!');
+    }
+
+    public function downloadDocument(\App\Models\WorkerDocument $document)
+    {
+        $this->authorize('edit worker');
+        
+        return response()->download(storage_path('app/' . $document->file_path), $document->document_name);
     }
 
     private function getChurchesForUser($user)

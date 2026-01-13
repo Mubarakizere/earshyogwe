@@ -154,8 +154,9 @@
                             <thead class="bg-gray-50">
                                 <tr>
                                     <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Worker Profile</th>
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Position & Dept</th>
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Organization</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Gender</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Job Title</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Institution</th>
                                     <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
                                     <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
                                 </tr>
@@ -177,27 +178,27 @@
                                             </div>
                                         </td>
                                         <td class="px-6 py-4 whitespace-nowrap">
-                                            <div class="text-sm font-medium text-gray-900">{{ $worker->position }}</div>
-                                            <div class="text-xs text-gray-500">{{ $worker->department->name ?? 'No Dept' }}</div>
+                                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium {{ $worker->gender == 'male' ? 'bg-blue-100 text-blue-800' : 'bg-pink-100 text-pink-800' }}">
+                                                {{ ucfirst($worker->gender ?? 'N/A') }}
+                                            </span>
                                         </td>
                                         <td class="px-6 py-4 whitespace-nowrap">
-                                             <div class="text-xs text-gray-500">{{ $worker->church->name }}</div>
+                                            <div class="text-sm font-medium text-gray-900">{{ $worker->job_title ?? 'N/A' }}</div>
+                                            <div class="text-xs text-gray-500">Emp: {{ $worker->employment_date?->format('M Y') ?? 'N/A' }}</div>
+                                        </td>
+                                        <td class="px-6 py-4 whitespace-nowrap">
+                                            @if($worker->institution)
+                                                <div class="text-sm text-gray-900">{{ $worker->institution->name }}</div>
+                                                <div class="text-xs text-gray-500">{{ $worker->institution->type_name }}</div>
+                                            @else
+                                                <span class="text-xs text-gray-400">No Institution</span>
+                                            @endif
                                         </td>
                                         <td class="px-6 py-4 whitespace-nowrap">
                                             @if($worker->status === 'active')
                                                  <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
                                                     Active
                                                 </span>
-                                                <!-- Retirement Alerts -->
-                                                @if($worker->retirement_status === 'overdue')
-                                                     <span class="ml-2 inline-flex items-center px-2 py-0.5 rounded text-xs font-bold bg-red-100 text-red-800 border border-red-200 animate-pulse">
-                                                        Overdue: {{ $worker->years_overdue }}y
-                                                     </span>
-                                                @elseif($worker->retirement_status === 'soon')
-                                                     <span class="ml-2 inline-flex items-center px-2 py-0.5 rounded text-xs font-semibold bg-amber-100 text-amber-800 border border-amber-200">
-                                                        Retiring in {{ $worker->years_to_retirement }}y
-                                                     </span>
-                                                @endif
                                             @elseif($worker->status === 'retired')
                                                 <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
                                                     Retired

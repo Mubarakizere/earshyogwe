@@ -72,6 +72,7 @@ Route::middleware('auth')->group(function () {
     // Workers & HR
     Route::get('workers/export', [\App\Http\Controllers\WorkerController::class, 'export'])->name('workers.export');
     Route::delete('worker-documents/{document}', [\App\Http\Controllers\WorkerController::class, 'destroyDocument'])->name('worker-documents.destroy');
+    Route::get('worker-documents/{document}/download', [\App\Http\Controllers\WorkerController::class, 'downloadDocument'])->name('worker-documents.download');
     Route::resource('workers', \App\Http\Controllers\WorkerController::class);
     
     // Institutions Management

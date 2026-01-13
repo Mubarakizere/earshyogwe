@@ -93,21 +93,6 @@
                             <h3 class="text-lg font-semibold text-gray-900 mb-4 border-b pb-2">Employment Information</h3>
                             
                             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                <!-- Church -->
-                                @if($churches->count() > 1)
-                                    <div>
-                                        <label class="block text-sm font-medium text-gray-700 mb-2">Church <span class="text-red-500">*</span></label>
-                                        <select name="church_id" required class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
-                                            <option value="">Select Church</option>
-                                            @foreach($churches as $church)
-                                                <option value="{{ $church->id }}" {{old('church_id') == $church->id ? 'selected' : '' }}>{{ $church->name }}</option>
-                                            @endforeach
-                                        </select>
-                                    </div>
-                                @else
-                                    <input type="hidden" name="church_id" value="{{ $churches->first()->id }}">
-                                @endif
-
                                 <!-- Institution -->
                                 <div>
                                     <label class="block text-sm font-medium text-gray-700 mb-2">Institution</label>
