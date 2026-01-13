@@ -9,6 +9,9 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('workers', function (Blueprint $table) {
+            // Make church_id nullable since it's no longer required
+            $table->foreignId('church_id')->nullable()->change();
+            
             // Add new fields for comprehensive employment information
             $table->enum('gender', ['male', 'female'])->after('last_name');
             $table->string('national_id')->nullable()->after('gender');
@@ -32,6 +35,9 @@ return new class extends Migration
     public function down(): void
     {
         Schema::table('workers', function (Blueprint $table) {
+            // Make church_id required again
+            $table->foreignId('church_id')->nullable(false)->change();
+            
             // Reverse the changes
             $table->dropColumn([
                 'gender',
