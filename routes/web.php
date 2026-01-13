@@ -73,6 +73,9 @@ Route::middleware('auth')->group(function () {
     Route::get('workers/export', [\App\Http\Controllers\WorkerController::class, 'export'])->name('workers.export');
     Route::resource('workers', \App\Http\Controllers\WorkerController::class);
     
+    // Institutions Management
+    Route::resource('institutions', \App\Http\Controllers\InstitutionController::class)->middleware(['permission:manage institutions']);
+    
     // Service Type Management
     Route::resource('service-types', \App\Http\Controllers\ServiceTypeController::class)->middleware(['role:boss|archid']);
     

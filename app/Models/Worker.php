@@ -13,15 +13,19 @@ class Worker extends Model
 
     protected $fillable = [
         'church_id',
-        'department_id',
+        'institution_id',
         'first_name',
         'last_name',
+        'gender',
+        'national_id',
+        'education_qualification',
         'email',
         'phone',
-        'position',
+        'district',
+        'sector',
+        'job_title',
         'employment_date',
         'birth_date',
-        'retirement_age',
         'status',
     ];
 
@@ -64,9 +68,14 @@ class Worker extends Model
         return $this->belongsTo(Church::class);
     }
 
-    public function department()
+    public function institution()
     {
-        return $this->belongsTo(Department::class);
+        return $this->belongsTo(Institution::class);
+    }
+
+    public function documents()
+    {
+        return $this->hasMany(WorkerDocument::class);
     }
 
     public function contracts()
@@ -79,40 +88,10 @@ class Worker extends Model
         return $this->hasOne(Contract::class)->where('status', 'active');
     }
 
-    public function retirementPlan()
-    {
-        return $this->hasOne(RetirementPlan::class);
-    }
-
     // Accessor for full name
     public function getFullNameAttribute()
     {
         return "{$this->first_name} {$this->last_name}";
-    }
-
-    // Accessor for years to retirement (Signed integer: negative means overdue)
-    public function getYearsToRetirementAttribute()
-    {
-        if (!$this->birth_date) return null;
-        
-        $retirementDate = $this->birth_date->copy()->addYears($this->retirement_age);
-        return (int) now()->diffInYears($retirementDate, false);
-    }
-
-    public function getRetirementStatusAttribute()
-    {
-        $years = $this->years_to_retirement;
-        
-        if ($years === null) return 'unknown';
-        if ($years < 0) return 'overdue';
-        if ($years <= 2) return 'soon';
-        return 'safe';
-    }
-
-    public function getYearsOverdueAttribute()
-    {
-        $years = $this->years_to_retirement;
-        return ($years < 0) ? abs($years) : 0;
     }
 
     // Scopes

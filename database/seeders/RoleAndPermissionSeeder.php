@@ -116,6 +116,9 @@ class RoleAndPermissionSeeder extends Seeder
             
             // Service Types
             'manage service types',
+            
+            // Institutions
+            'manage institutions',
         ];
 
         foreach ($permissions as $permission) {
@@ -219,6 +222,7 @@ class RoleAndPermissionSeeder extends Seeder
         $hr = Role::firstOrCreate(['name' => 'hr']);
         $hr->syncPermissions([
             'manage all workers',
+            'manage institutions',
             'create worker',
             'edit worker',
             'delete worker',
