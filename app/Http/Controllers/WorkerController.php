@@ -119,9 +119,9 @@ class WorkerController extends Controller
     {
         $this->authorize('create worker');
         $churches = $this->getChurchesForUser(auth()->user());
-        $departments = $this->getDepartmentsForUser(auth()->user());
+        $institutions = \App\Models\Institution::active()->orderBy('name')->get();
         
-        return view('workers.create', compact('churches', 'departments'));
+        return view('workers.create', compact('churches', 'institutions'));
     }
 
     public function store(Request $request)
@@ -129,18 +129,39 @@ class WorkerController extends Controller
         $this->authorize('create worker');
         $validated = $request->validate([
             'church_id' => 'required|exists:churches,id',
-            'department_id' => 'nullable|exists:departments,id',
+            'institution_id' => 'nullable|exists:institutions,id',
             'first_name' => 'required|string|max:255',
             'last_name' => 'required|string|max:255',
+            'gender' => 'required|in:male,female',
+            'national_id' => 'nullable|string|max:16',
+            'education_qualification' => 'nullable|string|max:255',
             'email' => 'required|email|unique:workers,email',
             'phone' => 'nullable|string|max:20',
-            'position' => 'required|string|max:255',
+            'district' => 'nullable|string|max:255',
+            'sector' => 'nullable|string|max:255',
+            'job_title' => 'required|string|max:255',
             'employment_date' => 'required|date',
             'birth_date' => 'nullable|date',
-            'retirement_age' => 'required|integer|min:50|max:70',
+            'document_names.*' => 'nullable|string|max:255',
+            'documents.*' => 'nullable|file|max:10240',
         ]);
 
-        Worker::create($validated);
+        $worker = Worker::create($validated);
+
+        // Handle document uploads
+        if ($request->hasFile('documents')) {
+            foreach ($request->file('documents') as $index => $file) {
+                if ($file) {
+                    $documentName = $request->document_names[$index] ?? 'Document ' . ($index + 1);
+                    $path = $file->store('worker_documents', 'local');
+                    
+                    $worker->documents()->create([
+                        'document_name' => $documentName,
+                        'file_path' => $path,
+                    ]);
+                }
+            }
+        }
 
         return redirect()->route('workers.index')
             ->with('success', 'Worker added successfully!');
@@ -158,9 +179,9 @@ class WorkerController extends Controller
     {
         $this->authorize('edit worker');
         $churches = $this->getChurchesForUser(auth()->user());
-        $departments = $this->getDepartmentsForUser(auth()->user());
+        $institutions = \App\Models\Institution::active()->orderBy('name')->get();
         
-        return view('workers.edit', compact('worker', 'churches', 'departments'));
+        return view('workers.edit', compact('worker', 'churches', 'institutions'));
     }
 
     public function update(Request $request, Worker $worker)
@@ -168,19 +189,40 @@ class WorkerController extends Controller
         $this->authorize('edit worker');
         $validated = $request->validate([
             'church_id' => 'required|exists:churches,id',
-            'department_id' => 'nullable|exists:departments,id',
+            'institution_id' => 'nullable|exists:institutions,id',
             'first_name' => 'required|string|max:255',
             'last_name' => 'required|string|max:255',
+            'gender' => 'required|in:male,female',
+            'national_id' => 'nullable|string|max:16',
+            'education_qualification' => 'nullable|string|max:255',
             'email' => 'required|email|unique:workers,email,' . $worker->id,
             'phone' => 'nullable|string|max:20',
-            'position' => 'required|string|max:255',
+            'district' => 'nullable|string|max:255',
+            'sector' => 'nullable|string|max:255',
+            'job_title' => 'required|string|max:255',
             'employment_date' => 'required|date',
             'birth_date' => 'nullable|date',
-            'retirement_age' => 'required|integer|min:50|max:70',
             'status' => 'required|in:active,retired,terminated',
+            'document_names.*' => 'nullable|string|max:255',
+            'documents.*' => 'nullable|file|max:10240',
         ]);
 
         $worker->update($validated);
+
+        // Handle new document uploads
+        if ($request->hasFile('documents')) {
+            foreach ($request->file('documents') as $index => $file) {
+                if ($file) {
+                    $documentName = $request->document_names[$index] ?? 'Document ' . ($index + 1);
+                    $path = $file->store('worker_documents', 'local');
+                    
+                    $worker->documents()->create([
+                        'document_name' => $documentName,
+                        'file_path' => $path,
+                    ]);
+                }
+            }
+        }
 
         return redirect()->route('workers.index')
             ->with('success', 'Worker updated successfully!');
@@ -193,6 +235,14 @@ class WorkerController extends Controller
 
         return redirect()->route('workers.index')
             ->with('success', 'Worker deleted successfully!');
+    }
+
+    public function destroyDocument(\App\Models\WorkerDocument $document)
+    {
+        $this->authorize('edit worker');
+        $document->delete();
+
+        return back()->with('success', 'Document deleted successfully!');
     }
 
     private function getChurchesForUser($user)
