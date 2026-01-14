@@ -9,17 +9,41 @@ use Illuminate\Http\Request;
 
 class WorkerController extends Controller
 {
-    public function export()
+    public function export(Request $request)
     {
         $user = auth()->user();
-        $query = Worker::with(['church', 'department']);
+        $query = Worker::with(['institution']);
         
-        // Apply same filters as index
+        // Apply same role-based scope as index
         if ($user->hasRole('pastor')) {
             $query->where('church_id', $user->church_id);
         } elseif ($user->hasRole('archid')) {
             $churchIds = Church::where('archid_id', $user->id)->pluck('id');
             $query->whereIn('church_id', $churchIds);
+        }
+
+        // Apply same filters as index
+        if ($request->filled('search')) {
+            $search = $request->search;
+            $query->where(function($q) use ($search) {
+                $q->where('first_name', 'like', "%{$search}%")
+                  ->orWhere('last_name', 'like', "%{$search}%")
+                  ->orWhere('job_title', 'like', "%{$search}%")
+                  ->orWhere('email', 'like', "%{$search}%")
+                  ->orWhere('phone', 'like', "%{$search}%");
+            });
+        }
+
+        if ($request->filled('church_id') && ($user->hasRole('boss') || $user->hasRole('archid'))) {
+            $query->where('church_id', $request->church_id);
+        }
+
+        if ($request->filled('institution_id')) {
+            $query->where('institution_id', $request->institution_id);
+        }
+
+        if ($request->filled('status')) {
+            $query->where('status', $request->status);
         }
 
         $workers = $query->get();
@@ -30,19 +54,19 @@ class WorkerController extends Controller
         header('Content-Type: text/csv');
         header('Content-Disposition: attachment; filename="' . $filename . '"');
 
-        fputcsv($handle, ['First Name', 'Last Name', 'Church', 'Department', 'Position', 'Status', 'Phone', 'Email', 'Employment Date']);
+        fputcsv($handle, ['First Name', 'Last Name', 'Email', 'Phone', 'Job Title', 'Institution', 'Status', 'Employment Date', 'Retirement Date']);
 
         foreach ($workers as $worker) {
             fputcsv($handle, [
                 $worker->first_name,
                 $worker->last_name,
-                $worker->church->name ?? 'N/A',
-                $worker->department->name ?? 'N/A',
-                $worker->position,
-                $worker->status,
-                $worker->phone,
                 $worker->email,
+                $worker->phone,
+                $worker->job_title,
+                $worker->institution->name ?? 'N/A',
+                $worker->status,
                 $worker->employment_date ? $worker->employment_date->format('Y-m-d') : '',
+                $worker->retirement_date ? $worker->retirement_date->format('Y-m-d') : '',
             ]);
         }
         fclose($handle);
@@ -70,7 +94,8 @@ class WorkerController extends Controller
             $query->where(function($q) use ($search) {
                 $q->where('first_name', 'like', "%{$search}%")
                   ->orWhere('last_name', 'like', "%{$search}%")
-                  ->orWhere('position', 'like', "%{$search}%")
+                  ->orWhere('job_title', 'like', "%{$search}%")
+                  ->orWhere('email', 'like', "%{$search}%")
                   ->orWhere('phone', 'like', "%{$search}%");
             });
         }
@@ -79,8 +104,8 @@ class WorkerController extends Controller
             $query->where('church_id', $request->church_id);
         }
 
-        if ($request->filled('department_id')) {
-            $query->where('department_id', $request->department_id);
+        if ($request->filled('institution_id')) {
+            $query->where('institution_id', $request->institution_id);
         }
 
         // Status filter (Active/Inactive/All)
@@ -92,7 +117,7 @@ class WorkerController extends Controller
         
         // 4. Data for Filters
         $churches = $this->getChurchesForUser($user);
-        $departments = $this->getDepartmentsForUser($user);
+        $institutions = $this->getInstitutionsForUser($user);
         
         // 5. Global Stats (Scoped to User Role, ignoring temporary filters)
         $statsQuery = Worker::query();
@@ -112,7 +137,7 @@ class WorkerController extends Controller
             'overdue' => $allWorkers->filter(fn($w) => $w->years_to_retirement !== null && $w->years_to_retirement < 0)->count(),
         ];
         
-        return view('workers.index', compact('workers', 'churches', 'departments', 'stats'));
+        return view('workers.index', compact('workers', 'churches', 'institutions', 'stats'));
     }
 
     public function create()
@@ -405,15 +430,9 @@ class WorkerController extends Controller
         }
     }
 
-    private function getDepartmentsForUser($user)
+    private function getInstitutionsForUser($user)
     {
-        if ($user->hasRole('boss')) {
-            return Department::where('is_active', true)->get();
-        } elseif ($user->hasRole('archid')) {
-            $churchIds = Church::where('archid_id', $user->id)->pluck('id');
-            return Department::whereIn('church_id', $churchIds)->where('is_active', true)->get();
-        } else {
-            return Department::where('church_id', $user->church_id)->where('is_active', true)->get();
-        }
+        // Institutions are global, so all users can see all active institutions
+        return \App\Models\Institution::where('is_active', true)->orderBy('name')->get();
     }
 }

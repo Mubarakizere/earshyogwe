@@ -46,7 +46,7 @@
                     <div class="relative z-10">
                         <p class="text-teal-100 text-xs font-bold uppercase tracking-wider">Total Workers</p>
                         <h3 class="text-3xl font-bold mt-1">{{ number_format($stats['total']) }}</h3>
-                        <p class="text-xs text-teal-100 mt-1">Across all departments</p>
+                        <p class="text-xs text-teal-100 mt-1">Across all institutions</p>
                     </div>
                     <div class="absolute right-0 bottom-0 opacity-10 transform translate-x-2 translate-y-2">
                         <svg class="w-24 h-24" fill="currentColor" viewBox="0 0 20 20">
@@ -118,13 +118,13 @@
                             @endif
                         </div>
 
-                         <!-- Department Filter -->
+                         <!-- Institution Filter -->
                          <div class="md:col-span-2">
-                             <label for="department_id" class="block text-xs font-medium text-gray-500 mb-1">Department</label>
-                             <select name="department_id" id="department_id" class="focus:ring-teal-500 focus:border-teal-500 block w-full sm:text-sm border-gray-300 rounded-md">
-                                 <option value="">All Depts</option>
-                                 @foreach($departments as $dept)
-                                     <option value="{{ $dept->id }}" {{ request('department_id') == $dept->id ? 'selected' : '' }}>{{ $dept->name }}</option>
+                             <label for="institution_id" class="block text-xs font-medium text-gray-500 mb-1">Institution</label>
+                             <select name="institution_id" id="institution_id" class="focus:ring-teal-500 focus:border-teal-500 block w-full sm:text-sm border-gray-300 rounded-md">
+                                 <option value="">All Institutions</option>
+                                 @foreach($institutions as $institution)
+                                     <option value="{{ $institution->id }}" {{ request('institution_id') == $institution->id ? 'selected' : '' }}>{{ $institution->name }}</option>
                                  @endforeach
                              </select>
                          </div>
@@ -145,7 +145,7 @@
                             <button type="submit" class="w-full bg-gray-800 border border-transparent rounded-md shadow-sm py-2 px-2 inline-flex justify-center text-sm font-medium text-white hover:bg-gray-900 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-teal-500 transition">
                                 <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z"></path></svg>
                             </button>
-                            @if(request()->hasAny(['search', 'church_id', 'department_id', 'status']))
+                            @if(request()->hasAny(['search', 'church_id', 'institution_id', 'status']))
                                 <a href="{{ route('workers.index') }}" class="bg-white border border-gray-300 rounded-md shadow-sm py-2 px-2 inline-flex justify-center text-gray-700 hover:bg-gray-50 hover:text-gray-900 transition" title="Clear Filters">
                                     <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
                                 </a>
