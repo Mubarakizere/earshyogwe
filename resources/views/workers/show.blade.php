@@ -156,24 +156,39 @@
                     </div>
                     <div class="p-6">
                         @if($worker->documents->count() > 0)
-                            <ul class="space-y-3">
+                            <div class="grid grid-cols-1 gap-3">
                                 @foreach($worker->documents as $document)
-                                    <li class="flex items-center justify-between p-3 bg-gray-50 rounded-lg border border-gray-200 hover:bg-gray-100 transition">
-                                        <div class="flex items-center space-x-3">
-                                            <svg class="w-6 h-6 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z"></path>
-                                            </svg>
-                                            <div>
-                                                <p class="text-sm font-medium text-gray-900">{{ $document->document_name }}</p>
-                                                <p class="text-xs text-gray-500">Uploaded {{ $document->created_at->format('M d, Y') }}</p>
+                                    @php
+                                        $extension = strtolower(pathinfo($document->file_path, PATHINFO_EXTENSION));
+                                        $type = in_array($extension, ['jpg', 'jpeg', 'png', 'gif']) ? 'image' : ($extension === 'pdf' ? 'pdf' : 'other');
+                                        $url = Storage::url($document->file_path);
+                                    @endphp
+                                    
+                                    @if($type === 'other')
+                                        <a href="{{ $url }}" download class="block p-4 border border-gray-200 rounded-lg hover:shadow-md transition bg-gray-50 hover:bg-white group">
+                                            <div class="flex items-center gap-3">
+                                                <svg class="w-8 h-8 text-gray-400 group-hover:text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
+                                                <div class="overflow-hidden flex-1">
+                                                    <p class="text-sm font-medium text-gray-900 truncate">{{ $document->document_name }}</p>
+                                                    <p class="text-xs text-blue-500">Download File</p>
+                                                </div>
                                             </div>
-                                        </div>
-                                        <a href="{{ route('worker-documents.download', $document) }}" class="text-blue-600 hover:text-blue-800 text-sm font-medium">
-                                            Download
                                         </a>
-                                    </li>
+                                    @else
+                                        <button type="button" 
+                                            @click="$dispatch('open-document-modal', { url: '{{ $url }}', type: '{{ $type }}' })"
+                                            class="block w-full text-left p-4 border border-gray-200 rounded-lg hover:shadow-md transition bg-gray-50 hover:bg-white group focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                            <div class="flex items-center gap-3">
+                                                <svg class="w-8 h-8 text-gray-400 group-hover:text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path></svg>
+                                                <div class="overflow-hidden flex-1">
+                                                    <p class="text-sm font-medium text-gray-900 truncate">{{ $document->document_name }}</p>
+                                                    <p class="text-xs text-gray-500">Click to View</p>
+                                                </div>
+                                            </div>
+                                        </button>
+                                    @endif
                                 @endforeach
-                            </ul>
+                            </div>
                         @else
                             <div class="text-center py-8">
                                 <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -183,6 +198,48 @@
                             </div>
                         @endif
                     </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Document Viewer Modal -->
+    <div x-data="{ open: false, url: '', type: '' }" 
+         @keydown.escape.window="open = false"
+         x-show="open" 
+         class="fixed inset-0 z-50 overflow-y-auto" 
+         style="display: none;"
+         x-on:open-document-modal.window="
+            open = true; 
+            url = $event.detail.url;
+            type = $event.detail.type;
+         ">
+        <div class="flex items-center justify-center min-h-screen text-center sm:p-0">
+            <div x-show="open" class="fixed inset-0 transition-opacity" aria-hidden="true" @click="open = false">
+                <div class="absolute inset-0 bg-gray-900 opacity-95"></div>
+            </div>
+            
+            <button @click="open = false" class="fixed top-4 right-4 text-white hover:text-gray-300 z-[60] focus:outline-none p-2 bg-black bg-opacity-20 rounded-full">
+                <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+            </button>
+
+            <div x-show="open" 
+                 class="relative bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all w-full h-full sm:h-auto sm:w-full sm:max-w-5xl max-h-[95vh] flex flex-col">
+                <div class="bg-gray-100 px-4 py-3 border-b flex justify-between items-center shrink-0">
+                    <h3 class="text-lg font-medium text-gray-900">Document Viewer</h3>
+                    <a :href="url" download class="text-blue-600 hover:text-blue-800 text-sm font-medium flex items-center">
+                        <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
+                        Download
+                    </a>
+                </div>
+                
+                <div class="overflow-auto p-2 sm:p-4 flex-1 bg-gray-50 flex items-center justify-center min-h-[50vh]">
+                    <template x-if="type === 'image'">
+                        <img :src="url" class="max-w-full max-h-[85vh] object-contain shadow-sm rounded">
+                    </template>
+                    <template x-if="type === 'pdf'">
+                        <iframe :src="url" class="w-full h-[85vh] border-0 rounded shadow-sm bg-white"></iframe>
+                    </template>
                 </div>
             </div>
         </div>
