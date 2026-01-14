@@ -144,6 +144,7 @@
                         <!-- Add New Documents Section -->
                         <div>
                             <h3 class="text-lg font-semibold text-gray-900 mb-4 border-b pb-2">Add New Documents (Optional)</h3>
+                            <p class="text-sm text-gray-600 mb-4">Accepted: PDF, Word (DOC/DOCX), Images (JPG/PNG/GIF). Max size: 20MB per file.</p>
                             
                             <div id="documents-container" class="space-y-3">
                                 <div class="document-row grid grid-cols-12 gap-3">
@@ -151,7 +152,7 @@
                                         <input type="text" name="document_names[]" placeholder="Document name" class="w-full px-4 py-2 border border-gray-300 rounded-lg text-sm">
                                     </div>
                                     <div class="col-span-6">
-                                        <input type="file" name="documents[]" class="w-full px-4 py-2 border border-gray-300 rounded-lg text-sm">
+                                        <input type="file" name="documents[]" accept=".pdf,.doc,.docx,.jpg,.jpeg,.png,.gif" class="w-full px-4 py-2 border border-gray-300 rounded-lg text-sm">
                                     </div>
                                     <div class="col-span-1"></div>
                                 </div>
@@ -207,7 +208,7 @@
                     <input type="text" name="document_names[]" placeholder="Document name" class="w-full px-4 py-2 border border-gray-300 rounded-lg text-sm">
                 </div>
                 <div class="col-span-6">
-                    <input type="file" name="documents[]" class="w-full px-4 py-2 border border-gray-300 rounded-lg text-sm">
+                    <input type="file" name="documents[]" accept=".pdf,.doc,.docx,.jpg,.jpeg,.png,.gif" class="w-full px-4 py-2 border border-gray-300 rounded-lg text-sm">
                 </div>
                 <div class="col-span-1">
                     <button type="button" onclick="this.closest('.document-row').remove()" class="text-red-600 hover:text-red-800 text-sm font-medium">Remove</button>
