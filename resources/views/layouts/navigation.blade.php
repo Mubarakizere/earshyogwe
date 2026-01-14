@@ -14,48 +14,48 @@
                 <!-- Navigation Links -->
                 <div class="hidden space-x-6 sm:-my-px sm:ms-10 sm:flex">
                     <x-nav-link :href="route('dashboard')" :active="request()->routeIs('dashboard')" class="text-brand-100 hover:text-white border-transparent hover:border-white focus:text-white focus:border-white transition duration-150 ease-in-out">
-                        {{ __('Dashboard') }}
+                        {{ __('navigation.dashboard') }}
                     </x-nav-link>
                     
                     @can('manage giving types')
                         <x-nav-link :href="route('giving-types.index')" :active="request()->routeIs('giving-types.*')" class="text-brand-100 hover:text-white border-transparent hover:border-white transition duration-150 ease-in-out">
-                            {{ __('Giving Types') }}
+                            {{ __('navigation.giving_types') }}
                         </x-nav-link>
                     @endcan
                     
                     @can('enter givings')
                         <x-nav-link :href="route('givings.index')" :active="request()->routeIs('givings.*')" class="text-brand-100 hover:text-white border-transparent hover:border-white transition duration-150 ease-in-out">
-                            {{ __('Givings') }}
+                            {{ __('navigation.givings') }}
                         </x-nav-link>
                     @endcan
                     
                     @can('manage expense categories')
                         <x-nav-link :href="route('expense-categories.index')" :active="request()->routeIs('expense-categories.*')" class="text-brand-100 hover:text-white border-transparent hover:border-white transition duration-150 ease-in-out">
-                            {{ __('Categories') }}
+                            {{ __('navigation.categories') }}
                         </x-nav-link>
                     @endcan
                     
                     <x-nav-link :href="route('expenses.index')" :active="request()->routeIs('expenses.*')" class="text-brand-100 hover:text-white border-transparent hover:border-white transition duration-150 ease-in-out">
-                        {{ __('Expenses') }}
+                        {{ __('navigation.expenses') }}
                     </x-nav-link>
                     
                     <x-nav-link :href="route('evangelism-reports.index')" :active="request()->routeIs('evangelism-reports.*')" class="text-brand-100 hover:text-white border-transparent hover:border-white transition duration-150 ease-in-out">
-                        {{ __('Evangelism') }}
+                        {{ __('navigation.evangelism') }}
                     </x-nav-link>
                     
                     <x-nav-link :href="route('activities.index')" :active="request()->routeIs('activities.*')" class="text-brand-100 hover:text-white border-transparent hover:border-white transition duration-150 ease-in-out">
-                        {{ __('Activities') }}
+                        {{ __('navigation.activities') }}
                     </x-nav-link>
                     
                     <x-nav-link :href="route('workers.index')" :active="request()->routeIs('workers.*')" class="text-brand-100 hover:text-white border-transparent hover:border-white transition duration-150 ease-in-out">
-                        {{ __('HR') }}
+                        {{ __('navigation.hr') }}
                     </x-nav-link>
                     
                     <x-nav-link :href="route('attendances.index')" :active="request()->routeIs('attendances.*')" class="text-brand-100 hover:text-white border-transparent hover:border-white transition duration-150 ease-in-out">
-                        {{ __('Attendance') }}
+                        {{ __('navigation.attendance') }}
                     </x-nav-link>
                     <x-nav-link :href="route('population-censuses.index')" :active="request()->routeIs('population-censuses.*')" class="text-brand-100 hover:text-white border-transparent hover:border-white transition duration-150 ease-in-out">
-                        {{ __('Census') }}
+                        {{ __('navigation.census') }}
                     </x-nav-link>
                 </div>
             </div>
@@ -137,7 +137,7 @@
 
                     <x-slot name="content">
                         <x-dropdown-link :href="route('profile.edit')">
-                            {{ __('Profile') }}
+                            {{ __('navigation.profile') }}
                         </x-dropdown-link>
 
                         <!-- Authentication -->
@@ -146,7 +146,7 @@
                             <x-dropdown-link :href="route('logout')"
                                     onclick="event.preventDefault();
                                                 this.closest('form').submit();">
-                                {{ __('Log Out') }}
+                                {{ __('navigation.log_out') }}
                             </x-dropdown-link>
                         </form>
                     </x-slot>
