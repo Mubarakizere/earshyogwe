@@ -288,6 +288,65 @@ class WorkerController extends Controller
             ->with('success', 'Worker deleted successfully!');
     }
 
+    public function trashed(Request $request)
+    {
+        $this->authorize('delete worker');
+        
+        $user = auth()->user();
+        $query = Worker::onlyTrashed()->with(['institution']);
+        
+        // Apply same role-based filtering as index
+        if ($user->hasRole('pastor')) {
+            $query->where('church_id', $user->church_id);
+        } elseif ($user->hasRole('archid')) {
+            $churchIds = Church::where('archid_id', $user->id)->pluck('id');
+            $query->whereIn('church_id', $churchIds);
+        }
+        
+        // Search in trashed workers
+        if ($request->filled('search')) {
+            $search = $request->search;
+            $query->where(function($q) use ($search) {
+                $q->where('first_name', 'like', "%{$search}%")
+                  ->orWhere('last_name', 'like', "%{$search}%")
+                  ->orWhere('email', 'like', "%{$search}%");
+            });
+        }
+        
+        $workers = $query->latest('deleted_at')->paginate(20)->withQueryString();
+        
+        return view('workers.trashed', compact('workers'));
+    }
+
+    public function restore($id)
+    {
+        $this->authorize('create worker'); // Need create permission to restore
+        
+        $worker = Worker::onlyTrashed()->findOrFail($id);
+        $worker->restore();
+        
+        return redirect()->route('workers.trashed')
+            ->with('success', 'Worker restored successfully!');
+    }
+
+    public function forceDelete($id)
+    {
+        $this->authorize('delete worker');
+        
+        $worker = Worker::onlyTrashed()->findOrFail($id);
+        
+        // Delete associated documents from storage
+        foreach ($worker->documents as $doc) {
+            \Storage::disk('local')->delete($doc->file_path);
+            $doc->delete();
+        }
+        
+        $worker->forceDelete();
+        
+        return redirect()->route('workers.trashed')
+            ->with('success', 'Worker permanently deleted!');
+    }
+
     public function destroyDocument(\App\Models\WorkerDocument $document)
     {
         $this->authorize('edit worker');

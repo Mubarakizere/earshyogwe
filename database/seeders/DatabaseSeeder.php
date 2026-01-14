@@ -18,9 +18,11 @@ class DatabaseSeeder extends Seeder
         // Seed roles and permissions first
         $this->call([
             RoleAndPermissionSeeder::class,
-            GivingTypeSeeder::class,
-            ExpenseCategorySeeder::class,
-            ServiceTypeSeeder::class,
+            // Comment out seeders you don't need to run every time
+            // Uncomment only when you need to reset these specific data
+            // GivingTypeSeeder::class,
+            // ExpenseCategorySeeder::class,
+            // ServiceTypeSeeder::class,
         ]);
 
         // Optional: Uncomment to create test users with roles

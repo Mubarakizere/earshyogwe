@@ -71,6 +71,9 @@ Route::middleware('auth')->group(function () {
     
     // Workers & HR
     Route::get('workers/export', [\App\Http\Controllers\WorkerController::class, 'export'])->name('workers.export');
+    Route::get('workers/trashed', [\App\Http\Controllers\WorkerController::class, 'trashed'])->name('workers.trashed');
+    Route::post('workers/{id}/restore', [\App\Http\Controllers\WorkerController::class, 'restore'])->name('workers.restore');
+    Route::delete('workers/{id}/force-delete', [\App\Http\Controllers\WorkerController::class, 'forceDelete'])->name('workers.force-delete');
     Route::delete('worker-documents/{document}', [\App\Http\Controllers\WorkerController::class, 'destroyDocument'])->name('worker-documents.destroy');
     Route::get('worker-documents/{document}/download', [\App\Http\Controllers\WorkerController::class, 'downloadDocument'])->name('worker-documents.download');
     Route::resource('workers', \App\Http\Controllers\WorkerController::class);
