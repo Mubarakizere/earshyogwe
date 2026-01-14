@@ -242,7 +242,7 @@ class WorkerController extends Controller
 
     public function downloadDocument(\App\Models\WorkerDocument $document)
     {
-        $this->authorize('edit worker');
+        $this->authorize('view worker');
         
         return response()->download(storage_path('app/' . $document->file_path), $document->document_name);
     }

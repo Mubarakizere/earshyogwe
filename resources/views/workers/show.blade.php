@@ -161,7 +161,7 @@
                                     @php
                                         $extension = strtolower(pathinfo($document->file_path, PATHINFO_EXTENSION));
                                         $type = in_array($extension, ['jpg', 'jpeg', 'png', 'gif']) ? 'image' : ($extension === 'pdf' ? 'pdf' : 'other');
-                                        $url = Storage::url($document->file_path);
+                                        $url = route('worker-documents.download', $document);
                                     @endphp
                                     
                                     @if($type === 'other')
