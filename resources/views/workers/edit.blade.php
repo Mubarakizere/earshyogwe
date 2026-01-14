@@ -123,7 +123,7 @@
                         @if($worker->documents->count() > 0)
                         <div>
                             <h3 class="text-lg font-semibold text-gray-900 mb-4 border-b pb-2">Existing Documents</h3>
-                            <div class="space-y-2" x-data="{ deleteDocId: null, deleteDocOpen: false }">
+                            <div class="space-y-2">
                                 @foreach($worker->documents as $document)
                                     <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
                                         <div>
@@ -131,31 +131,12 @@
                                             <p class="text-sm text-gray-500">Added {{ $document->created_at->format('M d, Y') }}</p>
                                         </div>
                                         <button type="button" 
-                                            @click="deleteDocId = {{ $document->id }}; deleteDocOpen = true"
+                                            @click="$dispatch('open-delete-modal', { id: {{ $document->id }} })"
                                             class="text-red-600 hover:text-red-800 text-sm font-medium">
                                             Delete
                                         </button>
                                     </div>
                                 @endforeach
-                                
-                                <!-- Delete Confirmation Modal -->
-                                <div x-show="deleteDocOpen" style="display: none;" class="fixed inset-0 z-50 overflow-y-auto">
-                                    <div class="flex items-center justify-center min-h-screen px-4">
-                                        <div x-show="deleteDocOpen" class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" @click="deleteDocOpen = false"></div>
-                                        <div x-show="deleteDocOpen" class="relative bg-white rounded-lg shadow-xl max-w-md w-full p-6">
-                                            <h3 class="text-lg font-medium text-gray-900 mb-4">Delete Document?</h3>
-                                            <p class="text-sm text-gray-500 mb-6">Are you sure you want to delete this document? This action cannot be undone.</p>
-                                            <div class="flex justify-end gap-3">
-                                                <button type="button" @click="deleteDocOpen = false" class="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50">Cancel</button>
-                                                <form :action="`{{ url('worker-documents') }}/${deleteDocId}`" method="POST">
-                                                    @csrf
-                                                    @method('DELETE')
-                                                    <button type="submit" class="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg">Delete</button>
-                                                </form>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
                             </div>
                         </div>
                         @endif
@@ -191,6 +172,30 @@
             </div>
         </div>
     </div>
+
+    <!-- Delete Document Confirmation Modal (MOVED OUTSIDE MAIN FORM) -->
+    @if($worker->documents->count() > 0)
+    <div x-data="{ deleteDocId: null, deleteDocOpen: false }" 
+         @open-delete-modal.window="deleteDocId = $event.detail.id; deleteDocOpen = true">
+        <div x-show="deleteDocOpen" style="display: none;" class="fixed inset-0 z-50 overflow-y-auto">
+            <div class="flex items-center justify-center min-h-screen px-4">
+                <div x-show="deleteDocOpen" class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" @click="deleteDocOpen = false"></div>
+                <div x-show="deleteDocOpen" class="relative bg-white rounded-lg shadow-xl max-w-md w-full p-6">
+                    <h3 class="text-lg font-medium text-gray-900 mb-4">Delete Document?</h3>
+                    <p class="text-sm text-gray-500 mb-6">Are you sure you want to delete this document? This action cannot be undone.</p>
+                    <div class="flex justify-end gap-3">
+                        <button type="button" @click="deleteDocOpen = false" class="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50">Cancel</button>
+                        <form :action="`{{ url('worker-documents') }}/${deleteDocId}`" method="POST">
+                            @csrf
+                            @method('DELETE')
+                            <button type="submit" class="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg">Delete</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    @endif
 
     <script>
         function addDocumentRow() {

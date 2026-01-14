@@ -242,7 +242,10 @@ class WorkerController extends Controller
 
     public function downloadDocument(\App\Models\WorkerDocument $document)
     {
-        $this->authorize('view worker');
+        // Allow any user with worker management permissions to download documents
+        if (!\Gate::any(['manage all workers', 'manage assigned workers', 'manage own workers'])) {
+            abort(403, 'This action is unauthorized.');
+        }
         
         return response()->download(storage_path('app/' . $document->file_path), $document->document_name);
     }
