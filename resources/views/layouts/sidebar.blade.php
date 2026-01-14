@@ -99,49 +99,93 @@
                     <path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd" />
                 </svg>
             </button>
-            <div x-show="open" x-collapse class="space-y-1 pl-9">
-                 @canany(['manage all workers', 'manage assigned workers', 'manage own workers'])
-                    <a href="{{ route('workers.index') }}" class="group flex items-center px-2 py-2 text-sm font-medium rounded-md hover:text-white hover:bg-brand-800 {{ request()->routeIs('workers.*') ? 'text-white bg-brand-800' : 'text-brand-200' }}">
-                        HR / Workers
-                    </a>
+            <div x-show="open" x-collapse class="space-y-1 pl-6">
+                
+                <!-- System & Security Sub-group -->
+                @canany(['manage users', 'manage roles', 'view activity logs'])
+                <div x-data="{ systemOpen: {{ request()->routeIs('users.*') || request()->routeIs('roles.*') || request()->routeIs('activity-logs.*') ? 'true' : 'false' }} }" class="space-y-1">
+                    <button @click="systemOpen = !systemOpen" class="flex items-center w-full px-2 py-2 text-xs font-medium rounded-md hover:bg-brand-800 hover:text-white transition-colors" :class="{ 'text-white': systemOpen, 'text-brand-300': !systemOpen }">
+                        <svg class="w-4 h-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" /></svg>
+                        <span class="flex-1 text-left">System & Security</span>
+                        <svg :class="{ 'rotate-90': systemOpen }" class="w-3 h-3 ml-auto transform transition-transform" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd" />
+                        </svg>
+                    </button>
+                    <div x-show="systemOpen" x-collapse class="space-y-1 pl-6">
+                        @can('manage users')
+                            <a href="{{ route('users.index') }}" class="group flex items-center px-2 py-1.5 text-xs font-medium rounded-md hover:text-white hover:bg-brand-800 {{ request()->routeIs('users.*') ? 'text-white bg-brand-800' : 'text-brand-200' }}">
+                                Users
+                            </a>
+                        @endcan
+                        @can('manage roles')
+                            <a href="{{ route('roles.index') }}" class="group flex items-center px-2 py-1.5 text-xs font-medium rounded-md hover:text-white hover:bg-brand-800 {{ request()->routeIs('roles.*') ? 'text-white bg-brand-800' : 'text-brand-200' }}">
+                                Roles
+                            </a>
+                        @endcan
+                        @can('view activity logs')
+                            <a href="{{ route('activity-logs.index') }}" class="group flex items-center px-2 py-1.5 text-xs font-medium rounded-md hover:text-white hover:bg-brand-800 {{ request()->routeIs('activity-logs.*') ? 'text-white bg-brand-800' : 'text-brand-200' }}">
+                                Audit Logs
+                            </a>
+                        @endcan
+                    </div>
+                </div>
+                @endcanany
+
+                <!-- HR Management Sub-group -->
+                @canany(['manage all workers', 'manage assigned workers', 'manage own workers', 'manage institutions'])
+                <div x-data="{ hrOpen: {{ request()->routeIs('workers.*') || request()->routeIs('institutions.*') ? 'true' : 'false' }} }" class="space-y-1">
+                    <button @click="hrOpen = !hrOpen" class="flex items-center w-full px-2 py-2 text-xs font-medium rounded-md hover:bg-brand-800 hover:text-white transition-colors" :class="{ 'text-white': hrOpen, 'text-brand-300': !hrOpen }">
+                        <svg class="w-4 h-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" /></svg>
+                        <span class="flex-1 text-left">HR Management</span>
+                        <svg :class="{ 'rotate-90': hrOpen }" class="w-3 h-3 ml-auto transform transition-transform" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd" />
+                        </svg>
+                    </button>
+                    <div x-show="hrOpen" x-collapse class="space-y-1 pl-6">
+                        @canany(['manage all workers', 'manage assigned workers', 'manage own workers'])
+                            <a href="{{ route('workers.index') }}" class="group flex items-center px-2 py-1.5 text-xs font-medium rounded-md hover:text-white hover:bg-brand-800 {{ request()->routeIs('workers.*') ? 'text-white bg-brand-800' : 'text-brand-200' }}">
+                                Workers
+                            </a>
+                        @endcanany
+                        @can('manage institutions')
+                            <a href="{{ route('institutions.index') }}" class="group flex items-center px-2 py-1.5 text-xs font-medium rounded-md hover:text-white hover:bg-brand-800 {{ request()->routeIs('institutions.*') ? 'text-white bg-brand-800' : 'text-brand-200' }}">
+                                Institutions
+                            </a>
+                        @endcan
+                    </div>
+                </div>
+                @endcanany
+
+                <!-- Settings Sub-group -->
+                @canany(['manage giving types', 'manage expense categories', 'manage service types'])
+                <div x-data="{ settingsOpen: {{ request()->routeIs('giving-types.*') || request()->routeIs('expense-categories.*') || request()->routeIs('service-types.*') ? 'true' : 'false' }} }" class="space-y-1">
+                    <button @click="settingsOpen = !settingsOpen" class="flex items-center w-full px-2 py-2 text-xs font-medium rounded-md hover:bg-brand-800 hover:text-white transition-colors" :class="{ 'text-white': settingsOpen, 'text-brand-300': !settingsOpen }">
+                        <svg class="w-4 h-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4" /></svg>
+                        <span class="flex-1 text-left">Settings</span>
+                        <svg :class="{ 'rotate-90': settingsOpen }" class="w-3 h-3 ml-auto transform transition-transform" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd" />
+                        </svg>
+                    </button>
+                    <div x-show="settingsOpen" x-collapse class="space-y-1 pl-6">
+                        @can('manage giving types')
+                            <a href="{{ route('giving-types.index') }}" class="group flex items-center px-2 py-1.5 text-xs font-medium rounded-md hover:text-white hover:bg-brand-800 {{ request()->routeIs('giving-types.*') ? 'text-white bg-brand-800' : 'text-brand-200' }}">
+                                Offerings Types
+                            </a>
+                        @endcan
+                        @can('manage expense categories')
+                            <a href="{{ route('expense-categories.index') }}" class="group flex items-center px-2 py-1.5 text-xs font-medium rounded-md hover:text-white hover:bg-brand-800 {{ request()->routeIs('expense-categories.*') ? 'text-white bg-brand-800' : 'text-brand-200' }}">
+                                Expense Cats
+                            </a>
+                        @endcan
+                        @can('manage service types')
+                            <a href="{{ route('service-types.index') }}" class="group flex items-center px-2 py-1.5 text-xs font-medium rounded-md hover:text-white hover:bg-brand-800 {{ request()->routeIs('service-types.*') ? 'text-white bg-brand-800' : 'text-brand-200' }}">
+                                Service Types
+                            </a>
+                        @endcan
+                    </div>
+                </div>
                 @endcanany
                 
-                @can('manage institutions')
-                    <a href="{{ route('institutions.index') }}" class="group flex items-center px-2 py-2 text-sm font-medium rounded-md hover:text-white hover:bg-brand-800 {{ request()->routeIs('institutions.*') ? 'text-white bg-brand-800' : 'text-brand-200' }}">
-                        Institutions
-                    </a>
-                @endcan
-
-                 @can('manage users')
-                    <a href="{{ route('users.index') }}" class="group flex items-center px-2 py-2 text-sm font-medium rounded-md hover:text-white hover:bg-brand-800 {{ request()->routeIs('users.*') ? 'text-white bg-brand-800' : 'text-brand-200' }}">
-                        Users
-                    </a>
-                @endcan
-                @can('manage roles')
-                    <a href="{{ route('roles.index') }}" class="group flex items-center px-2 py-2 text-sm font-medium rounded-md hover:text-white hover:bg-brand-800 {{ request()->routeIs('roles.*') ? 'text-white bg-brand-800' : 'text-brand-200' }}">
-                        Roles
-                    </a>
-                @endcan
-                @can('view activity logs')
-                    <a href="{{ route('activity-logs.index') }}" class="group flex items-center px-2 py-2 text-sm font-medium rounded-md hover:text-white hover:bg-brand-800 {{ request()->routeIs('activity-logs.*') ? 'text-white bg-brand-800' : 'text-brand-200' }}">
-                        Audit Logs
-                    </a>
-                @endcan
-                @can('manage giving types')
-                     <a href="{{ route('giving-types.index') }}" class="group flex items-center px-2 py-2 text-sm font-medium rounded-md hover:text-white hover:bg-brand-800 {{ request()->routeIs('giving-types.*') ? 'text-white bg-brand-800' : 'text-brand-200' }}">
-                        Offerings Types
-                    </a>
-                @endcan
-                @can('manage expense categories')
-                     <a href="{{ route('expense-categories.index') }}" class="group flex items-center px-2 py-2 text-sm font-medium rounded-md hover:text-white hover:bg-brand-800 {{ request()->routeIs('expense-categories.*') ? 'text-white bg-brand-800' : 'text-brand-200' }}">
-                        Expense Cats
-                    </a>
-                @endcan
-                @can('manage service types')
-                     <a href="{{ route('service-types.index') }}" class="group flex items-center px-2 py-2 text-sm font-medium rounded-md hover:text-white hover:bg-brand-800 {{ request()->routeIs('service-types.*') ? 'text-white bg-brand-800' : 'text-brand-200' }}">
-                        Service Types
-                    </a>
-                @endcan
             </div>
         </div>
 
