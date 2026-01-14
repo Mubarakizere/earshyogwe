@@ -221,8 +221,8 @@
                                         onclick="openQuickView({
                                             type: 'giving',
                                             title: 'Giving Details',
-                                            church: '{{ addslashes($giving->church->name) }}',
-                                            category: '{{ addslashes($giving->givingType->name) }}',
+                                            church: '{{ addslashes($giving->church?->name ?? 'N/A') }}',
+                                            category: '{{ addslashes($giving->givingType?->name ?? 'N/A') }}',
                                             amount: '{{ number_format($giving->amount) }} RWF',
                                             date: '{{ $giving->created_at->format('M d, Y') }}',
                                             user: '{{ $giving->user ? addslashes($giving->user->name) : 'System' }}'
@@ -233,8 +233,8 @@
                                                      <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
                                                 </div>
                                                 <div>
-                                                    <p class="text-sm font-semibold text-gray-900 group-hover:text-brand-600 transition-colors">{{ $giving->church->name }}</p>
-                                                    <p class="text-xs text-gray-500">{{ $giving->givingType->name }}</p>
+                                                    <p class="text-sm font-semibold text-gray-900 group-hover:text-brand-600 transition-colors">{{ $giving->church?->name ?? 'N/A' }}</p>
+                                                    <p class="text-xs text-gray-500">{{ $giving->givingType?->name ?? 'N/A' }}</p>
                                                 </div>
                                             </div>
                                         </td>
@@ -279,8 +279,8 @@
                                         onclick="openQuickView({
                                             type: 'expense',
                                             title: 'Expense Details',
-                                            church: '{{ addslashes($expense->church->name) }}',
-                                            category: '{{ addslashes($expense->expenseCategory->name) }}',
+                                            church: '{{ addslashes($expense->church?->name ?? 'N/A') }}',
+                                            category: '{{ addslashes($expense->expenseCategory?->name ?? 'N/A') }}',
                                             amount: '{{ number_format($expense->amount) }} RWF',
                                             description: '{{ addslashes($expense->description ?? '') }}',
                                             date: '{{ $expense->created_at->format('M d, Y') }}'
@@ -291,8 +291,8 @@
                                                       <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" /></svg>
                                                 </div>
                                                 <div>
-                                                    <p class="text-sm font-semibold text-gray-900 group-hover:text-brand-600 transition-colors">{{ $expense->church->name }}</p>
-                                                    <p class="text-xs text-gray-500">{{ $expense->expenseCategory->name }}</p>
+                                                    <p class="text-sm font-semibold text-gray-900 group-hover:text-brand-600 transition-colors">{{ $expense->church?->name ?? 'N/A' }}</p>
+                                                    <p class="text-xs text-gray-500">{{ $expense->expenseCategory?->name ?? 'N/A' }}</p>
                                                 </div>
                                             </div>
                                         </td>

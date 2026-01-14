@@ -127,6 +127,7 @@ class WorkerController extends Controller
     {
         $this->authorize('create worker');
         $validated = $request->validate([
+            'church_id' => 'nullable|exists:churches,id',
             'institution_id' => 'nullable|exists:institutions,id',
             'first_name' => 'required|string|max:255',
             'last_name' => 'required|string|max:255',
