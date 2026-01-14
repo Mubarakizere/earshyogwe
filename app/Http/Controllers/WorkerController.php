@@ -126,6 +126,30 @@ class WorkerController extends Controller
     public function store(Request $request)
     {
         $this->authorize('create worker');
+        
+        // DEBUG LOGGING - Track file uploads
+        \Log::info('=== WORKER CREATION ATTEMPT ===', [
+            'has_files' => $request->hasFile('documents'),
+            'files_count' => $request->file('documents') ? count($request->file('documents')) : 0,
+            'content_length' => $request->header('Content-Length'),
+        ]);
+        
+        // Log each file's details
+        if ($request->hasFile('documents')) {
+            foreach ($request->file('documents') as $index => $file) {
+                if ($file) {
+                    \Log::info("File #{$index}", [
+                        'name' => $file->getClientOriginalName(),
+                        'mime' => $file->getMimeType(),
+                        'size_mb' => round($file->getSize() / 1024 / 1024, 2),
+                        'is_valid' => $file->isValid(),
+                        'error_code' => $file->getError(),
+                    ]);
+                }
+            }
+        }
+        
+        try {
         $validated = $request->validate([
             'church_id' => 'nullable|exists:churches,id',
             'institution_id' => 'nullable|exists:institutions,id',
@@ -164,6 +188,20 @@ class WorkerController extends Controller
 
         return redirect()->route('workers.index')
             ->with('success', 'Worker added successfully!');
+            
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            \Log::error('=== VALIDATION FAILED ===', [
+                'errors' => $e->errors(),
+            ]);
+            throw $e;
+        } catch (\Exception $e) {
+            \Log::error('=== ERROR CREATING WORKER ===', [
+                'message' => $e->getMessage(),
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+            ]);
+            return back()->withInput()->withErrors(['error' => $e->getMessage()]);
+        }
     }
 
     public function show(Worker $worker)
