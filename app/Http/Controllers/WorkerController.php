@@ -158,7 +158,7 @@ class WorkerController extends Controller
             'gender' => 'required|in:male,female',
             'national_id' => 'nullable|string|max:16',
             'education_qualification' => 'nullable|string|max:255',
-            'email' => 'required|email|unique:workers,email',
+            'email' => 'required|email|unique:workers,email,NULL,id,deleted_at,NULL',
             'phone' => 'nullable|string|max:20',
             'district' => 'nullable|string|max:255',
             'sector' => 'nullable|string|max:255',
@@ -228,7 +228,7 @@ class WorkerController extends Controller
             'gender' => 'required|in:male,female',
             'national_id' => 'nullable|string|max:16',
             'education_qualification' => 'nullable|string|max:255',
-            'email' => 'required|email|unique:workers,email,' . $worker->id,
+            'email' => 'required|email|unique:workers,email,' . $worker->id . ',id,deleted_at,NULL',
             'phone' => 'nullable|string|max:20',
             'district' => 'nullable|string|max:255',
             'sector' => 'nullable|string|max:255',
@@ -285,7 +285,19 @@ class WorkerController extends Controller
             abort(403, 'This action is unauthorized.');
         }
         
-        return response()->download(storage_path('app/' . $document->file_path), $document->document_name);
+        $filePath = storage_path('app/private/' . $document->file_path);
+        
+        // Check if file exists
+        if (!file_exists($filePath)) {
+            \Log::error('File not found for download', [
+                'document_id' => $document->id,
+                'expected_path' => $filePath,
+                'stored_path' => $document->file_path,
+            ]);
+            abort(404, 'File not found');
+        }
+        
+        return response()->download($filePath, $document->document_name);
     }
 
     private function getChurchesForUser($user)
