@@ -81,6 +81,18 @@ return [
     'locale' => env('APP_LOCALE', 'en'),
 
     'fallback_locale' => env('APP_FALLBACK_LOCALE', 'en'),
+    
+    /*
+    |--------------------------------------------------------------------------
+    | Available Locales
+    |--------------------------------------------------------------------------
+    |
+    | List of all supported locales for multi-language support.
+    | en = English, rw = Kinyarwanda, sw = Swahili, fr = French
+    |
+    */
+    
+    'available_locales' => ['en', 'rw', 'sw', 'fr'],
 
     'faker_locale' => env('APP_FAKER_LOCALE', 'en_US'),
 

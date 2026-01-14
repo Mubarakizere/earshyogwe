@@ -61,9 +61,54 @@
             </div>
 
             <!-- Settings Dropdown -->
-            <div class="hidden sm:flex sm:items-center sm:ms-6">
+            <div class="hidden sm:flex sm:items-center sm:ms-6 gap-4">
+                <!-- Language Switcher -->
+                <div x-data="{ open: false }" class="relative">
+                    <button @click="open = !open" @click.away="open = false" class="flex items-center gap-2 px-3 py-2 text-sm font-medium text-white hover:bg-brand-600 rounded-lg transition duration-150 ease-in-out">
+                        <span class="text-xl">
+                            @php
+                                $currentLocale = app()->getLocale();
+                                $flags = ['en' => '🇬🇧', 'rw' => '🇷🇼', 'sw' => '🇹🇿', 'fr' => '🇫🇷'];
+                                $names = ['en' => 'EN', 'rw' => 'RW', 'sw' => 'SW', 'fr' => 'FR'];
+                            @endphp
+                            {{ $flags[$currentLocale] ?? '🇬🇧' }}
+                        </span>
+                        <span class="hidden lg:inline">{{ $names[$currentLocale] ?? 'EN' }}</span>
+                        <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd"/>
+                        </svg>
+                    </button>
+                    
+                    <div x-show="open" 
+                         x-transition:enter="transition ease-out duration-200"
+                         x-transition:enter-start="opacity-0 scale-95"
+                         x-transition:enter-end="opacity-100 scale-100"
+                         x-transition:leave="transition ease-in duration-75"
+                         x-transition:leave-start="opacity-100 scale-100"
+                         x-transition:leave-end="opacity-0 scale-95"
+                         class="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg py-1 z-50"
+                         style="display: none;">
+                        <a href="{{ route('language.switch', 'en') }}" class="flex items-center gap-3 px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 {{ app()->getLocale() == 'en' ? 'bg-blue-50 font-semibold' : '' }}">
+                            <span class="text-xl">🇬🇧</span>
+                            <span>English</span>
+                        </a>
+                        <a href="{{ route('language.switch', 'rw') }}" class="flex items-center gap-3 px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 {{ app()->getLocale() == 'rw' ? 'bg-blue-50 font-semibold' : '' }}">
+                            <span class="text-xl">🇷🇼</span>
+                            <span>Kinyarwanda</span>
+                        </a>
+                        <a href="{{ route('language.switch', 'sw') }}" class="flex items-center gap-3 px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 {{ app()->getLocale() == 'sw' ? 'bg-blue-50 font-semibold' : '' }}">
+                            <span class="text-xl">🇹🇿</span>
+                            <span>Swahili</span>
+                        </a>
+                        <a href="{{ route('language.switch', 'fr') }}" class="flex items-center gap-3 px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 {{ app()->getLocale() == 'fr' ? 'bg-blue-50 font-semibold' : '' }}">
+                            <span class="text-xl">🇫🇷</span>
+                            <span>Français</span>
+                        </a>
+                    </div>
+                </div>
+                
                 <!-- Notifications Dropdown -->
-                <div class="text-white mr-4">
+                <div class="text-white">
                     <x-notifications-dropdown /> 
                 </div>
 
