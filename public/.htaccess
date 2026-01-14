@@ -23,3 +23,9 @@
     RewriteCond %{REQUEST_FILENAME} !-f
     RewriteRule ^ index.php [L]
 </IfModule>
+
+# Increase PHP upload limits for document uploads (PDFs, etc.)
+php_value upload_max_filesize 25M
+php_value post_max_size 30M
+php_value max_execution_time 300
+php_value max_input_time 300

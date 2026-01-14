@@ -142,7 +142,7 @@ class WorkerController extends Controller
             'employment_date' => 'required|date',
             'birth_date' => 'nullable|date',
             'document_names.*' => 'nullable|string|max:255',
-            'documents.*' => 'nullable|file|mimes:pdf,doc,docx,jpg,jpeg,png,gif|max:20480',
+            'documents.*' => 'nullable|file|mimes:pdf,doc,docx,jpg,jpeg,png,gif|mimetypes:application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document,image/jpeg,image/png,image/gif|max:20480',
         ]);
 
         $worker = Worker::create($validated);
@@ -199,7 +199,7 @@ class WorkerController extends Controller
             'birth_date' => 'nullable|date',
             'status' => 'required|in:active,retired,terminated',
             'document_names.*' => 'nullable|string|max:255',
-            'documents.*' => 'nullable|file|mimes:pdf,doc,docx,jpg,jpeg,png,gif|max:20480',
+            'documents.*' => 'nullable|file|mimes:pdf,doc,docx,jpg,jpeg,png,gif|mimetypes:application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document,image/jpeg,image/png,image/gif|max:20480',
         ]);
 
         $worker->update($validated);
