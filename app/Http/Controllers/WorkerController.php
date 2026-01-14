@@ -176,7 +176,19 @@ class WorkerController extends Controller
             foreach ($request->file('documents') as $index => $file) {
                 if ($file) {
                     $documentName = $request->document_names[$index] ?? 'Document ' . ($index + 1);
-                    $path = $file->store('worker_documents', 'local');
+                    
+                    // Get original extension
+                    $extension = $file->getClientOriginalExtension();
+                    
+                    // Generate unique filename with extension
+                    $filename = uniqid() . '_' . time() . '.' . $extension;
+                    $path = $file->storeAs('worker_documents', $filename, 'local');
+                    
+                    \Log::info("File saved with extension", [
+                        'original_name' => $file->getClientOriginalName(),
+                        'saved_path' => $path,
+                        'extension' => $extension,
+                    ]);
                     
                     $worker->documents()->create([
                         'document_name' => $documentName,
@@ -247,7 +259,13 @@ class WorkerController extends Controller
             foreach ($request->file('documents') as $index => $file) {
                 if ($file) {
                     $documentName = $request->document_names[$index] ?? 'Document ' . ($index + 1);
-                    $path = $file->store('worker_documents', 'local');
+                    
+                    // Get original extension
+                    $extension = $file->getClientOriginalExtension();
+                    
+                    // Generate unique filename with extension
+                    $filename = uniqid() . '_' . time() . '.' . $extension;
+                    $path = $file->storeAs('worker_documents', $filename, 'local');
                     
                     $worker->documents()->create([
                         'document_name' => $documentName,
@@ -297,7 +315,24 @@ class WorkerController extends Controller
             abort(404, 'File not found');
         }
         
-        return response()->download($filePath, $document->document_name);
+        // Get file extension
+        $extension = strtolower(pathinfo($document->file_path, PATHINFO_EXTENSION));
+        
+        // For PDFs, display inline in browser instead of downloading
+        if ($extension === 'pdf') {
+            return response()->file($filePath, [
+                'Content-Type' => 'application/pdf',
+                'Content-Disposition' => 'inline; filename="' . $document->document_name . '.pdf"'
+            ]);
+        }
+        
+        // For other files, force download with proper extension
+        $filename = $document->document_name;
+        if (!str_ends_with(strtolower($filename), '.' . $extension)) {
+            $filename .= '.' . $extension;
+        }
+        
+        return response()->download($filePath, $filename);
     }
 
     private function getChurchesForUser($user)
