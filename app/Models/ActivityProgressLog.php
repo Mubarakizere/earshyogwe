@@ -49,4 +49,15 @@ class ActivityProgressLog extends Model
     {
         return $query->orderBy('log_date', 'desc');
     }
+
+    /**
+     * Accessors
+     */
+    public function getCumulativeTotalAttribute()
+    {
+        // Sum all logs up to and including this log's date
+        return ActivityProgressLog::where('activity_id', $this->activity_id)
+            ->where('log_date', '<=', $this->log_date)
+            ->sum('progress_value');
+    }
 }

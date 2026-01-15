@@ -362,45 +362,117 @@ class ActivityController extends Controller
     // Progress Logging
     public function addProgressLog(Request $request, Activity $activity)
     {
-        $this->authorize('log activity progress');
-        $this->checkActivityScope($activity);
+        \Log::info('=== Progress Log Submission Started ===');
+        \Log::info('Activity ID: ' . $activity->id);
+        \Log::info('User ID: ' . auth()->id());
+        \Log::info('Request Data: ', $request->all());
+        
+        try {
+            \Log::info('Checking authorization...');
+            $this->authorize('log activity progress');
+            \Log::info('Authorization passed!');
+            
+            \Log::info('Checking activity scope...');
+            $this->checkActivityScope($activity);
+            \Log::info('Activity scope check passed!');
+        } catch (\Exception $e) {
+            \Log::error('Authorization or scope check failed: ' . $e->getMessage());
+            return back()->with('error', 'Authorization failed: ' . $e->getMessage());
+        }
 
-        $validated = $request->validate([
-            'log_date' => 'required|date',
-            'progress_value' => 'required|integer|min:0',
-            'notes' => 'nullable|string',
-            'photos.*' => 'nullable|image|mimes:jpg,jpeg,png|max:5120',
-        ]);
+        \Log::info('Starting validation...');
+        
+        try {
+            $validated = $request->validate([
+                'log_date' => 'required|date',
+                'progress_value' => 'required|integer|min:0',
+                'notes' => 'nullable|string',
+                'photos' => 'nullable|array',
+                'photos.*' => 'nullable|file|mimes:jpg,jpeg,png,gif,webp|max:10240', // 10MB max
+            ]);
+            \Log::info('Validation passed!');
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            \Log::error('Validation failed!');
+            \Log::error('Validation errors: ', $e->errors());
+            throw $e; // Re-throw to show errors to user
+        }
 
-        // Calculate progress percentage
+        \Log::info('Validated Data: ', $validated);
+
+        // Calculate cumulative progress (sum all previous logs + this new value)
+        $previousTotal = \App\Models\ActivityProgressLog::where('activity_id', $activity->id)
+            ->where('log_date', '<', $validated['log_date'])
+            ->sum('progress_value');
+        
+        $cumulativeProgress = $previousTotal + $validated['progress_value'];
+        
+        \Log::info('Previous total: ' . $previousTotal);
+        \Log::info('This period amount: ' . $validated['progress_value']);
+        \Log::info('New cumulative total: ' . $cumulativeProgress);
+
+        // Calculate progress percentage based on cumulative total
         $progress_percentage = $activity->target > 0 
-            ? min(100, round(($validated['progress_value'] / $activity->target) * 100, 2))
+            ? min(100, round(($cumulativeProgress / $activity->target) * 100, 2))
             : 0;
+
+        \Log::info('Calculated Percentage: ' . $progress_percentage);
 
         // Handle photo uploads
         $photoPaths = [];
         if ($request->hasFile('photos')) {
+            \Log::info('Processing ' . count($request->file('photos')) . ' photos');
             foreach ($request->file('photos') as $photo) {
                 $path = $photo->store('activity-progress', 'public');
                 $photoPaths[] = $path;
+                \Log::info('Photo uploaded: ' . $path);
             }
         }
 
-        // Create progress log
-        $progressLog = \App\Models\ActivityProgressLog::create([
+        \Log::info('Photo Paths: ', $photoPaths);
+
+        // Prepare data for insertion
+        $logData = [
             'activity_id' => $activity->id,
-            'logger_id' => auth()->id(),
+            'logged_by' => auth()->id(),
             'log_date' => $validated['log_date'],
-            'progress_value' => $validated['progress_value'],
-            'progress_percentage' => $progress_percentage,
+            'progress_value' => $validated['progress_value'], // Amount added this period
+            'progress_percentage' => $progress_percentage, // Percentage based on cumulative
             'notes' => $validated['notes'] ?? null,
             'photos' => $photoPaths,
-        ]);
+        ];
 
-        // Update activity's current progress to the latest value
-        $activity->update(['current_progress' => $validated['progress_value']]);
+        \Log::info('Data to insert: ', $logData);
 
-        return back()->with('success', 'Progress log added successfully.');
+        try {
+            // Create progress log
+            $progressLog = \App\Models\ActivityProgressLog::create($logData);
+            \Log::info('Progress log created successfully. ID: ' . $progressLog->id);
+
+            // Update activity's current progress to cumulative total
+            $updateData = ['current_progress' => $cumulativeProgress];
+            
+            // Auto-complete when target is reached
+            if ($cumulativeProgress >= $activity->target && $activity->status !== 'completed') {
+                $updateData['status'] = 'completed';
+                \Log::info('Target reached! Auto-completing activity.');
+            }
+            
+            $activity->update($updateData);
+            \Log::info('Activity current_progress updated to: ' . $cumulativeProgress . ' (cumulative total)');
+
+            \Log::info('=== Progress Log Submission Completed Successfully ===');
+            
+            $message = 'Progress log added successfully. Total progress: ' . number_format($cumulativeProgress) . ' ' . $activity->target_unit;
+            if (isset($updateData['status'])) {
+                $message .= ' 🎉 Activity completed!';
+            }
+            
+            return back()->with('success', $message);
+        } catch (\Exception $e) {
+            \Log::error('Error creating progress log: ' . $e->getMessage());
+            \Log::error('Stack trace: ' . $e->getTraceAsString());
+            return back()->with('error', 'Failed to add progress log: ' . $e->getMessage());
+        }
     }
     // END: Approval Workflow values
 

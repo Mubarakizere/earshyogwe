@@ -20,37 +20,70 @@
             </div>
 
             {{-- Timeline List --}}
-            <div class="space-y-4">
+            <div class="space-y-6">
                 @foreach($activity->progressLogs as $log)
-                    <div class="flex gap-4 pb-4 border-b border-gray-200 last:border-b-0">
-                        <div class="flex-shrink-0 w-16 text-center">
-                            <div class="text-xs text-gray-500">{{ $log->log_date->format('M d') }}</div>
-                            <div class="text-2xl font-bold text-purple-600">{{ $log->progress_percentage }}%</div>
+                    <div class="relative pl-8 pb-6 border-l-2 border-purple-200 last:border-l-0 last:pb-0">
+                        {{-- Date badge on timeline --}}
+                        <div class="absolute -left-3 top-0 w-6 h-6 bg-purple-600 rounded-full flex items-center justify-center">
+                            <div class="w-2 h-2 bg-white rounded-full"></div>
                         </div>
-
-                        <div class="flex-grow">
-                            <div class="flex items-center gap-2 mb-1">
-                                <span class="font-medium text-gray-900">{{ number_format($log->progress_value) }} / {{ number_format($activity->target) }}</span>
-                                <span class="text-xs text-gray-500">{{ $activity->target_unit ?? 'units' }}</span>
+                        
+                        <div class="bg-gray-50 rounded-lg p-4 hover:bg-gray-100 transition">
+                            {{-- Header with date and percentage --}}
+                            <div class="flex items-center justify-between mb-3">
+                                <div class="flex items-center gap-3">
+                                    <span class="text-sm font-medium text-gray-600">
+                                        {{ $log->log_date->format('M d, Y') }}
+                                    </span>
+                                    <span class="px-3 py-1 bg-purple-100 text-purple-700 text-sm font-bold rounded-full">
+                                        {{ $log->progress_percentage }}%
+                                    </span>
+                                </div>
+                                <div class="text-right">
+                                    <div class="text-xs text-gray-500 uppercase tracking-wide mb-1">Cumulative Total</div>
+                                    <div class="text-lg font-bold text-gray-900">
+                                        {{ number_format($log->cumulative_total) }} / {{ number_format($activity->target) }}
+                                    </div>
+                                    <div class="text-xs text-gray-500">{{ $activity->target_unit ?? 'units' }}</div>
+                                </div>
                             </div>
 
+                            {{-- Period amount added --}}
+                            <div class="bg-white px-3 py-2 rounded border border-purple-200 mb-3">
+                                <div class="flex items-center justify-between">
+                                    <span class="text-xs text-gray-600">Added this period:</span>
+                                    <span class="text-lg font-bold text-purple-600">+{{ number_format($log->progress_value) }} {{ $activity->target_unit ?? 'units' }}</span>
+                                </div>
+                            </div>
+
+                            {{-- Progress bar --}}
+                            <div class="w-full bg-gray-200 rounded-full h-2 mb-3">
+                                <div class="bg-purple-600 h-2 rounded-full transition-all" style="width: {{ $log->progress_percentage }}%"></div>
+                            </div>
+
+                            {{-- Notes --}}
                             @if($log->notes)
-                                <p class="text-sm text-gray-700 mb-2">{{ $log->notes }}</p>
+                                <p class="text-sm text-gray-700 mb-3 italic bg-white p-2 rounded border-l-4 border-purple-400">{{ $log->notes }}</p>
                             @endif
 
+                            {{-- Photos --}}
                             @if($log->photos && count($log->photos) > 0)
-                                <div class="flex gap-2 flex-wrap">
+                                <div class="flex gap-2 flex-wrap mb-3">
                                     @foreach($log->photos as $photo)
                                         <button type="button" 
                                             @click="$dispatch('open-document-modal', { url: '{{ Storage::url($photo) }}', type: 'image' })"
-                                            class="relative w-20 h-20 rounded overflow-hidden hover:opacity-90 transition">
+                                            class="relative w-24 h-24 rounded-lg overflow-hidden hover:opacity-90 transition border-2 border-gray-200 hover:border-purple-400">
                                             <img src="{{ Storage::url($photo) }}" alt="Progress photo" class="w-full h-full object-cover">
                                         </button>
                                     @endforeach
                                 </div>
                             @endif
 
-                            <div class="text-xs text-gray-400 mt-2">
+                            {{-- Footer with logger info --}}
+                            <div class="text-xs text-gray-500 flex items-center gap-2 pt-2 border-t border-gray-200">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
+                                </svg>
                                 Logged by {{ $log->logger->name }} on {{ $log->created_at->format('M d, Y @ g:i A') }}
                             </div>
                         </div>
@@ -133,6 +166,9 @@
                     <div class="mb-4">
                         <h3 class="text-lg font-medium leading-6 text-gray-900">Log Activity Progress</h3>
                         <p class="text-sm text-gray-500 mt-1">Track: {{ strtolower($activity->tracking_frequency) }}</p>
+                        <p class="text-xs bg-purple-50 text-purple-700 px-3 py-2 rounded mt-2">
+                            💡 <strong>Enter the amount you completed this period</strong>, not the total. The system will calculate the cumulative total automatically.
+                        </p>
                     </div>
 
                     <div class="space-y-4">
@@ -143,10 +179,11 @@
                         </div>
 
                         <div>
-                            <label class="block text-sm font-medium text-gray-700">Progress Value <span class="text-red-500">*</span></label>
-                            <input type="number" name="progress_value" required min="0" value="{{ $activity->current_progress }}"
-                                class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-purple-500 focus:border-purple-500 sm:text-sm">
-                            <p class="text-xs text-gray-500 mt-1">Current: {{ number_format($activity->current_progress) }} / Target: {{ number_format($activity->target) }} {{ $activity->target_unit }}</p>
+                            <label class="block text-sm font-medium text-gray-700">Amount Added This Period <span class="text-red-500">*</span></label>
+                            <input type="number" name="progress_value" required min="0" value="0"
+                                class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-purple-500 focus:border-purple-500 sm:text-sm"
+                                placeholder="e.g., 1500">
+                            <p class="text-xs text-gray-500 mt-1">Current total: {{ number_format($activity->current_progress) }} / Target: {{ number_format($activity->target) }} {{ $activity->target_unit }}</p>
                         </div>
 
                         <div>
@@ -164,7 +201,7 @@
                                     file:text-sm file:font-semibold
                                     file:bg-purple-50 file:text-purple-700
                                     hover:file:bg-purple-100">
-                            <p class="text-xs text-gray-500 mt-1">Upload progress photos (max 5MB each)</p>
+                            <p class="text-xs text-gray-500 mt-1">Upload progress photos (max 10MB each)</p>
                         </div>
                     </div>
 
