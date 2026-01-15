@@ -135,7 +135,7 @@
                                 
                                 <div class="flex items-center justify-between text-xs text-gray-500 mt-auto pt-4 border-t border-gray-100">
                                     <span class="truncate pr-2">By: {{ $expense->enteredBy->name ?? 'Unknown' }}</span>
-                                    <span>{{ $expense->church->name }}</span>
+                                    <span>{{ $expense->church->name ?? 'N/A' }}</span>
                                 </div>
                                 
                                 @if($expense->receipt_path)
