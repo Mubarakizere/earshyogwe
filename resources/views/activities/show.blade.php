@@ -7,6 +7,67 @@
 
     <div class="py-12">
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
+            {{-- Sticky Action Bar --}}
+            <div class="sticky top-0 z-10 bg-white border-b border-gray-200 shadow-sm mb-6 -mt-12 pt-6 pb-4 px-6 -mx-6 sm:-mx-8 sm:px-8">
+                <div class="flex items-center justify-between">
+                    <div class="flex items-center gap-3">
+                        <a href="{{ route('activities.index') }}" 
+                           class="inline-flex items-center px-4 py-2 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 transition">
+                            <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
+                            </svg>
+                            Back to List
+                        </a>
+                        
+                        <span class="text-gray-400">|</span>
+                        
+                        <div class="flex items-center gap-2">
+                            @php
+                                $statusColors = [
+                                    'planned' => 'bg-gray-100 text-gray-800',
+                                    'in_progress' => 'bg-blue-100 text-blue-800',
+                                    'completed' => 'bg-green-100 text-green-800',
+                                    'cancelled' => 'bg-red-100 text-red-800',
+                                ];
+                                $statusLabel = ucfirst(str_replace('_', ' ', $activity->status));
+                            @endphp
+                            <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium {{ $statusColors[$activity->status] ?? 'bg-gray-100 text-gray-800' }}">
+                                {{ $statusLabel }}
+                            </span>
+                            <span class="text-sm text-gray-500">{{ $activity->department->name ?? 'No Department' }}</span>
+                        </div>
+                    </div>
+                    
+                    <div class="flex items-center gap-2">
+                        @can('edit activities')
+                            <a href="{{ route('activities.edit', $activity) }}" 
+                               class="inline-flex items-center px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white text-sm font-medium rounded-lg transition">
+                                <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
+                                </svg>
+                                Edit
+                            </a>
+                        @endcan
+                        
+                        @can('delete activities')
+                            <form action="{{ route('activities.destroy', $activity) }}" method="POST" 
+                                  onsubmit="return confirm('Are you sure you want to delete this activity? This action cannot be undone.');" 
+                                  class="inline">
+                                @csrf
+                                @method('DELETE')
+                                <button type="submit" 
+                                        class="inline-flex items-center px-4 py-2 bg-red-600 hover:bg-red-700 text-white text-sm font-medium rounded-lg transition">
+                                    <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+                                    </svg>
+                                    Delete
+                                </button>
+                            </form>
+                        @endcan
+                    </div>
+                </div>
+            </div>
+            
             <div class="bg-white overflow-hidden shadow-xl rounded-lg">
                 <div class="p-8">
                     <div class="flex justify-between items-start mb-6">
@@ -284,36 +345,22 @@
                         @include('activities.partials.progress-timeline')
                     @endif
 
-                    <!-- Action Buttons -->
-                    <div class="flex items-center justify-end space-x-4 border-t border-gray-200 pt-6">
-                        <a href="{{ route('activities.index') }}" class="px-6 py-2 border border-gray-300 rounded-lg text-gray-700 font-medium hover:bg-gray-50 transition">
-                            Back to List
+                    <!-- Bottom Action Buttons -->
+                    <div class="flex items-center justify-between border-t border-gray-200 pt-6 mt-8">
+                        <a href="{{ route('activities.index') }}" 
+                           class="px-6 py-2 border border-gray-300 rounded-lg text-gray-700 font-medium hover:bg-gray-50 transition">
+                            ← Back to List
                         </a>
                         
                         @if($activity->status === 'in_progress' && $activity->approval_status === 'approved')
                              @can('edit activities')
-                                <button type="button" @click="completionModalOpen = true" class="px-6 py-2 bg-green-600 hover:bg-green-700 text-white font-medium rounded-lg shadow-sm transition flex items-center">
-                                    <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
-                                    Mark Complete
+                                <button type="button" @click="completionModalOpen = true" 
+                                        class="px-6 py-3 bg-green-600 hover:bg-green-700 text-white font-semibold rounded-lg shadow-md transition flex items-center">
+                                    <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+                                    Mark as Complete
                                 </button>
                              @endcan
                         @endif
-
-                        @can('edit activities')
-                            <a href="{{ route('activities.edit', $activity) }}" class="px-6 py-2 bg-purple-600 hover:bg-purple-700 text-white font-medium rounded-lg shadow-sm transition">
-                                Edit Activity
-                            </a>
-                        @endcan
-
-                        @can('delete activities')
-                            <form action="{{ route('activities.destroy', $activity) }}" method="POST" onsubmit="return confirm('Are you sure you want to delete this activity?');">
-                                @csrf
-                                @method('DELETE')
-                                <button type="submit" class="px-6 py-2 bg-red-600 hover:bg-red-700 text-white font-medium rounded-lg shadow-sm transition">
-                                    Delete
-                                </button>
-                            </form>
-                        @endcan
                     </div>
                 </div>
             </div>

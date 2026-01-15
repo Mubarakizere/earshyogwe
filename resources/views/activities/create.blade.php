@@ -4,17 +4,48 @@
     </x-slot>
 
     <div class="py-12">
-        <div class="max-w-6xl mx-auto sm:px-6 lg:px-8">
+        <div class="max-w-5xl mx-auto sm:px-6 lg:px-8">
             <div class="bg-white overflow-hidden shadow-xl rounded-lg">
-                <form action="{{ route('activities.store') }}" method="POST" enctype="multipart/form-data" class="p-8">
+                <form action="{{ route('activities.store') }}" method="POST" enctype="multipart/form-data" 
+                      x-data="{ currentTab: 'basic', hasCustomFields: false }">
                     @csrf
 
-                    <div class="space-y-8">
-                        {{-- Section 1: Basic Information --}}
-                        <div>
-                            <h3 class="text-lg font-semibold text-gray-900 mb-4 pb-2 border-b">Basic Information</h3>
+                    {{-- Tab Navigation --}}
+                    <div class="border-b border-gray-200 bg-gray-50 px-6 pt-6">
+                        <nav class="flex space-x-4" aria-label="Tabs">
+                            <button type="button" @click="currentTab = 'basic'"
+                                :class="currentTab === 'basic' ? 'border-purple-500 text-purple-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'"
+                                class="whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm transition">
+                                <span class="flex items-center gap-2">
+                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                                    Basic Info
+                                </span>
+                            </button>
                             
-                            <div class="grid grid-cols-2 gap-4 mb-4">
+                            <button type="button" @click="currentTab = 'timeline'"
+                                :class="currentTab === 'timeline' ? 'border-purple-500 text-purple-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'"
+                                class="whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm transition">
+                                <span class="flex items-center gap-2">
+                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
+                                    Timeline & Target
+                                </span>
+                            </button>
+                            
+                            <button type="button" @click="currentTab = 'optional'"
+                                :class="currentTab === 'optional' ? 'border-purple-500 text-purple-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'"
+                                class="whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm transition">
+                                <span class="flex items-center gap-2">
+                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4"></path></svg>
+                                    Optional Details
+                                </span>
+                            </button>
+                        </nav>
+                    </div>
+
+                    <div class="p-8">
+                        {{-- TAB 1: BASIC INFO --}}
+                        <div x-show="currentTab === 'basic'" class="space-y-6">
+                            <div class="grid grid-cols-2 gap-6">
                                 @if($churches->count() > 1)
                                     <div>
                                         <label class="block text-sm font-medium text-gray-700 mb-2">Church <span class="text-red-500">*</span></label>
@@ -32,7 +63,9 @@
 
                                 <div>
                                     <label class="block text-sm font-medium text-gray-700 mb-2">Department <span class="text-red-500">*</span></label>
-                                    <select name="department_id" required class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-purple-500 focus:border-purple-500">
+                                    <select name="department_id" required 
+                                            @change="hasCustomFields = {{ collect($departments)->map(function($d) { return ['id' => $d->id, 'has' => \App\Models\CustomFieldDefinition::where('department_id', $d->id)->active()->count() > 0]; })->toJson() }}[event.target.value]?.has || false"
+                                            class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-purple-500 focus:border-purple-500">
                                         <option value="">Select Department</option>
                                         @foreach($departments as $department)
                                             <option value="{{ $department->id }}" {{ old('department_id') == $department->id ? 'selected' : '' }}>{{ $department->name }}</option>
@@ -42,30 +75,32 @@
                                 </div>
                             </div>
 
-                            <div class="mb-4">
+                            <div>
                                 <label class="block text-sm font-medium text-gray-700 mb-2">Activity Name <span class="text-red-500">*</span></label>
-                                <input type="text" name="name" value="{{ old('name') }}" required class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-purple-500 focus:border-purple-500">
+                                <input type="text" name="name" value="{{ old('name') }}" required 
+                                       placeholder="e.g., Bible Distribution Campaign"
+                                       class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-purple-500 focus:border-purple-500">
                                 @error('name') <p class="text-red-500 text-xs mt-1">{{ $message }}</p> @enderror
                             </div>
 
-                            <div class="grid grid-cols-2 gap-4 mb-4">
+                            <div class="grid grid-cols-2 gap-6">
                                 <div>
                                     <label class="block text-sm font-medium text-gray-700 mb-2">Category</label>
                                     <select name="activity_category" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-purple-500 focus:border-purple-500">
                                         <option value="">Select Category</option>
                                         <option value="Evangelism" {{ old('activity_category') == 'Evangelism' ? 'selected' : '' }}>Evangelism</option>
-                                        <option value="Infrastructure" {{ old('activity_category') == 'Infrastructure' ? 'selected' : '' }}>Infrastructure/Development</option>
+                                        <option value="Infrastructure" {{ old('activity_category') == 'Infrastructure' ? 'selected' : '' }}>Infrastructure</option>
                                         <option value="Finance" {{ old('activity_category') == 'Finance' ? 'selected' : '' }}>Finance</option>
-                                        <option value="Training" {{ old('activity_category') == 'Training' ? 'selected' : '' }}>Training/Education</option>
+                                        <option value="Training" {{ old('activity_category') == 'Training' ? 'selected' : '' }}>Training</option>
                                         <option value="Social" {{ old('activity_category') == 'Social' ? 'selected' : '' }}>Social Services</option>
-                                        <option value="Worship" {{ old('activity_category') == 'Worship' ? 'selected' : '' }}>Worship/Liturgy</option>
+                                        <option value="Worship" {{ old('activity_category') == 'Worship' ? 'selected' : '' }}>Worship</option>
                                         <option value="Other" {{ old('activity_category') == 'Other' ? 'selected' : '' }}>Other</option>
                                     </select>
                                     @error('activity_category') <p class="text-red-500 text-xs mt-1">{{ $message }}</p> @enderror
                                 </div>
 
                                 <div>
-                                    <label class="block text-sm font-medium text-gray-700 mb-2">Priority Level <span class="text-red-500">*</span></label>
+                                    <label class="block text-sm font-medium text-gray-700 mb-2">Priority <span class="text-red-500">*</span></label>
                                     <select name="priority_level" required class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-purple-500 focus:border-purple-500">
                                         <option value="low" {{ old('priority_level') == 'low' ? 'selected' : '' }}>Low</option>
                                         <option value="medium" selected {{ old('priority_level') == 'medium' ? 'selected' : '' }}>Medium</option>
@@ -76,131 +111,38 @@
                                 </div>
                             </div>
 
-                            <div class="mb-4">
-                                <label class="block text-sm font-medium text-gray-700 mb-2">Description</label>
-                                <textarea name="description" rows="3" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-purple-500 focus:border-purple-500">{{ old('description') }}</textarea>
-                                <p class="text-xs text-gray-500 mt-1">Brief overview of the activity</p>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Description & Objectives</label>
+                                <textarea name="description" rows="4" 
+                                          placeholder="What is this activity about? What are the goals?"
+                                          class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-purple-500 focus:border-purple-500">{{ old('description') }}</textarea>
+                                <p class="text-xs text-gray-500 mt-1">Brief description and what you want to achieve</p>
                                 @error('description') <p class="text-red-500 text-xs mt-1">{{ $message }}</p> @enderror
                             </div>
 
-                            <div class="mb-4">
-                                <label class="block text-sm font-medium text-gray-700 mb-2">Objectives</label>
-                                <textarea name="objectives" rows="3" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-purple-500 focus:border-purple-500">{{ old('objectives') }}</textarea>
-                                <p class="text-xs text-gray-500 mt-1">Clear, measurable objectives (what do you want to achieve?)</p>
-                                @error('objectives') <p class="text-red-500 text-xs mt-1">{{ $message }}</p> @enderror
-                            </div>
-
-                            <div class="mb-4">
-                                <label class="block text-sm font-medium text-gray-700 mb-2">Expected Outcomes</label>
-                                <textarea name="expected_outcomes" rows="2" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-purple-500 focus:border-purple-500">{{ old('expected_outcomes') }}</textarea>
-                                <p class="text-xs text-gray-500 mt-1">What results/changes do you expect?</p>
-                                @error('expected_outcomes') <p class="text-red-500 text-xs mt-1">{{ $message }}</p> @enderror
+                            <div class="flex justify-end">
+                                <button type="button" @click="currentTab = 'timeline'" 
+                                        class="px-6 py-3 bg-purple-600 hover:bg-purple-700 text-white font-semibold rounded-lg transition">
+                                    Next: Timeline & Target →
+                                </button>
                             </div>
                         </div>
 
-                        {{-- Section 2: Location --}}
-                        <div>
-                            <h3 class="text-lg font-semibold text-gray-900 mb-4 pb-2 border-b">Location</h3>
-                            
-                            <div class="grid grid-cols-2 gap-4">
-                                <div>
-                                    <label class="block text-sm font-medium text-gray-700 mb-2">Location Name</label>
-                                    <input type="text" name="location_name" value="{{ old('location_name') }}" placeholder="e.g., Church Hall, Community Center" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-purple-500 focus:border-purple-500">
-                                    @error('location_name') <p class="text-red-500 text-xs mt-1">{{ $message }}</p> @enderror
-                                </div>
-
-                                <div>
-                                    <label class="block text-sm font-medium text-gray-700 mb-2">Region</label>
-                                    <input type="text" name="location_region" value="{{ old('location_region') }}" placeholder="Province/District/Sector" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-purple-500 focus:border-purple-500">
-                                    <p class="text-xs text-gray-500 mt-1">Administrative location</p>
-                                    @error('location_region') <p class="text-red-500 text-xs mt-1">{{ $message }}</p> @enderror
-                                </div>
-                            </div>
-
-                            <div class="mt-4">
-                                <label class="block text-sm font-medium text-gray-700 mb-2">Address</label>
-                                <textarea name="location_address" rows="2" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-purple-500 focus:border-purple-500">{{ old('location_address') }}</textarea>
-                                @error('location_address') <p class="text-red-500 text-xs mt-1">{{ $message }}</p> @enderror
-                            </div>
-
-                            <div class="mt-4">
-                                <label class="block text-sm font-medium text-gray-700 mb-2">Location on Map (Optional)</label>
-                                <p class="text-xs text-gray-500 mb-2">Click on the map or drag the marker to select the exact location. You can also use your current location.</p>
-                                <x-map-picker 
-                                    latitude="{{ old('location_latitude', '-1.9441') }}" 
-                                    longitude="{{ old('location_longitude', '30.0619') }}" 
-                                    name="location" 
-                                />
-                                @error('location_latitude') <p class="text-red-500 text-xs mt-1">{{ $message }}</p> @enderror
-                                @error('location_longitude') <p class="text-red-500 text-xs mt-1">{{ $message }}</p> @enderror
-                            </div>
-                        </div>
-
-                        {{-- Section 3: Targets & Beneficiaries --}}
-                        <div>
-                            <h3 class="text-lg font-semibold text-gray-900 mb-4 pb-2 border-b">Targets & Beneficiaries</h3>
-                            
-                            <div class="grid grid-cols-3 gap-4 mb-4">
-                                <div>
-                                    <label class="block text-sm font-medium text-gray-700 mb-2">Target Value <span class="text-red-500">*</span></label>
-                                    <input type="number" name="target" value="{{ old('target', 0) }}" required min="0" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-purple-500 focus:border-purple-500">
-                                    @error('target') <p class="text-red-500 text-xs mt-1">{{ $message }}</p> @enderror
-                                </div>
-
-                                <div>
-                                    <label class="block text-sm font-medium text-gray-700 mb-2">Target Unit</label>
-                                    <input type="text" name="target_unit" value="{{ old('target_unit') }}" placeholder="e.g., People, Buildings, RWF" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-purple-500 focus:border-purple-500">
-                                    <p class="text-xs text-gray-500 mt-1">What is being measured?</p>
-                                    @error('target_unit') <p class="text-red-500 text-xs mt-1">{{ $message }}</p> @enderror
-                                </div>
-
-                                <div>
-                                    <label class="block text-sm font-medium text-gray-700 mb-2">Progress Tracking</label>
-                                    <select name="tracking_frequency" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-purple-500 focus:border-purple-500">
-                                        <option value="daily" {{ old('tracking_frequency') == 'daily' ? 'selected' : '' }}>Daily</option>
-                                        <option value="weekly" selected {{ old('tracking_frequency ') == 'weekly' ? 'selected' : '' }}>Weekly</option>
-                                        <option value="biweekly" {{ old('tracking_frequency') == 'biweekly' ? 'selected' : '' }}>Bi-Weekly</option>
-                                        <option value="monthly" {{ old('tracking_frequency') == 'monthly' ? 'selected' : '' }}>Monthly</option>
-                                    </select>
-                                    <p class="text-xs text-gray-500 mt-1">How often to report progress</p>
-                                    @error('tracking_frequency') <p class="text-red-500 text-xs mt-1">{{ $message }}</p> @enderror
-                                </div>
-                            </div>
-
-                            <div class="mb-4">
-                                <label class="block text-sm font-medium text-gray-700 mb-2">Target Beneficiaries</label>
-                                <textarea name="target_beneficiaries" rows="2" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-purple-500 focus:border-purple-500">{{ old('target_beneficiaries') }}</textarea>
-                                <p class="text-xs text-gray-500 mt-1">Who will benefit from this activity?</p>
-                                @error('target_beneficiaries') <p class="text-red-500 text-xs mt-1">{{ $message }}</p> @enderror
-                            </div>
-                        </div>
-
-                        {{-- Section 4: Team & Responsibility --}}
-                        <div>
-                            <h3 class="text-lg font-semibold text-gray-900 mb-4 pb-2 border-b">Team & Responsibility</h3>
-                            
-                            <div class="mb-4">
-                                <label class="block text-sm font-medium text-gray-700 mb-2">Responsible Person</label>
-                                <input type="text" name="responsible_person" value="{{ old('responsible_person') }}" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-purple-500 focus:border-purple-500">
-                                <p class="text-xs text-gray-500 mt-1">Name of the person leading this activity</p>
-                                @error('responsible_person') <p class="text-red-500 text-xs mt-1">{{ $message }}</p> @enderror
-                            </div>
-                        </div>
-
-                        {{-- Section 5: Timeline --}}
-                        <div>
-                            <h3 class="text-lg font-semibold text-gray-900 mb-4 pb-2 border-b">Timeline</h3>
-                            
-                            <div class="grid grid-cols-3 gap-4">
+                        {{-- TAB 2: TIMELINE & TARGET --}}
+                        <div x-show="currentTab === 'timeline'" class="space-y-6">
+                            <div class="grid grid-cols-3 gap-6">
                                 <div>
                                     <label class="block text-sm font-medium text-gray-700 mb-2">Start Date <span class="text-red-500">*</span></label>
-                                    <input type="date" name="start_date" value="{{ old('start_date') }}" required class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-purple-500 focus:border-purple-500">
+                                    <input type="date" name="start_date" value="{{ old('start_date') }}" required 
+                                           class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-purple-500 focus:border-purple-500">
                                     @error('start_date') <p class="text-red-500 text-xs mt-1">{{ $message }}</p> @enderror
                                 </div>
 
                                 <div>
                                     <label class="block text-sm font-medium text-gray-700 mb-2">End Date</label>
-                                    <input type="date" name="end_date" value="{{ old('end_date') }}" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-purple-500 focus:border-purple-500">
+                                    <input type="date" name="end_date" value="{{ old('end_date') }}" 
+                                           class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-purple-500 focus:border-purple-500">
+                                    <p class="text-xs text-gray-500 mt-1">Leave blank if ongoing</p>
                                     @error('end_date') <p class="text-red-500 text-xs mt-1">{{ $message }}</p> @enderror
                                 </div>
 
@@ -210,95 +152,183 @@
                                         <option value="planned" selected {{ old('status') == 'planned' ? 'selected' : '' }}>Planned</option>
                                         <option value="in_progress" {{ old('status') == 'in_progress' ? 'selected' : '' }}>In Progress</option>
                                         <option value="completed" {{ old('status') == 'completed' ? 'selected' : '' }}>Completed</option>
-                                        <option value="cancelled" {{ old('status') == 'cancelled' ? 'selected' : '' }}>Cancelled</option>
                                     </select>
                                     @error('status') <p class="text-red-500 text-xs mt-1">{{ $message }}</p> @enderror
                                 </div>
                             </div>
-                        </div>
 
-                        {{-- Section 6: Budget & Funding --}}
-                        <div>
-                            <h3 class="text-lg font-semibold text-gray-900 mb-4 pb-2 border-b">Budget & Funding</h3>
-                            
-                            <div class="grid grid-cols-2 gap-4">
+                            <div class="grid grid-cols-3 gap-6">
                                 <div>
-                                    <label class="block text-sm font-medium text-gray-700 mb-2">Budget Estimate (RWF)</label>
-                                    <input type="number" name="budget_estimate" value="{{ old('budget_estimate') }}" min="0" step="100" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-purple-500 focus:border-purple-500">
-                                    <p class="text-xs text-gray-500 mt-1">Estimated cost for this activity</p>
-                                    @error('budget_estimate') <p class="text-red-500 text-xs mt-1">{{ $message }}</p> @enderror
+                                    <label class="block text-sm font-medium text-gray-700 mb-2">Target Value <span class="text-red-500">*</span></label>
+                                    <input type="number" name="target" value="{{ old('target', 0) }}" required min="0" 
+                                           placeholder="e.g., 10000"
+                                           class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-purple-500 focus:border-purple-500">
+                                    @error('target') <p class="text-red-500 text-xs mt-1">{{ $message }}</p> @enderror
                                 </div>
 
                                 <div>
-                                    <label class="block text-sm font-medium text-gray-700 mb-2">Funding Source</label>
-                                    <select name="funding_source" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-purple-500 focus:border-purple-500">
-                                        <option value="">Select Source</option>
-                                        <option value="Church" {{ old('funding_source') == 'Church' ? 'selected' : '' }}>Church</option>
-                                        <option value="Diocese" {{ old('funding_source') == 'Diocese' ? 'selected' : '' }}>Diocese</option>
-                                        <option value="Donation" {{ old('funding_source') == 'Donation' ? 'selected' : '' }}>Donation</option>
-                                        <option value="Grant" {{ old('funding_source') == 'Grant' ? 'selected' : '' }}>Grant</option>
-                                        <option value="Government" {{ old('funding_source') == 'Government' ? 'selected' : '' }}>Government</option>
-                                        <option value="Mixed" {{ old('funding_source') == 'Mixed' ? 'selected' : '' }}>Mixed Sources</option>
+                                    <label class="block text-sm font-medium text-gray-700 mb-2">Unit</label>
+                                    <input type="text" name="target_unit" value="{{ old('target_unit') }}" 
+                                           placeholder="e.g., Bibles, People"
+                                           class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-purple-500 focus:border-purple-500">
+                                    <p class="text-xs text-gray-500 mt-1">What are you measuring?</p>
+                                    @error('target_unit') <p class="text-red-500 text-xs mt-1">{{ $message }}</p> @enderror
+                                </div>
+
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-2">Track Progress</label>
+                                    <select name="tracking_frequency" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-purple-500 focus:border-purple-500">
+                                        <option value="daily" {{ old('tracking_frequency') == 'daily' ? 'selected' : '' }}>Daily</option>
+                                        <option value="weekly" selected {{ old('tracking_frequency') == 'weekly' ? 'selected' : '' }}>Weekly</option>
+                                        <option value="biweekly" {{ old('tracking_frequency') == 'biweekly' ? 'selected' : '' }}>Bi-Weekly</option>
+                                        <option value="monthly" {{ old('tracking_frequency') == 'monthly' ? 'selected' : '' }}>Monthly</option>
                                     </select>
-                                    @error('funding_source') <p class="text-red-500 text-xs mt-1">{{ $message }}</p> @enderror
+                                    @error('tracking_frequency') <p class="text-red-500 text-xs mt-1">{{ $message }}</p> @enderror
+                                </div>
+                            </div>
+
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Responsible Person</label>
+                                <input type="text" name="responsible_person" value="{{ old('responsible_person') }}" 
+                                       placeholder="Name of person leading this activity"
+                                       class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-purple-500 focus:border-purple-500">
+                                @error('responsible_person') <p class="text-red-500 text-xs mt-1">{{ $message }}</p> @enderror
+                            </div>
+
+                            <div class="flex justify-between">
+                                <button type="button" @click="currentTab = 'basic'" 
+                                        class="px-6 py-3 border border-gray-300 rounded-lg text-gray-700 font-semibold hover:bg-gray-50 transition">
+                                    ← Back
+                                </button>
+                                <div class="flex gap-3">
+                                    <button type="button" @click="currentTab = 'optional'" 
+                                            class="px-6 py-3 border border-purple-300 text-purple-600 rounded-lg font-semibold hover:bg-purple-50 transition">
+                                        Optional Details (Skip if not needed) →
+                                    </button>
+                                    <button type="submit" 
+                                            class="px-6 py-3 bg-green-600 hover:bg-green-700 text-white font-semibold rounded-lg transition">
+                                        ✓ Create Activity
+                                    </button>
                                 </div>
                             </div>
                         </div>
 
-                        {{-- Section 7: Risk Management --}}
-                        <div>
-                            <h3 class="text-lg font-semibold text-gray-900 mb-4 pb-2 border-b">Risk Management</h3>
-                            
-                            <div class="mb-4">
-                                <label class="block text-sm font-medium text-gray-700 mb-2">Risk Assessment</label>
-                                <textarea name="risk_assessment" rows="3" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-purple-500 focus:border-purple-500">{{ old('risk_assessment') }}</textarea>
-                                <p class="text-xs text-gray-500 mt-1">What potential challenges or risks do you foresee?</p>
-                                @error('risk_assessment') <p class="text-red-500 text-xs mt-1">{{ $message }}</p> @enderror
-                            </div>
-
-                            <div class="mb-4">
-                                <label class="block text-sm font-medium text-gray-700 mb-2">Mitigation Plan</label>
-                                <textarea name="mitigation_plan" rows="3" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-purple-500 focus:border-purple-500">{{ old('mitigation_plan') }}</textarea>
-                                <p class="text-xs text-gray-500 mt-1">How will you handle these risks?</p>
-                                @error('mitigation_plan') <p class="text-red-500 text-xs mt-1">{{ $message }}</p> @enderror
-                            </div>
-                        </div>
-
-                        {{-- Section 8: Documents --}}
-                        <div class="border-t border-gray-200 pt-6">
-                            <label class="block text-sm font-medium text-gray-700 mb-2">Upload Documents (Optional)</label>
-                            <input type="file" name="documents[]" multiple accept=".jpg,.jpeg,.png,.pdf,.doc,.docx" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-purple-500 focus:border-purple-500">
-                            <p class="mt-1 text-sm text-gray-500">Upload proof/evidence documents (Images, PDFs, Word docs, max 5MB each)</p>
-                        </div>
-
-                        {{-- Section 9: Custom Fields (Dynamic based on department) --}}
-                        <div class="border-t border-gray-200 pt-6">
-                            <h3 class="text-md font-semibold text-gray-900 mb-4">Department-Specific Fields</h3>
-                            
-                            @foreach($departments as $department)
-                                @php
-                                    $deptFieldsCount = \App\Models\CustomFieldDefinition::where('department_id', $department->id)
-                                        ->active()
-                                        ->count();
-                                @endphp
+                        {{-- TAB 3: OPTIONAL DETAILS --}}
+                        <div x-show="currentTab === 'optional'" class="space-y-6">
+                            {{-- Location --}}
+                            <div class="border border-gray-200 rounded-lg p-6 bg-gray-50">
+                                <h4 class="font-semibold text-gray-900 mb-4">📍 Location (Optional)</h4>
                                 
-                                @if($deptFieldsCount > 0)
-                                    <div x-show="document.querySelector('[name=department_id]')?.value == '{{ $department->id }}'" style="display: none;">
-                                        <p class="text-sm text-gray-600 mb-4">Custom fields for {{ $department->name }}:</p>
-                                        <x-custom-fields-form :departmentId="$department->id" />
+                                <div class="grid grid-cols-2 gap-4 mb-4">
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700 mb-2">Location Name</label>
+                                        <input type="text" name="location_name" value="{{ old('location_name') }}" 
+                                               placeholder="e.g., Church Hall"
+                                               class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-purple-500 focus:border-purple-500">
+                                        @error('location_name') <p class="text-red-500 text-xs mt-1">{{ $message }}</p> @enderror
                                     </div>
-                                @endif
-                            @endforeach
-                            
-                            <p class="text-xs text-gray-500 italic mt-2" x-show="!document.querySelector('[name=department_id]')?.value">
-                                Select a department to see if there are any custom fields
-                            </p>
-                        </div>
 
-                        {{-- Submit Buttons --}}
-                        <div class="flex items-center justify-end space-x-4 pt-6 border-t border-gray-200">
-                            <a href="{{ route('activities.index') }}" class="px-6 py-3 border border-gray-300 rounded-lg text-gray-700 font-semibold hover:bg-gray-50 transition">Cancel</a>
-                            <button type="submit" class="px-6 py-3 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold rounded-lg shadow-md transition">Create Activity</button>
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700 mb-2">Region</label>
+                                        <input type="text" name="location_region" value="{{ old('location_region') }}" 
+                                               placeholder="Province/District"
+                                               class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-purple-500 focus:border-purple-500">
+                                        @error('location_region') <p class="text-red-500 text-xs mt-1">{{ $message }}</p> @enderror
+                                    </div>
+                                </div>
+
+                                <div class="mb-4">
+                                    <label class="block text-sm font-medium text-gray-700 mb-2">Address</label>
+                                    <textarea name="location_address" rows="2" 
+                                              class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-purple-500 focus:border-purple-500">{{ old('location_address') }}</textarea>
+                                    @error('location_address') <p class="text-red-500 text-xs mt-1">{{ $message }}</p> @enderror
+                                </div>
+
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-2">Pin on Map</label>
+                                    <p class="text-xs text-gray-500 mb-2">Click, drag marker, or use your current location</p>
+                                    <x-map-picker 
+                                        latitude="{{ old('location_latitude', '-1.9441') }}" 
+                                        longitude="{{ old('location_longitude', '30.0619') }}" 
+                                        name="location" 
+                                    />
+                                </div>
+                            </div>
+
+                            {{-- Budget --}}
+                            <div class="border border-gray-200 rounded-lg p-6 bg-gray-50">
+                                <h4 class="font-semibold text-gray-900 mb-4">💰 Budget (Optional)</h4>
+                                <div class="grid grid-cols-2 gap-4">
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700 mb-2">Budget Estimate (RWF)</label>
+                                        <input type="number" name="budget_estimate" value="{{ old('budget_estimate') }}" min="0" step="1000" 
+                                               placeholder="0"
+                                               class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-purple-500 focus:border-purple-500">
+                                        @error('budget_estimate') <p class="text-red-500 text-xs mt-1">{{ $message }}</p> @enderror
+                                    </div>
+
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700 mb-2">Funding Source</label>
+                                        <select name="funding_source" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-purple-500 focus:border-purple-500">
+                                            <option value="">Select Source</option>
+                                            <option value="Church" {{ old('funding_source') == 'Church' ? 'selected' : '' }}>Church</option>
+                                            <option value="Diocese" {{ old('funding_source') == 'Diocese' ? 'selected' : '' }}>Diocese</option>
+                                            <option value="Donation" {{ old('funding_source') == 'Donation' ? 'selected' : '' }}>Donation</option>
+                                            <option value="Grant" {{ old('funding_source') == 'Grant' ? 'selected' : '' }}>Grant</option>
+                                            <option value="Mixed" {{ old('funding_source') == 'Mixed' ? 'selected' : '' }}>Mixed</option>
+                                        </select>
+                                        @error('funding_source') <p class="text-red-500 text-xs mt-1">{{ $message }}</p> @enderror
+                                    </div>
+                                </div>
+                            </div>
+
+                            {{-- Beneficiaries --}}
+                            <div class="border border-gray-200 rounded-lg p-6 bg-gray-50">
+                                <h4 class="font-semibold text-gray-900 mb-4">👥 Target Beneficiaries (Optional)</h4>
+                                <textarea name="target_beneficiaries" rows="2" 
+                                          placeholder="Who will benefit? e.g., Youth, Families, Community members"
+                                          class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-purple-500 focus:border-purple-500">{{ old('target_beneficiaries') }}</textarea>
+                                @error('target_beneficiaries') <p class="text-red-500 text-xs mt-1">{{ $message }}</p> @enderror
+                            </div>
+
+                            {{-- Documents --}}
+                            <div class="border border-gray-200 rounded-lg p-6 bg-gray-50">
+                                <h4 class="font-semibold text-gray-900 mb-4">📎 Documents (Optional)</h4>
+                                <input type="file" name="documents[]" multiple accept=".jpg,.jpeg,.png,.pdf,.doc,.docx" 
+                                       class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-purple-500 focus:border-purple-500">
+                                <p class="text-xs text-gray-500 mt-2">Upload supporting documents (max 5MB each)</p>
+                            </div>
+
+                            {{-- Custom Fields --}}
+                            <div x-show="hasCustomFields" class="border border-purple-200 rounded-lg p-6 bg-purple-50">
+                                <h4 class="font-semibold text-gray-900 mb-4">⚙️ Department-Specific Fields</h4>
+                                
+                                @foreach($departments as $department)
+                                    @php
+                                        $deptFieldsCount = \App\Models\CustomFieldDefinition::where('department_id', $department->id)
+                                            ->active()
+                                            ->count();
+                                    @endphp
+                                    
+                                    @if($deptFieldsCount > 0)
+                                        <div x-show="document.querySelector('[name=department_id]')?.value == '{{ $department->id }}'" style="display: none;">
+                                            <p class="text-sm text-gray-600 mb-4">Custom fields for {{ $department->name }}:</p>
+                                            <x-custom-fields-form :departmentId="$department->id" />
+                                        </div>
+                                    @endif
+                                @endforeach
+                            </div>
+
+                            <div class="flex justify-between pt-4">
+                                <button type="button" @click="currentTab = 'timeline'" 
+                                        class="px-6 py-3 border border-gray-300 rounded-lg text-gray-700 font-semibold hover:bg-gray-50 transition">
+                                    ← Back
+                                </button>
+                                <button type="submit" 
+                                        class="px-8 py-3 bg-green-600 hover:bg-green-700 text-white font-semibold rounded-lg shadow-md transition">
+                                    ✓ Create Activity
+                                </button>
+                            </div>
                         </div>
                     </div>
                 </form>
