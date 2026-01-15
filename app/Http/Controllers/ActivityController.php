@@ -389,7 +389,7 @@ class ActivityController extends Controller
         // Create progress log
         $progressLog = \App\Models\ActivityProgressLog::create([
             'activity_id' => $activity->id,
-            'logged_by' => auth()->id(),
+            'logger_id' => auth()->id(),
             'log_date' => $validated['log_date'],
             'progress_value' => $validated['progress_value'],
             'progress_percentage' => $progress_percentage,
