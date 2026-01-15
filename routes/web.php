@@ -75,6 +75,7 @@ Route::middleware('auth')->group(function () {
     Route::post('activities/{activity}/approve', [\App\Http\Controllers\ActivityController::class, 'approve'])->name('activities.approve');
     Route::post('activities/{activity}/reject', [\App\Http\Controllers\ActivityController::class, 'reject'])->name('activities.reject');
     Route::post('activities/{activity}/complete', [\App\Http\Controllers\ActivityController::class, 'markComplete'])->name('activities.complete');
+    Route::post('activities/{activity}/progress', [\App\Http\Controllers\ActivityController::class, 'addProgressLog'])->name('activities.progress.add');
     Route::resource('activities', \App\Http\Controllers\ActivityController::class);
     
     // Workers & HR
@@ -88,6 +89,9 @@ Route::middleware('auth')->group(function () {
     
     // Institutions Management
     Route::resource('institutions', \App\Http\Controllers\InstitutionController::class)->middleware(['permission:manage institutions']);
+    
+    // Custom Fields Management (Phase 2)
+    Route::resource('custom-fields', \App\Http\Controllers\CustomFieldController::class)->middleware(['permission:manage custom fields']);
     
     // Service Type Management
     Route::resource('service-types', \App\Http\Controllers\ServiceTypeController::class)->middleware(['role:boss|archid']);

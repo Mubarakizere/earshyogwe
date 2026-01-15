@@ -88,7 +88,76 @@
                              <h4 class="text-sm font-semibold text-gray-500 uppercase tracking-wider mb-4">Description</h4>
                              <p class="text-gray-700 text-sm leading-relaxed whitespace-pre-line">{{ $activity->description ?? 'No description provided.' }}</p>
                         </div>
+
+                        {{-- Location --}}
+                        @if($activity->location_name || $activity->location_address || ($activity->location_latitude && $activity->location_longitude))
+                            <div class="bg-gray-50 p-6 rounded-lg border border-gray-100">
+                                <h4 class="text-sm font-semibold text-gray-500 uppercase tracking-wider mb-4">Location</h4>
+                                <div class="space-y-2">
+                                    @if($activity->location_name)
+                                        <div>
+                                            <span class="block text-xs text-gray-400">Location Name</span>
+                                            <span class="text-gray-900 font-medium">{{ $activity->location_name }}</span>
+                                        </div>
+                                    @endif
+                                    @if($activity->location_region)
+                                        <div>
+                                            <span class="block text-xs text-gray-400">Region</span>
+                                            <span class="text-gray-900 font-medium">{{ $activity->location_region }}</span>
+                                        </div>
+                                    @endif
+                                    @if($activity->location_address)
+                                        <div>
+                                            <span class="block text-xs text-gray-400">Address</span>
+                                            <span class="text-gray-900">{{ $activity->location_address }}</span>
+                                        </div>
+                                    @endif
+                                    @if($activity->location_latitude && $activity->location_longitude)
+                                        <div class="mt-4">
+                                            <div id="show-map" style="height: 250px; width: 100%; border-radius: 0.5rem;"></div>
+                                            <p class="text-xs text-gray-500 mt-2">Coordinates: {{ number_format($activity->location_latitude, 6) }}, {{number_format($activity->location_longitude, 6) }}</p>
+                                        </div>
+                                        <script>
+                                        document.addEventListener('DOMContentLoaded', function() {
+                                            if (typeof L !== 'undefined') {
+                                                const map = L.map('show-map').setView([{{ $activity->location_latitude }}, {{ $activity->location_longitude }}], 15);
+                                                L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                                                    attribution: '&copy; OpenStreetMap'
+                                                }).addTo(map);
+                                                L.marker([{{ $activity->location_latitude }}, {{ $activity->location_longitude }}])
+                                                    .addTo(map)
+                                                    .bindPopup('{{ $activity->location_name ?? 'Activity Location' }}');
+                                            }
+                                        });
+                                        </script>
+                                    @endif
+                                </div>
+                            </div>
+                        @endif
                     </div>
+
+                    {{-- Custom Fields --}}
+                    @if($activity->customValues && $activity->customValues->count() > 0)
+                        <div class="mb-8">
+                            <h4 class="text-lg font-bold text-gray-900 mb-4 border-b border-gray-200 pb-2">Department-Specific Fields</h4>
+                            <div class="bg-gray-50 p-6 rounded-lg border border-gray-100 space-y-3">
+                                @foreach($activity->customValues as $customValue)
+                                    <div>
+                                        <span class="block text-xs text-gray-400 uppercase tracking-wider">{{ $customValue->fieldDefinition->field_name }}</span>
+                                        <span class="text-gray-900 font-medium">
+                                            @if($customValue->fieldDefinition->field_type === 'checkbox')
+                                                {{ $customValue->field_value ? 'Yes' : 'No' }}
+                                            @elseif($customValue->fieldDefinition->field_type === 'date')
+                                                {{ \Carbon\Carbon::parse($customValue->field_value)->format('M d, Y') }}
+                                            @else
+                                                {{ $customValue->field_value }}
+                                            @endif
+                                        </span>
+                                    </div>
+                                @endforeach
+                            </div>
+                        </div>
+                    @endif
 
                     <!-- Documents Section -->
                     <div class="mb-8">
@@ -206,9 +275,13 @@
                                             {{ number_format($activity->financial_spent) }}
                                         </span>
                                     </div>
-                                </div>
                             </div>
                         </div>
+                    @endif
+
+                    {{-- Progress Timeline --}}
+                    @if($activity->status !== 'cancelled')
+                        @include('activities.partials.progress-timeline')
                     @endif
 
                     <!-- Action Buttons -->

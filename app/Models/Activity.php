@@ -29,6 +29,24 @@ class Activity extends Model
         'attendance_count',
         'salvation_count',
         'created_by',
+        // Phase 1 Enhanced Fields
+        'activity_category',
+        'priority_level',
+        'objectives',
+        'target_beneficiaries',
+        'expected_outcomes',
+        'target_unit',
+        'support_team',
+        'funding_source',
+        'tracking_frequency',
+        'risk_assessment',
+        'mitigation_plan',
+        'location_name',
+        'location_address',
+        'location_latitude',
+        'location_longitude',
+        'location_region',
+        'duration_days',
     ];
 
     public static function bootLogsActivity()
@@ -65,6 +83,7 @@ class Activity extends Model
     protected $casts = [
         'start_date' => 'date',
         'end_date' => 'date',
+        'support_team' => 'array',
     ];
 
     public function department()
@@ -90,6 +109,16 @@ class Activity extends Model
     public function documents()
     {
         return $this->hasMany(ActivityDocument::class);
+    }
+
+    public function progressLogs()
+    {
+        return $this->hasMany(ActivityProgressLog::class)->orderBy('log_date', 'desc');
+    }
+
+    public function customValues()
+    {
+        return $this->hasMany(ActivityCustomValue::class);
     }
 
     // Accessor for progress percentage

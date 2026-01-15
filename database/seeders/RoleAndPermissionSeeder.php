@@ -58,6 +58,7 @@ class RoleAndPermissionSeeder extends Seeder
             'edit activities',
             'delete activities', // NEW
             'approve activities', // NEW
+            'log activity progress', // Phase 1
             'view all activities',
             'view assigned activities',
             'view own activities',
@@ -119,6 +120,9 @@ class RoleAndPermissionSeeder extends Seeder
             
             // Institutions
             'manage institutions',
+            
+            // Custom Fields (Phase 2)
+            'manage custom fields',
         ];
 
         foreach ($permissions as $permission) {
@@ -150,6 +154,7 @@ class RoleAndPermissionSeeder extends Seeder
             'edit activities',
             'delete activities', // NEW
             'approve activities', // NEW
+            'log activity progress', // Phase 1
             'view assigned activities',
             'manage assigned workers',
             'manage contracts',
@@ -185,6 +190,7 @@ class RoleAndPermissionSeeder extends Seeder
             'create activities',
             'edit activities',
             'delete activities', // NEW
+            'log activity progress', // Phase 1
             'view own activities',
             'view department activities',
             'manage own workers',

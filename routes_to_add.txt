@@ -1,0 +1,1 @@
+﻿Route::post('activities/{activity}/progress', [ActivityController::class, 'addProgressLog'])->name('activities.progress.add');

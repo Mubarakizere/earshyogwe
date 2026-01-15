@@ -81,62 +81,73 @@ class ActivityController extends Controller
     {
         $user = auth()->user();
         
-        $query = $this->getBaseQueryForUser($user)->with(['department', 'church', 'creator']);
-
-        // 1. Filter by Name (Search)
+        // Get base query based on user permissions
+        $query = $this->getBaseQueryForUser($user);
+        
+        // Get stats for the current user's visible activities
+        $stats = [
+            'total' => (clone $query)->count(),
+            'pending_approval' => (clone $query)->where('approval_status', 'pending')->count(),
+            'approved' => (clone $query)->where('approval_status', 'approved')->where('status', 'in_progress')->count(),
+            'completed' => (clone $query)->where('status', 'completed')->count(),
+        ];
+        
+        // Apply tab filtering
+        $tab = $request->get('tab', 'my_activities');
+        
+        if ($tab === 'my_activities') {
+            // Show only activities from user's church
+            if ($user->church_id) {
+                $query->where('church_id', $user->church_id);
+            }
+        } elseif ($tab === 'approvals') {
+            // Only for users who can approve
+            if ($user->can('approve activities')) {
+                $query->where('approval_status', 'pending');
+            }
+        }
+        // 'overview' tab shows all based on permission (no additional filter)
+        
+        // Apply search filter
         if ($request->filled('search')) {
-            $query->where('name', 'like', "%{$request->search}%");
+            $search = $request->search;
+            $query->where(function($q) use ($search) {
+                $q->where('name', 'like', "%{$search}%")
+                  ->orWhere('description', 'like', "%{$search}%")
+                  ->orWhere('objectives', 'like', "%{$search}%");
+            });
         }
-
-        // 2. Filter by Church
-        if ($request->filled('church_id')) {
-            $query->where('church_id', $request->church_id);
-        }
-
-        // 3. Filter by Status (Main Status)
+        
+        // Apply status filter
         if ($request->filled('status')) {
             $query->where('status', $request->status);
         }
-
-        // 4. Filter by Approval Status (if applicable to filter usually logic handles tabs, but we can add filter)
-        // Tabs logic:
-        $tab = $request->input('tab', 'overview');
-        if ($tab === 'approvals' && $user->can('approve activities')) {
-            $query->where('approval_status', 'pending');
-        } elseif ($tab === 'my_activities') {
-             // If I am a creator or responsible person?
-             // Let's rely on "BaseQuery" for visibility scope, but "My Activities" tab usually emphasizes "Created by Me".
-             $query->where('created_by', $user->id);
-        } 
-
-        // 5. Date Range Filter
-        if ($request->filled('start_date')) {
-            $query->where('start_date', '>=', $request->start_date);
+        
+        // Apply priority filter
+        if ($request->filled('priority')) {
+            $query->where('priority_level', $request->priority);
         }
-        if ($request->filled('end_date')) {
-            $query->where('end_date', '<=', $request->end_date);
+        
+        // Apply church filter
+        if ($request->filled('church_id')) {
+            $query->where('church_id', $request->church_id);
         }
-
-        // 6. Department Filter
+        
+        // Apply department filter
         if ($request->filled('department_id')) {
             $query->where('department_id', $request->department_id);
         }
-
-        $activities = $query->latest()->paginate(10)->withQueryString();
-
-        $departments = $this->getDepartmentsForUser($user);
-        $churches = $this->getChurchesForUser($user);
-
-        // Stats
-        $baseStatsQuery = $this->getBaseQueryForUser($user);
-        $stats = [
-            'total' => (clone $baseStatsQuery)->count(),
-            'pending_approval' => (clone $baseStatsQuery)->where('approval_status', 'pending')->count(), // Fixed Key
-            'approved' => (clone $baseStatsQuery)->where('approval_status', 'approved')->count(),
-            'completed' => (clone $baseStatsQuery)->where('status', 'completed')->count(),
-        ];
-
-        return view('activities.index', compact('activities', 'departments', 'churches', 'stats'));
+        
+        // Get activities with relationships
+        $activities = $query->with(['church', 'department', 'creator'])
+            ->orderBy('created_at', 'desc')
+            ->paginate(15)
+            ->appends($request->query());
+        
+        // Get churches visible to this user for filter dropdown
+        $churches = $this->getVisibleChurches($user);
+        
+        return view('activities.index', compact('activities', 'stats', 'churches'));
     }
 
     public function create()
@@ -165,12 +176,36 @@ class ActivityController extends Controller
             'end_date' => 'nullable|date|after:start_date',
             'status' => 'required|in:planned,in_progress,completed,cancelled',
             'documents.*' => 'nullable|file|mimes:jpg,jpeg,png,pdf,doc,docx|max:5120',
+            // Phase 1 Enhanced Fields
+            'activity_category' => 'nullable|string|max:50',
+            'priority_level' => 'required|in:low,medium,high,critical',
+            'objectives' => 'nullable|string',
+            'target_beneficiaries' => 'nullable|string',
+            'expected_outcomes' => 'nullable|string',
+            'target_unit' => 'nullable|string|max:50',
+            'funding_source' => 'nullable|string|max:100',
+            'tracking_frequency' => 'required|in:daily,weekly,biweekly,monthly',
+            'risk_assessment' => 'nullable|string',
+            'mitigation_plan' => 'nullable|string',
+            'location_name' => 'nullable|string|max:255',
+            'location_address' => 'nullable|string',
+            'location_latitude' => 'nullable|numeric|between:-90,90',
+            'location_longitude' => 'nullable|numeric|between:-180,180',
+            'location_region' => 'nullable|string|max:100',
         ]);
 
         // Determine Approval Status
         // Users with 'approve activities' permission are auto-approved.
         $user = auth()->user();
         $approvalStatus = $user->can('approve activities') ? 'approved' : 'pending';
+        
+        // Calculate duration in days
+        $duration_days = null;
+        if ($validated['start_date'] && $validated['end_date']) {
+            $start = \Carbon\Carbon::parse($validated['start_date']);
+            $end = \Carbon\Carbon::parse($validated['end_date']);
+            $duration_days = $start->diffInDays($end);
+        }
 
         $activity = Activity::create([
             'department_id' => $validated['department_id'],
@@ -185,21 +220,47 @@ class ActivityController extends Controller
             'status' => $validated['status'],
             'approval_status' => $approvalStatus,
             'created_by' => auth()->id(),
+            // Phase 1 Enhanced Fields
+            'activity_category' => $validated['activity_category'] ?? null,
+            'priority_level' => $validated['priority_level'],
+            'objectives' => $validated['objectives'] ?? null,
+            'target_beneficiaries' => $validated['target_beneficiaries'] ?? null,
+            'expected_outcomes' => $validated['expected_outcomes'] ?? null,
+            'target_unit' => $validated['target_unit'] ?? null,
+            'funding_source' => $validated['funding_source'] ?? null,
+            'tracking_frequency' => $validated['tracking_frequency'],
+            'risk_assessment' => $validated['risk_assessment'] ?? null,
+            'mitigation_plan' => $validated['mitigation_plan'] ?? null,
+            'location_name' => $validated['location_name'] ?? null,
+            'location_address' => $validated['location_address'] ?? null,
+            'location_latitude' => $validated['location_latitude'] ?? null,
+            'location_longitude' => $validated['location_longitude'] ?? null,
+            'location_region' => $validated['location_region'] ?? null,
+            'duration_days' => $duration_days,
         ]);
 
         // Handle document uploads
         if ($request->hasFile('documents')) {
-            foreach ($request->file('documents') as $file) {
-                $path = $file->store('activity-documents', 'public');
-                $fileType = $file->getClientOriginalExtension();
-                
-                \App\Models\ActivityDocument::create([
-                    'activity_id' => $activity->id,
+            foreach ($request->file('documents') as $document) {
+                $path = $document->store('activity-documents', 'public');
+                $activity->documents()->create([
                     'file_path' => $path,
-                    'file_type' => in_array($fileType, ['jpg', 'jpeg', 'png']) ? 'image' : ($fileType === 'pdf' ? 'pdf' : 'document'),
+                    'file_name' => $document->getClientOriginalName(),
                     'uploaded_by' => auth()->id(),
-                    'uploaded_at' => now(),
                 ]);
+            }
+        }
+
+        // Handle custom field values
+        if ($request->has('custom_fields')) {
+            foreach ($request->custom_fields as $fieldId => $value) {
+                if ($value !== null && $value !== '') {
+                    \App\Models\ActivityCustomValue::create([
+                        'activity_id' => $activity->id,
+                        'custom_field_definition_id' => $fieldId,
+                        'field_value' => $value,
+                    ]);
+                }
             }
         }
         
@@ -297,6 +358,50 @@ class ActivityController extends Controller
 
         return back()->with('success', 'Activity marked as completed.');
     }
+    
+    // Progress Logging
+    public function addProgressLog(Request $request, Activity $activity)
+    {
+        $this->authorize('log activity progress');
+        $this->checkActivityScope($activity);
+
+        $validated = $request->validate([
+            'log_date' => 'required|date',
+            'progress_value' => 'required|integer|min:0',
+            'notes' => 'nullable|string',
+            'photos.*' => 'nullable|image|mimes:jpg,jpeg,png|max:5120',
+        ]);
+
+        // Calculate progress percentage
+        $progress_percentage = $activity->target > 0 
+            ? min(100, round(($validated['progress_value'] / $activity->target) * 100, 2))
+            : 0;
+
+        // Handle photo uploads
+        $photoPaths = [];
+        if ($request->hasFile('photos')) {
+            foreach ($request->file('photos') as $photo) {
+                $path = $photo->store('activity-progress', 'public');
+                $photoPaths[] = $path;
+            }
+        }
+
+        // Create progress log
+        $progressLog = \App\Models\ActivityProgressLog::create([
+            'activity_id' => $activity->id,
+            'logged_by' => auth()->id(),
+            'log_date' => $validated['log_date'],
+            'progress_value' => $validated['progress_value'],
+            'progress_percentage' => $progress_percentage,
+            'notes' => $validated['notes'] ?? null,
+            'photos' => $photoPaths,
+        ]);
+
+        // Update activity's current progress to the latest value
+        $activity->update(['current_progress' => $validated['progress_value']]);
+
+        return back()->with('success', 'Progress log added successfully.');
+    }
     // END: Approval Workflow values
 
     public function edit(Activity $activity)
@@ -372,18 +477,22 @@ class ActivityController extends Controller
         return collect();
     }
     
+    /**
+     * Get base query filtered by user's permissions
+     */
     private function getBaseQueryForUser($user)
     {
         $baseQuery = Activity::query();
         
+        // Boss sees everything
         if ($user->can('view all activities')) {
-            // See all activities
             return $baseQuery;
         }
         
         // Check for department-specific permissions
         $allowedDepartmentIds = [];
         $departments = Department::all();
+        
         foreach ($departments as $dept) {
             $permissionName = "view {$dept->slug} activities";
             if ($user->can($permissionName)) {
@@ -391,21 +500,44 @@ class ActivityController extends Controller
             }
         }
         
-        // If user has department-specific permissions, filter by those
+        // If user has department permissions, show those activities
         if (!empty($allowedDepartmentIds)) {
-            $baseQuery->whereIn('department_id', $allowedDepartmentIds);
-        }
-        // Otherwise, use church-based permissions
-        elseif ($user->can('view assigned activities')) {
-            $churchIds = Church::where('archid_id', $user->id)->pluck('id');
-            $baseQuery->whereIn('church_id', $churchIds);
-        } elseif ($user->can('view own activities') && $user->church_id) {
-            $baseQuery->where('church_id', $user->church_id);
-        } else {
-            $baseQuery->where('id', 0); // No access
+            return $baseQuery->whereIn('department_id', $allowedDepartmentIds);
         }
         
-        return $baseQuery;
+        // Archid sees activities from their assigned churches
+        if ($user->can('view assigned activities')) {
+            $churchIds = Church::where('archid_id', $user->id)->pluck('id');
+            return $baseQuery->whereIn('church_id', $churchIds);
+        }
+        
+        // Pastor sees only their own church's activities
+        if ($user->can('view own activities') && $user->church_id) {
+            return $baseQuery->where('church_id', $user->church_id);
+        }
+        
+        // No permission - return empty query
+        return $baseQuery->where('id', 0);
+    }
+    
+    /**
+     * Get churches visible to the user
+     */
+    private function getVisibleChurches($user)
+    {
+        if ($user->can('view all activities')) {
+            return Church::orderBy('name')->get();
+        }
+        
+        if ($user->can('view assigned activities')) {
+            return Church::where('archid_id', $user->id)->orderBy('name')->get();
+        }
+        
+        if ($user->church_id) {
+            return Church::where('id', $user->church_id)->get();
+        }
+        
+        return collect();
     }
 
     private function checkActivityScope(Activity $activity)
