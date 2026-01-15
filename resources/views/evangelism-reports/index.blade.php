@@ -156,7 +156,7 @@
                                         </td>
                                         @if($churches->count() > 1 || auth()->user()->can('view all churches'))
                                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600 font-medium">
-                                                {{ $report->church->name }}
+                                                {{ $report->church?->name ?? 'N/A' }}
                                             </td>
                                         @endif
                                         <td class="px-6 py-4 whitespace-nowrap text-center">
