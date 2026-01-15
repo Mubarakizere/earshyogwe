@@ -12,23 +12,23 @@ class CustomFieldController extends Controller
     {
         $this->authorize('manage custom fields');
         
-        // Get user's departments (if they're a department head)
         $user = auth()->user();
-        $departments = Department::query()
-            ->where('head_id', $user->id)
-            ->orWhereHas('permissions', function($query) use ($user) {
-                $query->whereHas('users', function($q) use ($user) {
-                    $q->where('users.id', $user->id);
-                });
-            })
-            ->get();
-
-        // Get custom fields for user's departments
-        $customFields = CustomFieldDefinition::query()
-            ->whereIn('department_id', $departments->pluck('id'))
-            ->with('department')
-            ->ordered()
-            ->paginate(20);
+        
+        // Boss and admin can see all departments
+        if ($user->hasRole(['boss', 'admin'])) {
+            $departments = Department::all();
+            $customFields = CustomFieldDefinition::with('department')
+                ->ordered()
+                ->paginate(20);
+        } else {
+            // Department heads see only their departments
+            $departments = Department::where('head_id', $user->id)->get();
+            $customFields = CustomFieldDefinition::query()
+                ->whereIn('department_id', $departments->pluck('id'))
+                ->with('department')
+                ->ordered()
+                ->paginate(20);
+        }
 
         return view('custom-fields.index', compact('customFields', 'departments'));
     }
@@ -38,13 +38,17 @@ class CustomFieldController extends Controller
         $this->authorize('manage custom fields');
         
         $user = auth()->user();
-        $departments = Department::query()
-            ->where('head_id', $user->id)
-            ->get();
+        
+        // Boss and admin can create for all departments
+        if ($user->hasRole(['boss', 'admin'])) {
+            $departments = Department::all();
+        } else {
+            $departments = Department::where('head_id', $user->id)->get();
+        }
 
         if ($departments->isEmpty()) {
             return redirect()->route('custom-fields.index')
-                ->with('error', 'You must be a department head to create custom fields.');
+                ->with('error', 'No departments available.');
         }
 
         return view('custom-fields.create', compact('departments'));
@@ -66,9 +70,12 @@ class CustomFieldController extends Controller
         ]);
 
         // Verify user has permission for this department
-        $department = Department::findOrFail($validated['department_id']);
-        if ($department->head_id !== auth()->id()) {
-            abort(403, 'You can only create custom fields for your own department.');
+        $user = auth()->user();
+        if (!$user->hasRole(['boss', 'admin'])) {
+            $department = Department::findOrFail($validated['department_id']);
+            if ($department->head_id !== $user->id) {
+                abort(403, 'You can only create custom fields for your own department.');
+            }
         }
 
         // Generate unique field key
@@ -103,11 +110,19 @@ class CustomFieldController extends Controller
         $this->authorize('manage custom fields');
 
         // Verify user owns this field
-        if ($customField->department->head_id !== auth()->id()) {
-            abort(403, 'You can only edit custom fields for your own department.');
+        $user = auth()->user();
+        if (!$user->hasRole(['boss', 'admin'])) {
+            if ($customField->department->head_id !== $user->id) {
+                abort(403, 'You can only edit custom fields for your own department.');
+            }
         }
 
-        $departments = Department::where('head_id', auth()->id())->get();
+        // Boss and admin can edit all departments
+        if ($user->hasRole(['boss', 'admin'])) {
+            $departments = Department::all();
+        } else {
+            $departments = Department::where('head_id', $user->id)->get();
+        }
 
         return view('custom-fields.edit', compact('customField', 'departments'));
     }
@@ -117,8 +132,11 @@ class CustomFieldController extends Controller
         $this->authorize('manage custom fields');
 
         // Verify user owns this field
-        if ($customField->department->head_id !== auth()->id()) {
-            abort(403, 'You can only edit custom fields for your own department.');
+        $user = auth()->user();
+        if (!$user->hasRole(['boss', 'admin'])) {
+            if ($customField->department->head_id !== $user->id) {
+                abort(403, 'You can only edit custom fields for your own department.');
+            }
         }
 
         $validated = $request->validate([
@@ -151,8 +169,11 @@ class CustomFieldController extends Controller
         $this->authorize('manage custom fields');
 
         // Verify user owns this field
-        if ($customField->department->head_id !== auth()->id()) {
-            abort(403, 'You can only delete custom fields for your own department.');
+        $user = auth()->user();
+        if (!$user->hasRole(['boss', 'admin'])) {
+            if ($customField->department->head_id !== $user->id) {
+                abort(403, 'You can only delete custom fields for your own department.');
+            }
         }
 
         $customField->delete();

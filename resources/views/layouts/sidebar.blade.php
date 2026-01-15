@@ -40,18 +40,10 @@
                     </a>
                 @endcanany
                 @canany(['view all activities', 'view assigned activities', 'view own activities'])
-                    <a href="{{ route('activities.index') }}" class="group flex items-center px-2 py-2 text-sm font-medium rounded-md hover:text-white hover:bg-brand-800 {{ request()->routeIs('activities.*') && !request()->routeIs('custom-fields.*') ? 'text-white bg-brand-800' : 'text-brand-200' }}">
+                    <a href="{{ route('activities.index') }}" class="group flex items-center px-2 py-2 text-sm font-medium rounded-md hover:text-white hover:bg-brand-800 {{ request()->routeIs('activities.*') ? 'text-white bg-brand-800' : 'text-brand-200' }}">
                         Activities
                     </a>
                 @endcanany
-                @can('manage custom fields')
-                    <a href="{{ route('custom-fields.index') }}" class="group flex items-center px-2 py-2 text-sm font-medium rounded-md hover:text-white hover:bg-brand-800 {{ request()->routeIs('custom-fields.*') ? 'text-white bg-brand-800' : 'text-brand-200' }}">
-                        <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
-                        </svg>
-                        Custom Fields
-                    </a>
-                @endcan
                 @canany(['view all evangelism', 'view assigned evangelism', 'view own evangelism'])
                     <a href="{{ route('evangelism-reports.index') }}" class="group flex items-center px-2 py-2 text-sm font-medium rounded-md hover:text-white hover:bg-brand-800 {{ request()->routeIs('evangelism-reports.*') ? 'text-white bg-brand-800' : 'text-brand-200' }}">
                         Evangelism
@@ -165,8 +157,8 @@
                 @endcanany
 
                 <!-- Settings Sub-group -->
-                @canany(['manage giving types', 'manage expense categories', 'manage service types'])
-                <div x-data="{ settingsOpen: {{ request()->routeIs('giving-types.*') || request()->routeIs('expense-categories.*') || request()->routeIs('service-types.*') ? 'true' : 'false' }} }" class="space-y-1">
+                @canany(['manage giving types', 'manage expense categories', 'manage service types', 'manage custom fields'])
+                <div x-data="{ settingsOpen: {{ request()->routeIs('giving-types.*') || request()->routeIs('expense-categories.*') || request()->routeIs('service-types.*') || request()->routeIs('custom-fields.*') ? 'true' : 'false' }} }" class="space-y-1">
                     <button @click="settingsOpen = !settingsOpen" class="flex items-center w-full px-2 py-2 text-xs font-medium rounded-md hover:bg-brand-800 hover:text-white transition-colors" :class="{ 'text-white': settingsOpen, 'text-brand-300': !settingsOpen }">
                         <svg class="w-4 h-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4" /></svg>
                         <span class="flex-1 text-left">Settings</span>
@@ -188,6 +180,11 @@
                         @can('manage service types')
                             <a href="{{ route('service-types.index') }}" class="group flex items-center px-2 py-1.5 text-xs font-medium rounded-md hover:text-white hover:bg-brand-800 {{ request()->routeIs('service-types.*') ? 'text-white bg-brand-800' : 'text-brand-200' }}">
                                 Service Types
+                            </a>
+                        @endcan
+                        @can('manage custom fields')
+                            <a href="{{ route('custom-fields.index') }}" class="group flex items-center px-2 py-1.5 text-xs font-medium rounded-md hover:text-white hover:bg-brand-800 {{ request()->routeIs('custom-fields.*') ? 'text-white bg-brand-800' : 'text-brand-200' }}">
+                                Custom Fields
                             </a>
                         @endcan
                     </div>
