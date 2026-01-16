@@ -1,10 +1,10 @@
 <x-app-layout>
     <x-slot name="header">
-        <div class="flex items-center justify-between">
+        <div class="flex flex-col md:flex-row justify-between items-center gap-4">
             <h2 class="font-semibold text-xl text-gray-800 leading-tight">
-                {{ __('Activity Details') }}
+                {{ __('Objective Details') }} <!-- Was Activity Details -->
             </h2>
-            <div class="flex items-center space-x-4">
+            <div class="flex gap-2">
                 <a href="{{ route('activities.index') }}" class="text-sm text-gray-600 hover:text-gray-900">
                     &larr; Back to Activities
                 </a>
@@ -164,14 +164,14 @@
                          </div>
                     @endif
 
-                    {{-- Activity Log / Timeline --}}
+                    {{-- Activity Reports / Timeline --}}
                     @if($activity->status !== 'cancelled')
                         <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
                             <div class="p-6 border-b border-gray-200">
-                                <h3 class="text-lg font-medium text-gray-900">Activity Log</h3>
+                                <h3 class="text-lg font-medium text-gray-900">Activity Reports</h3>
                             </div>
                             <div class="p-6">
-                                @include('activities.partials.progress-timeline')
+                                @include('activities.partials.progress-timeline', ['activity' => $activity])
                             </div>
                         </div>
                     @endif

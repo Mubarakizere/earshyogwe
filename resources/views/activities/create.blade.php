@@ -1,6 +1,6 @@
 <x-app-layout>
     <x-slot name="header">
-        <h2 class="font-semibold text-2xl text-gray-800 leading-tight">Create Activity</h2>
+        <h2 class="font-semibold text-2xl text-gray-800 leading-tight">Add New Objective</h2>
     </x-slot>
 
     <div class="py-12">
@@ -76,7 +76,7 @@
                             </div>
 
                             <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-2">Activity Name <span class="text-red-500">*</span></label>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Objective Title <span class="text-red-500">*</span></label>
                                 <input type="text" name="name" value="{{ old('name') }}" required 
                                        placeholder="e.g., Bible Distribution Campaign"
                                        class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-purple-500 focus:border-purple-500">
@@ -289,7 +289,7 @@
                                 </button>
                                 <button type="submit" 
                                         class="px-8 py-3 bg-green-600 hover:bg-green-700 text-white font-semibold rounded-lg shadow-md transition">
-                                    ✓ Create Activity
+                                    ✓ Create Objective
                                 </button>
                             </div>
                         </div>

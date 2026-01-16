@@ -2,12 +2,12 @@
 <div x-data="{ progressModalOpen: false }" @keydown.escape.window="progressModalOpen = false">
     <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
         <div class="flex justify-between items-center mb-4">
-            <h4 class="text-lg font-bold text-gray-900">Progress Timeline</h4>
+            <h4 class="text-lg font-bold text-gray-900">Activity Reports List</h4> <!-- Was Progress Timeline -->
             @can('log activity progress')
                 <button type="button" @click="progressModalOpen = true" class="px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white text-sm font-medium rounded-lg transition">
                     <span class="flex items-center">
                         <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path></svg>
-                        Log Progress
+                        Add New Activity <!-- Was Log Progress -->
                     </span>
                 </button>
             @endcan
@@ -49,21 +49,56 @@
                             </div>
 
                             {{-- Period amount added --}}
-                            <div class="bg-white px-3 py-2 rounded border border-purple-200 mb-3">
-                                <div class="flex items-center justify-between">
-                                    <span class="text-xs text-gray-600">Added this period:</span>
-                                    <span class="text-lg font-bold text-purple-600">+{{ number_format($log->progress_value) }} {{ $activity->target_unit ?? 'units' }}</span>
+                            <div class="grid grid-cols-2 gap-4 mb-3">
+                                <div class="bg-white px-3 py-2 rounded border border-purple-200">
+                                    <div class="flex flex-col">
+                                        <span class="text-xs text-gray-500 uppercase">Quantity/Output</span>
+                                        <span class="text-lg font-bold text-purple-600">+{{ number_format($log->progress_value) }} {{ $activity->target_unit ?? 'units' }}</span>
+                                    </div>
+                                </div>
+                                <div class="bg-white px-3 py-2 rounded border border-purple-200">
+                                    <div class="flex flex-col">
+                                        <span class="text-xs text-gray-500 uppercase">Budget Spent</span>
+                                        <span class="text-lg font-bold text-gray-700">{{ number_format($log->financial_spent) }} RWF</span>
+                                    </div>
                                 </div>
                             </div>
+
+                            {{-- Location --}}
+                            @if($log->location)
+                                <div class="flex items-center text-sm text-gray-600 mb-2">
+                                    <svg class="w-4 h-4 mr-1 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
+                                    {{ $log->location }}
+                                </div>
+                            @endif
 
                             {{-- Progress bar --}}
                             <div class="w-full bg-gray-200 rounded-full h-2 mb-3">
                                 <div class="bg-purple-600 h-2 rounded-full transition-all" style="width: {{ $log->progress_percentage }}%"></div>
                             </div>
 
+                            {{-- Activities Performed --}}
+                            @if($log->activities_performed)
+                                <div class="mb-3">
+                                    <h5 class="text-xs font-bold text-gray-500 uppercase mb-1">Activities Performed</h5>
+                                    <p class="text-sm text-gray-800 bg-white p-2 rounded border border-gray-100">{{ $log->activities_performed }}</p>
+                                </div>
+                            @endif
+
+                            {{-- Results (Outcome) --}}
+                            @if($log->results_outcome)
+                                <div class="mb-3">
+                                    <h5 class="text-xs font-bold text-gray-500 uppercase mb-1">Results (Outcome)</h5>
+                                    <p class="text-sm text-gray-800 bg-white p-2 rounded border border-gray-100">{{ $log->results_outcome }}</p>
+                                </div>
+                            @endif
+
                             {{-- Notes --}}
                             @if($log->notes)
-                                <p class="text-sm text-gray-700 mb-3 italic bg-white p-2 rounded border-l-4 border-purple-400">{{ $log->notes }}</p>
+                                <div class="mb-3">
+                                    <h5 class="text-xs font-bold text-gray-500 uppercase mb-1">Notes</h5>
+                                    <p class="text-sm text-gray-600 italic">{{ $log->notes }}</p>
+                                </div>
                             @endif
 
                             {{-- Photos --}}
@@ -95,8 +130,8 @@
                 <svg class="w-16 h-16 text-gray-300 mx-auto mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
                 </svg>
-                <p class="text-gray-500 text-sm">No progress logs yet</p>
-                <p class="text-gray-400 text-xs mt-1">Click "Log Progress" to add the first update</p>
+                <p class="text-gray-500 text-sm">No specific activities logged yet</p>
+                <p class="text-gray-400 text-xs mt-1">Click "Log Progress" to add a report</p>
             </div>
         @endif
     </div>
@@ -163,32 +198,54 @@
                  class="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
                 <form action="{{ route('activities.progress.add', $activity) }}" method="POST" enctype="multipart/form-data" class="p-6">
                     @csrf
-                    <div class="mb-4">
-                        <h3 class="text-lg font-medium leading-6 text-gray-900">Log Activity Progress</h3>
-                        <p class="text-sm text-gray-500 mt-1">Track: {{ strtolower($activity->tracking_frequency) }}</p>
-                        <p class="text-xs bg-purple-50 text-purple-700 px-3 py-2 rounded mt-2">
-                            💡 <strong>Enter the amount you completed this period</strong>, not the total. The system will calculate the cumulative total automatically.
-                        </p>
+                    <div class="mb-4 text-center">
+                        <h3 class="text-lg font-bold leading-6 text-gray-900 border-b pb-2">Activity Reporting Form</h3>
+                        <p class="text-sm text-gray-500 mt-2">Fill in the details for {{ strtolower($activity->tracking_frequency) }} report.</p>
                     </div>
 
                     <div class="space-y-4">
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700">Date <span class="text-red-500">*</span></label>
-                            <input type="date" name="log_date" required value="{{ date('Y-m-d') }}"
-                                class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-purple-500 focus:border-purple-500 sm:text-sm">
+                        <div class="grid grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700">Date <span class="text-red-500">*</span></label>
+                                <input type="date" name="log_date" required value="{{ date('Y-m-d') }}"
+                                    class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-purple-500 focus:border-purple-500 sm:text-sm">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700">Budget Spent (RWF)</label>
+                                <input type="number" name="financial_spent" min="0" value="0"
+                                    class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-purple-500 focus:border-purple-500 sm:text-sm">
+                            </div>
                         </div>
 
                         <div>
-                            <label class="block text-sm font-medium text-gray-700">Amount Added This Period <span class="text-red-500">*</span></label>
-                            <input type="number" name="progress_value" required min="0" value="0"
-                                class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-purple-500 focus:border-purple-500 sm:text-sm"
-                                placeholder="e.g., 1500">
-                            <p class="text-xs text-gray-500 mt-1">Current total: {{ number_format($activity->current_progress) }} / Target: {{ number_format($activity->target) }} {{ $activity->target_unit }}</p>
+                            <label class="block text-sm font-medium text-gray-700">Activities Performed <span class="text-red-500">*</span></label>
+                            <textarea name="activities_performed" rows="3" required placeholder="Describe specific activities done..."
+                                class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-purple-500 focus:border-purple-500 sm:text-sm"></textarea>
                         </div>
 
                         <div>
-                            <label class="block text-sm font-medium text-gray-700">Notes</label>
-                            <textarea name="notes" rows="3"
+                            <label class="block text-sm font-medium text-gray-700">Results (Outcome)</label>
+                            <textarea name="results_outcome" rows="3" placeholder="What was the result/outcome?"
+                                class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-purple-500 focus:border-purple-500 sm:text-sm"></textarea>
+                        </div>
+
+                        <div class="grid grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700">Quantity/Output <span class="text-red-500">*</span></label>
+                                <input type="number" name="progress_value" required min="0" value="0"
+                                    class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-purple-500 focus:border-purple-500 sm:text-sm">
+                                <p class="text-xs text-gray-500 mt-1">Target: {{ number_format($activity->target) }} {{ $activity->target_unit }}</p>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700">Location</label>
+                                <input type="text" name="location" placeholder="Where did this happen?"
+                                    class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-purple-500 focus:border-purple-500 sm:text-sm">
+                            </div>
+                        </div>
+
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700">General Notes</label>
+                            <textarea name="notes" rows="2"
                                 class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-purple-500 focus:border-purple-500 sm:text-sm"></textarea>
                         </div>
 
@@ -201,14 +258,13 @@
                                     file:text-sm file:font-semibold
                                     file:bg-purple-50 file:text-purple-700
                                     hover:file:bg-purple-100">
-                            <p class="text-xs text-gray-500 mt-1">Upload progress photos (max 10MB each)</p>
                         </div>
                     </div>
 
                     <div class="mt-5 sm:mt-6 sm:grid sm:grid-cols-2 sm:gap-3 sm:grid-flow-row-dense">
                         <button type="submit"
                             class="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-purple-600 text-base font-medium text-white hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500 sm:col-start-2 sm:text-sm">
-                            Save Progress
+                            Submit Report
                         </button>
                         <button type="button" @click="progressModalOpen = false"
                             class="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500 sm:mt-0 sm:col-start-1 sm:text-sm">
@@ -216,6 +272,7 @@
                         </button>
                     </div>
                 </form>
+
             </div>
         </div>
     </div>

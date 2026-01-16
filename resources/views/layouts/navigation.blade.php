@@ -17,6 +17,16 @@
                         {{ __('navigation.dashboard') }}
                     </x-nav-link>
                     
+                    <x-nav-link :href="route('activities.index')" :active="request()->routeIs('activities.*')" class="text-brand-100 hover:text-white border-transparent hover:border-white transition duration-150 ease-in-out">
+                        {{ __('Objectives') }}
+                    </x-nav-link>
+
+                    @can('manage departments')
+                    <x-nav-link :href="route('departments.index')" :active="request()->routeIs('departments.*')" class="text-brand-100 hover:text-white border-transparent hover:border-white transition duration-150 ease-in-out">
+                        {{ __('Directorates') }}
+                    </x-nav-link>
+                    @endcan
+
                     @can('manage giving types')
                         <x-nav-link :href="route('giving-types.index')" :active="request()->routeIs('giving-types.*')" class="text-brand-100 hover:text-white border-transparent hover:border-white transition duration-150 ease-in-out">
                             {{ __('navigation.giving_types') }}

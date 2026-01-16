@@ -146,8 +146,9 @@ class ActivityController extends Controller
         
         // Get churches visible to this user for filter dropdown
         $churches = $this->getVisibleChurches($user);
+        $departments = $this->getDepartmentsForUser($user);
         
-        return view('activities.index', compact('activities', 'stats', 'churches'));
+        return view('activities.index', compact('activities', 'stats', 'churches', 'departments'));
     }
 
     public function create()
@@ -377,6 +378,10 @@ class ActivityController extends Controller
             $validated = $request->validate([
                 'log_date' => 'required|date',
                 'progress_value' => 'required|integer|min:0',
+                'activities_performed' => 'nullable|string',
+                'results_outcome' => 'nullable|string',
+                'location' => 'nullable|string',
+                'financial_spent' => 'nullable|numeric|min:0',
                 'notes' => 'nullable|string',
                 'photos' => 'nullable|array',
                 'photos.*' => 'nullable|file|mimes:jpg,jpeg,png,gif,webp|max:10240', // 10MB max
@@ -390,23 +395,28 @@ class ActivityController extends Controller
 
         \Log::info('Validated Data: ', $validated);
 
-        // Calculate cumulative progress (sum all previous logs + this new value)
+        // Calculate standard cumulative totals for the specific log entry (point in time)
         $previousTotal = \App\Models\ActivityProgressLog::where('activity_id', $activity->id)
             ->where('log_date', '<', $validated['log_date'])
             ->sum('progress_value');
         
-        $cumulativeProgress = $previousTotal + $validated['progress_value'];
+        $cumulativeAtDate = $previousTotal + $validated['progress_value'];
         
-        \Log::info('Previous total: ' . $previousTotal);
-        \Log::info('This period amount: ' . $validated['progress_value']);
-        \Log::info('New cumulative total: ' . $cumulativeProgress);
+        // Calculate GLOBAL totals for the Activity (Objective) update
+        // Sum all EXISTING logs (excluding the one we are creating, which isn't in DB yet)
+        $totalProgress = \App\Models\ActivityProgressLog::where('activity_id', $activity->id)->sum('progress_value') + $validated['progress_value'];
+        $totalFinancial = \App\Models\ActivityProgressLog::where('activity_id', $activity->id)->sum('financial_spent') + ($validated['financial_spent'] ?? 0);
 
-        // Calculate progress percentage based on cumulative total
+        \Log::info('Global Total Progress: ' . $totalProgress);
+        \Log::info('Global Financial Spent: ' . $totalFinancial);
+
+
+        // Calculate progress percentage based on cumulative total at that point in time
         $progress_percentage = $activity->target > 0 
-            ? min(100, round(($cumulativeProgress / $activity->target) * 100, 2))
+            ? min(100, round(($cumulativeAtDate / $activity->target) * 100, 2))
             : 0;
 
-        \Log::info('Calculated Percentage: ' . $progress_percentage);
+        \Log::info('Calculated Log Percentage: ' . $progress_percentage);
 
         // Handle photo uploads
         $photoPaths = [];
@@ -427,7 +437,11 @@ class ActivityController extends Controller
             'logged_by' => auth()->id(),
             'log_date' => $validated['log_date'],
             'progress_value' => $validated['progress_value'], // Amount added this period
-            'progress_percentage' => $progress_percentage, // Percentage based on cumulative
+            'progress_percentage' => $progress_percentage, // Percentage at this point in time
+            'activities_performed' => $validated['activities_performed'] ?? null,
+            'results_outcome' => $validated['results_outcome'] ?? null,
+            'location' => $validated['location'] ?? null,
+            'financial_spent' => $validated['financial_spent'] ?? 0,
             'notes' => $validated['notes'] ?? null,
             'photos' => $photoPaths,
         ];
@@ -439,11 +453,14 @@ class ActivityController extends Controller
             $progressLog = \App\Models\ActivityProgressLog::create($logData);
             \Log::info('Progress log created successfully. ID: ' . $progressLog->id);
 
-            // Update activity's current progress to cumulative total
-            $updateData = ['current_progress' => $cumulativeProgress];
+            // Update activity's current progress and financial spent to GLOBAL totals
+            $updateData = [
+                'current_progress' => $totalProgress,
+                'financial_spent' => $totalFinancial
+            ];
             
             // Auto-complete when target is reached
-            if ($cumulativeProgress >= $activity->target && $activity->status !== 'completed') {
+            if ($totalProgress >= $activity->target && $activity->status !== 'completed') {
                 $updateData['status'] = 'completed';
                 \Log::info('Target reached! Auto-completing activity.');
             }

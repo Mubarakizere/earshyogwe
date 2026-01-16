@@ -17,6 +17,10 @@ class ActivityProgressLog extends Model
         'progress_percentage',
         'notes',
         'photos',
+        'activities_performed',
+        'results_outcome',
+        'location',
+        'financial_spent',
     ];
 
     protected $casts = [
