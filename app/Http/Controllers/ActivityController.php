@@ -187,11 +187,6 @@ class ActivityController extends Controller
             'tracking_frequency' => 'required|in:daily,weekly,biweekly,monthly',
             'risk_assessment' => 'nullable|string',
             'mitigation_plan' => 'nullable|string',
-            'location_name' => 'nullable|string|max:255',
-            'location_address' => 'nullable|string',
-            'location_latitude' => 'nullable|numeric|between:-90,90',
-            'location_longitude' => 'nullable|numeric|between:-180,180',
-            'location_region' => 'nullable|string|max:100',
         ]);
 
         // Determine Approval Status
@@ -231,11 +226,6 @@ class ActivityController extends Controller
             'tracking_frequency' => $validated['tracking_frequency'],
             'risk_assessment' => $validated['risk_assessment'] ?? null,
             'mitigation_plan' => $validated['mitigation_plan'] ?? null,
-            'location_name' => $validated['location_name'] ?? null,
-            'location_address' => $validated['location_address'] ?? null,
-            'location_latitude' => $validated['location_latitude'] ?? null,
-            'location_longitude' => $validated['location_longitude'] ?? null,
-            'location_region' => $validated['location_region'] ?? null,
             'duration_days' => $duration_days,
         ]);
 

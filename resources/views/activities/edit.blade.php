@@ -239,23 +239,8 @@
                                     </div>
                                 </div>
 
-                                <div class="mb-4">
-                                    <label class="block text-sm font-medium text-gray-700 mb-2">Address</label>
-                                    <textarea name="location_address" rows="2" 
-                                              class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-purple-500 focus:border-purple-500">{{ old('location_address', $activity->location_address) }}</textarea>
-                                    @error('location_address') <p class="text-red-500 text-xs mt-1">{{ $message }}</p> @enderror
-                                </div>
+                            {{-- Location REMOVED --}}
 
-                                <div>
-                                    <label class="block text-sm font-medium text-gray-700 mb-2">Pin on Map</label>
-                                    <p class="text-xs text-gray-500 mb-2">Click, drag marker, or use your current location</p>
-                                    <x-map-picker 
-                                        latitude="{{ old('location_latitude', $activity->location_latitude ?? '-1.9441') }}" 
-                                        longitude="{{ old('location_longitude', $activity->location_longitude ?? '30.0619') }}" 
-                                        name="location" 
-                                    />
-                                </div>
-                            </div>
 
                             {{-- Budget --}}
                             <div class="border border-gray-200 rounded-lg p-6 bg-gray-50">

@@ -215,49 +215,12 @@
 
                         {{-- TAB 3: OPTIONAL DETAILS --}}
                         <div x-show="currentTab === 'optional'" class="space-y-6">
-                            {{-- Location --}}
-                            <div class="border border-gray-200 rounded-lg p-6 bg-gray-50">
-                                <h4 class="font-semibold text-gray-900 mb-4">📍 Location (Optional)</h4>
-                                
-                                <div class="grid grid-cols-2 gap-4 mb-4">
-                                    <div>
-                                        <label class="block text-sm font-medium text-gray-700 mb-2">Location Name</label>
-                                        <input type="text" name="location_name" value="{{ old('location_name') }}" 
-                                               placeholder="e.g., Church Hall"
-                                               class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-purple-500 focus:border-purple-500">
-                                        @error('location_name') <p class="text-red-500 text-xs mt-1">{{ $message }}</p> @enderror
-                                    </div>
+                            {{-- Location REMOVED --}}
 
-                                    <div>
-                                        <label class="block text-sm font-medium text-gray-700 mb-2">Region</label>
-                                        <input type="text" name="location_region" value="{{ old('location_region') }}" 
-                                               placeholder="Province/District"
-                                               class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-purple-500 focus:border-purple-500">
-                                        @error('location_region') <p class="text-red-500 text-xs mt-1">{{ $message }}</p> @enderror
-                                    </div>
-                                </div>
-
-                                <div class="mb-4">
-                                    <label class="block text-sm font-medium text-gray-700 mb-2">Address</label>
-                                    <textarea name="location_address" rows="2" 
-                                              class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-purple-500 focus:border-purple-500">{{ old('location_address') }}</textarea>
-                                    @error('location_address') <p class="text-red-500 text-xs mt-1">{{ $message }}</p> @enderror
-                                </div>
-
-                                <div>
-                                    <label class="block text-sm font-medium text-gray-700 mb-2">Pin on Map</label>
-                                    <p class="text-xs text-gray-500 mb-2">Click, drag marker, or use your current location</p>
-                                    <x-map-picker 
-                                        latitude="{{ old('location_latitude', '-1.9441') }}" 
-                                        longitude="{{ old('location_longitude', '30.0619') }}" 
-                                        name="location" 
-                                    />
-                                </div>
-                            </div>
 
                             {{-- Budget --}}
                             <div class="border border-gray-200 rounded-lg p-6 bg-gray-50">
-                                <h4 class="font-semibold text-gray-900 mb-4">💰 Budget (Optional)</h4>
+                                <h4 class="font-semibold text-gray-900 mb-4">Budget (Optional)</h4>
                                 <div class="grid grid-cols-2 gap-4">
                                     <div>
                                         <label class="block text-sm font-medium text-gray-700 mb-2">Budget Estimate (RWF)</label>
@@ -284,7 +247,7 @@
 
                             {{-- Beneficiaries --}}
                             <div class="border border-gray-200 rounded-lg p-6 bg-gray-50">
-                                <h4 class="font-semibold text-gray-900 mb-4">👥 Target Beneficiaries (Optional)</h4>
+                                <h4 class="font-semibold text-gray-900 mb-4">Target Beneficiaries (Optional)</h4>
                                 <textarea name="target_beneficiaries" rows="2" 
                                           placeholder="Who will benefit? e.g., Youth, Families, Community members"
                                           class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-purple-500 focus:border-purple-500">{{ old('target_beneficiaries') }}</textarea>
@@ -293,7 +256,7 @@
 
                             {{-- Documents --}}
                             <div class="border border-gray-200 rounded-lg p-6 bg-gray-50">
-                                <h4 class="font-semibold text-gray-900 mb-4">📎 Documents (Optional)</h4>
+                                <h4 class="font-semibold text-gray-900 mb-4">Documents (Optional)</h4>
                                 <input type="file" name="documents[]" multiple accept=".jpg,.jpeg,.png,.pdf,.doc,.docx" 
                                        class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-purple-500 focus:border-purple-500">
                                 <p class="text-xs text-gray-500 mt-2">Upload supporting documents (max 5MB each)</p>
@@ -301,7 +264,7 @@
 
                             {{-- Custom Fields --}}
                             <div x-show="hasCustomFields" class="border border-purple-200 rounded-lg p-6 bg-purple-50">
-                                <h4 class="font-semibold text-gray-900 mb-4">⚙️ Department-Specific Fields</h4>
+                                <h4 class="font-semibold text-gray-900 mb-4">Department-Specific Fields</h4>
                                 
                                 @foreach($departments as $department)
                                     @php
