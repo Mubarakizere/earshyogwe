@@ -10,3 +10,4 @@ Artisan::command('inspire', function () {
 use Illuminate\Support\Facades\Schedule;
 
 Schedule::command('contracts:check-expiry')->daily();
+Schedule::command('activities:send-reminders')->daily();

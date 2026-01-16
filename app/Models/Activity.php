@@ -97,6 +97,7 @@ class Activity extends Model
         return $this->belongsTo(User::class, 'created_by');
     }
 
+
     public function indicators()
     {
         return $this->hasMany(ActivityIndicator::class);
