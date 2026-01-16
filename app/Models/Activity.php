@@ -41,11 +41,7 @@ class Activity extends Model
         'tracking_frequency',
         'risk_assessment',
         'mitigation_plan',
-        'location_name',
-        'location_address',
-        'location_latitude',
-        'location_longitude',
-        'location_region',
+        'mitigation_plan',
         'duration_days',
     ];
 

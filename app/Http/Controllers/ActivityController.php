@@ -237,6 +237,7 @@ class ActivityController extends Controller
                     'file_path' => $path,
                     'file_name' => $document->getClientOriginalName(),
                     'uploaded_by' => auth()->id(),
+                    'uploaded_at' => now(),
                 ]);
             }
         }
@@ -494,9 +495,51 @@ class ActivityController extends Controller
             'start_date' => 'required|date',
             'end_date' => 'nullable|date|after:start_date',
             'status' => 'required|in:planned,in_progress,completed,cancelled',
+            'documents.*' => 'nullable|file|mimes:jpg,jpeg,png,pdf,doc,docx|max:5120',
+            // Phase 1 Enhanced Fields
+            'activity_category' => 'nullable|string|max:50',
+            'priority_level' => 'required|in:low,medium,high,critical',
+            'objectives' => 'nullable|string',
+            'target_beneficiaries' => 'nullable|string',
+            'expected_outcomes' => 'nullable|string',
+            'target_unit' => 'nullable|string|max:50',
+            'funding_source' => 'nullable|string|max:100',
+            'tracking_frequency' => 'required|in:daily,weekly,biweekly,monthly',
+            'risk_assessment' => 'nullable|string',
+            'mitigation_plan' => 'nullable|string',
         ]);
 
         $activity->update($validated);
+
+        // Handle document removal
+        if ($request->has('remove_documents')) {
+            \App\Models\ActivityDocument::destroy($request->remove_documents);
+        }
+
+        // Handle new document uploads
+        if ($request->hasFile('documents')) {
+            foreach ($request->file('documents') as $document) {
+                $path = $document->store('activity-documents', 'public');
+                $activity->documents()->create([
+                    'file_path' => $path,
+                    'file_name' => $document->getClientOriginalName(),
+                    'uploaded_by' => auth()->id(),
+                    'uploaded_at' => now(),
+                ]);
+            }
+        }
+
+        // Handle custom field values
+        if ($request->has('custom_fields')) {
+            foreach ($request->custom_fields as $fieldId => $value) {
+                if ($value !== null) {
+                    $activity->customValues()->updateOrCreate(
+                        ['custom_field_definition_id' => $fieldId],
+                        ['field_value' => $value]
+                    );
+                }
+            }
+        }
 
         return redirect()->route('activities.index')
             ->with('success', 'Activity updated successfully!');

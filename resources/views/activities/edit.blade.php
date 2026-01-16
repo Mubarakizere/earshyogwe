@@ -285,11 +285,11 @@
                                 <div class="grid grid-cols-2 gap-3">
                                     @foreach($activity->documents as $index => $doc)
                                         <div class="flex items-center justify-between bg-white p-3 rounded border">
-                                            <a href="{{ Storage::url($doc) }}" target="_blank" class="text-sm text-purple-600 hover:underline flex-1 truncate">
-                                                📄 Document {{ $index + 1 }}
+                                            <a href="{{ Storage::url($doc->file_path) }}" target="_blank" class="text-sm text-purple-600 hover:underline flex-1 truncate">
+                                                📄 {{ $doc->file_name ?? 'Document ' . ($index + 1) }}
                                             </a>
                                             <label class="ml-2">
-                                                <input type="checkbox" name="remove_documents[]" value="{{ $index }}" class="rounded">
+                                                <input type="checkbox" name="remove_documents[]" value="{{ $doc->id }}" class="rounded">
                                                 <span class="text-xs text-red-600 ml-1">Remove</span>
                                             </label>
                                         </div>
