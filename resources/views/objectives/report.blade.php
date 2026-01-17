@@ -1,131 +1,189 @@
-@extends('layouts.app')
+<x-app-layout>
+    <x-slot name="header">
+        <div class="flex flex-col md:flex-row justify-between items-center gap-4">
+            <div>
+                <h2 class="font-semibold text-2xl text-gray-800 leading-tight flex items-center gap-3">
+                    {{ __('Submit Activity Report') }}
+                    <span class="px-3 py-1 text-xs font-bold tracking-wider uppercase bg-purple-100 text-purple-700 rounded-full border border-purple-200">
+                        Reporting
+                    </span>
+                </h2>
+                <p class="text-sm text-gray-500 mt-1">Submit progress updates and results for this objective.</p>
+            </div>
+            
+            <div class="flex gap-2">
+                <a href="{{ route('objectives.show', $objective) }}" class="inline-flex items-center px-4 py-2 bg-white border border-gray-300 rounded-md font-semibold text-xs text-gray-700 uppercase tracking-widest shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 transition">
+                    <svg class="w-4 h-4 mr-2 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
+                    </svg>
+                    Back to Details
+                </a>
+            </div>
+        </div>
+    </x-slot>
 
-@section('content')
-<div class="container mx-auto px-4 sm:px-6 lg:px-8 py-8">
-    <div class="flex justify-between items-center mb-6">
-        <h1 class="text-2xl font-bold text-gray-900 dark:text-gray-100">{{ __('Submit Report') }}</h1>
-        <a href="{{ route('objectives.show', $objective) }}" class="text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-100 flex items-center">
-            <x-heroicon-o-arrow-left class="w-5 h-5 mr-1"/>
-            {{ __('Back to Objective') }}
-        </a>
-    </div>
+    <div class="py-12">
+        <div class="max-w-5xl mx-auto sm:px-6 lg:px-8">
+            
+            <!-- Pro Header Card -->
+            <div class="bg-gradient-to-r from-purple-600 to-indigo-700 rounded-t-lg shadow-lg p-6 text-white overflow-hidden relative">
+                <div class="relative z-10">
+                    <p class="text-purple-100 text-xs font-bold uppercase tracking-wider mb-1">Current Objective</p>
+                    <h3 class="text-2xl font-bold">{{ $objective->name }}</h3>
+                    <div class="flex items-center gap-4 mt-2 text-purple-100 text-sm">
+                        <span class="flex items-center">
+                            <svg class="w-4 h-4 mr-1 opacity-70" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path></svg>
+                            {{ $objective->church->name }}
+                        </span>
+                        <span class="flex items-center">
+                            <svg class="w-4 h-4 mr-1 opacity-70" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path></svg>
+                            {{ $objective->department->name }}
+                        </span>
+                    </div>
+                </div>
+                <div class="absolute right-0 bottom-0 opacity-10 transform translate-x-4 translate-y-4">
+                    <svg class="w-32 h-32" fill="currentColor" viewBox="0 0 20 20">
+                        <path d="M13 6a3 3 0 11-6 0 3 3 0 016 0zM18 8a2 2 0 11-4 0 2 2 0 014 0zM14 15a4 4 0 00-8 0v3h8v-3zM6 8a2 2 0 11-4 0 2 2 0 014 0zM16 18v-3a5.972 5.972 0 00-.75-2.906A3.005 3.005 0 0119 15v3h-3zM4.75 12.094A5.973 5.973 0 004 15v3H1v-3a3 3 0 013.75-2.906z"></path>
+                    </svg>
+                </div>
+            </div>
 
-    <!-- Main Form Card matching the Image Layout -->
-    <div class="bg-white dark:bg-gray-800 shadow-xl rounded-lg overflow-hidden border border-gray-200 dark:border-gray-700">
-        <div class="p-6 sm:p-10">
-            <form action="{{ route('objectives.report.store', $objective) }}" method="POST">
-                @csrf
-                
-                <!-- Layout: Two Columns to match the Key Image -->
-                <div class="grid grid-cols-1 lg:grid-cols-2 gap-x-12 gap-y-8">
+            <!-- Main Form Card -->
+            <div class="bg-white overflow-hidden shadow-xl rounded-b-lg border-x border-b border-gray-200">
+                <form action="{{ route('objectives.report.store', $objective) }}" method="POST" class="p-8">
+                    @csrf
                     
-                    <!-- LEFT COLUMN -->
-                    <div class="space-y-8">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
                         
-                        <!-- Objective (Read Only) -->
-                        <div>
-                            <label class="block text-xl font-bold text-[#E91E63] mb-2">{{ __('Objective') }}</label>
-                            <div class="p-4 bg-gray-50 dark:bg-gray-900 rounded-lg border border-gray-300 dark:border-gray-600 min-h-[100px] text-lg text-gray-800 dark:text-gray-200">
-                                {{ $objective->name }}
-                                <div class="text-sm text-gray-500 mt-2 italic">{{ $objective->objectives }}</div>
+                        {{-- LEFT COLUMN --}}
+                        <div class="space-y-6">
+                            <div>
+                                <label for="activities_description" class="block text-sm font-bold text-gray-700 uppercase tracking-wider mb-2">
+                                    {{ __('Activities Performed') }} <span class="text-red-500">*</span>
+                                </label>
+                                <textarea name="activities_description" id="activities_description" rows="5" 
+                                    class="w-full rounded-lg border-gray-300 focus:border-purple-500 focus:ring-purple-500 shadow-sm transition-colors"
+                                    placeholder="Describe what was done..." required>{{ old('activities_description') }}</textarea>
+                                @error('activities_description')
+                                    <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                                @enderror
+                            </div>
+
+                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                                <div>
+                                    <label for="quantity" class="block text-sm font-bold text-gray-700 uppercase tracking-wider mb-2">
+                                        {{ __('Quantity/Output') }} <span class="text-red-500">*</span>
+                                    </label>
+                                    <div class="relative">
+                                        <input type="number" name="quantity" id="quantity" step="0.01" 
+                                            class="w-full rounded-lg border-gray-300 focus:border-purple-500 focus:ring-purple-500 shadow-sm transition-colors pr-12"
+                                            placeholder="0" required value="{{ old('quantity') }}">
+                                        <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
+                                            <span class="text-gray-400 text-xs font-medium">{{ $objective->target_unit ?? 'Qty' }}</span>
+                                        </div>
+                                    </div>
+                                    @error('quantity')
+                                        <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                                    @enderror
+                                </div>
+
+                                <div>
+                                    <label for="report_date" class="block text-sm font-bold text-gray-700 uppercase tracking-wider mb-2">
+                                        {{ __('Date of Activity') }} <span class="text-red-500">*</span>
+                                    </label>
+                                    <input type="date" name="report_date" id="report_date" 
+                                        class="w-full rounded-lg border-gray-300 focus:border-purple-500 focus:ring-purple-500 shadow-sm transition-colors"
+                                        value="{{ old('report_date', date('Y-m-d')) }}" required>
+                                    @error('report_date')
+                                        <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                                    @enderror
+                                </div>
                             </div>
                         </div>
 
-                        <!-- Activities (The core of the report) -->
-                        <div>
-                            <label for="activities_description" class="block text-xl font-bold text-[#E91E63] mb-2">{{ __('Activities') }}</label>
-                            <textarea name="activities_description" id="activities_description" rows="5" 
-                                class="w-full rounded-lg border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-lg"
-                                placeholder="Describe the activities performed..." required>{{ old('activities_description') }}</textarea>
-                            @error('activities_description')
-                                <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
-                            @enderror
-                        </div>
-
-                        <!-- Quantity/Output -->
-                        <div>
-                            <label for="quantity" class="block text-lg font-bold text-[#E91E63] mb-2">{{ __('Quantity/Output') }}</label>
-                            <div class="flex items-center">
-                                <input type="number" name="quantity" id="quantity" step="0.01" 
-                                    class="w-full rounded-lg border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-lg"
-                                    placeholder="0" required value="{{ old('quantity') }}">
-                                <span class="ml-3 text-gray-500 font-medium whitespace-nowrap">{{ $objective->target_unit ?? 'Units' }}</span>
+                        {{-- RIGHT COLUMN --}}
+                        <div class="space-y-6">
+                            <div>
+                                <label for="results_outcome" class="block text-sm font-bold text-gray-700 uppercase tracking-wider mb-2">
+                                    {{ __('Results & Outcomes') }} <span class="text-red-500">*</span>
+                                </label>
+                                <textarea name="results_outcome" id="results_outcome" rows="5" 
+                                    class="w-full rounded-lg border-gray-300 focus:border-purple-500 focus:ring-purple-500 shadow-sm transition-colors"
+                                    placeholder="What was the impact/result?" required>{{ old('results_outcome') }}</textarea>
+                                @error('results_outcome')
+                                    <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                                @enderror
                             </div>
-                            @error('quantity')
-                                <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
-                            @enderror
-                        </div>
 
-                        <!-- Date -->
-                        <div>
-                            <label for="report_date" class="block text-lg font-bold text-[#E91E63] mb-2">{{ __('Date') }}</label>
-                            <input type="date" name="report_date" id="report_date" 
-                                class="w-full rounded-lg border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-lg"
-                                value="{{ old('report_date', date('Y-m-d')) }}" required>
-                            @error('report_date')
-                                <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
-                            @enderror
-                        </div>
+                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                                <div>
+                                    <label for="budget_spent" class="block text-sm font-bold text-gray-700 uppercase tracking-wider mb-2">
+                                        {{ __('Cost (RWF)') }}
+                                    </label>
+                                    <div class="relative">
+                                        <div class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
+                                            <span class="text-gray-400 text-xs">RWF</span>
+                                        </div>
+                                        <input type="number" name="budget_spent" id="budget_spent" step="0.01" 
+                                            class="w-full rounded-lg border-gray-300 focus:border-purple-500 focus:ring-purple-500 shadow-sm transition-colors pl-12"
+                                            placeholder="0" value="{{ old('budget_spent') }}">
+                                    </div>
+                                    @error('budget_spent')
+                                        <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                                    @enderror
+                                </div>
 
+                                <div>
+                                    <label for="location" class="block text-sm font-bold text-gray-700 uppercase tracking-wider mb-2">
+                                        {{ __('Location') }}
+                                    </label>
+                                    <input type="text" name="location" id="location" 
+                                        class="w-full rounded-lg border-gray-300 focus:border-purple-500 focus:ring-purple-500 shadow-sm transition-colors"
+                                        value="{{ old('location') }}" placeholder="e.g. Parish Hall">
+                                    @error('location')
+                                        <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                                    @enderror
+                                </div>
+                            </div>
+                        </div>
                     </div>
 
-                    <!-- RIGHT COLUMN -->
-                    <div class="space-y-8">
-                        
-                        <!-- Responsible Person -->
-                        <div>
-                            <label for="responsible_person" class="block text-sm font-bold text-[#E91E63] mb-2 text-right lg:text-left">{{ __('Responsible Person (Implementers)') }}</label>
-                            <input type="text" name="responsible_person" id="responsible_person" 
-                                class="w-full rounded-lg border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
-                                value="{{ old('responsible_person', auth()->user()->name) }}" required>
-                            @error('responsible_person')
-                                <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
-                            @enderror
-                        </div>
-
-                        <!-- Location -->
-                        <div>
-                            <label for="location" class="block text-sm font-bold text-[#E91E63] mb-2 text-right lg:text-left">{{ __('Location') }}</label>
-                            <input type="text" name="location" id="location" 
-                                class="w-full rounded-lg border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
-                                value="{{ old('location') }}" placeholder="e.g., Main Hall, Rubavu District...">
-                            @error('location')
-                                <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
-                            @enderror
-                        </div>
-
-                        <!-- Results (Outcome) -->
-                        <div>
-                            <label for="results_outcome" class="block text-sm font-bold text-[#E91E63] mb-2 text-right lg:text-left">{{ __('Results (Outcome)') }}</label>
-                            <textarea name="results_outcome" id="results_outcome" rows="4" 
-                                class="w-full rounded-lg border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
-                                placeholder="What was the outcome?" required>{{ old('results_outcome') }}</textarea>
-                            @error('results_outcome')
-                                <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
-                            @enderror
-                        </div>
-
-                        <!-- Budget -->
-                        <div>
-                            <label for="budget_spent" class="block text-sm font-bold text-[#E91E63] mb-2 text-right lg:text-left">{{ __('Budget / Cost (RWF)') }}</label>
-                            <input type="number" name="budget_spent" id="budget_spent" step="0.01" 
-                                class="w-full rounded-lg border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
-                                placeholder="0" value="{{ old('budget_spent') }}">
-                            @error('budget_spent')
-                                <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
-                            @enderror
-                        </div>
-                        
+                    <div class="mt-8">
+                        <label for="responsible_person" class="block text-sm font-bold text-gray-700 uppercase tracking-wider mb-2">
+                            {{ __('Submitted By / Responsible Person') }} <span class="text-red-500">*</span>
+                        </label>
+                        <input type="text" name="responsible_person" id="responsible_person" 
+                            class="w-full rounded-lg border-gray-300 focus:border-purple-500 focus:ring-purple-500 shadow-sm transition-colors"
+                            value="{{ old('responsible_person', auth()->user()->name) }}" required>
+                        @error('responsible_person')
+                            <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                        @enderror
                     </div>
-                </div>
 
-                <div class="mt-10 flex justify-end">
-                    <button type="submit" class="px-6 py-3 bg-[#E91E63] hover:bg-pink-600 text-white font-bold rounded-lg shadow-lg transform transition hover:scale-105">
-                        {{ __('Submit Report') }}
-                    </button>
+                    <div class="mt-10 flex justify-end gap-3 border-t border-gray-100 pt-8">
+                        <a href="{{ route('objectives.show', $objective) }}" class="px-6 py-3 bg-white border border-gray-300 rounded-lg text-gray-700 font-bold hover:bg-gray-50 transition">
+                            Cancel
+                        </a>
+                        <button type="submit" class="px-8 py-3 bg-purple-600 hover:bg-purple-700 text-white font-bold rounded-lg shadow-lg transform transition hover:scale-105">
+                            {{ __('Submit Report') }}
+                        </button>
+                    </div>
+                </form>
+            </div>
+
+            <!-- Hint Card -->
+            <div class="mt-6 p-4 bg-purple-50 border border-purple-100 rounded-lg flex gap-4">
+                <div class="flex-shrink-0 w-10 h-10 bg-purple-100 text-purple-600 rounded-full flex items-center justify-center">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
                 </div>
-            </form>
+                <div>
+                    <h4 class="text-sm font-bold text-purple-900 leading-tight">Pro Tip</h4>
+                    <p class="text-sm text-purple-700 mt-1">
+                        Submitting regular reports helps automatically calculate the progress percentage for this objective on the main dashboard.
+                    </p>
+                </div>
+            </div>
+
         </div>
     </div>
-</div>
-@endsection
+</x-app-layout>
