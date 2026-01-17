@@ -6,7 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 
-class Activity extends Model
+class Objective extends Model
 {
     use HasFactory, SoftDeletes;
     use \App\Traits\LogsActivity;
@@ -18,29 +18,22 @@ class Activity extends Model
         'description',
         'start_date',
         'end_date',
-        'responsible_person',
         'status', // planned, in_progress, completed, cancelled
         'target',
-        'current_progress',
+        'target_unit',
         'approval_status', // pending, approved, rejected
-        'budget_estimate',
-        'financial_spent',
-        'completion_summary',
-        'attendance_count',
-        'salvation_count',
         'created_by',
-        // Phase 1 Enhanced Fields
+        // Enhanced Fields (Planning related)
         'activity_category',
         'priority_level',
-        'objectives',
+        'objectives', // Assuming this is 'Goals' or similar, but name collision with class name. 
+                      // The migration has this column in 'activities' table, now 'objectives'.
         'target_beneficiaries',
         'expected_outcomes',
-        'target_unit',
         'support_team',
         'funding_source',
         'tracking_frequency',
         'risk_assessment',
-        'mitigation_plan',
         'mitigation_plan',
         'duration_days',
     ];
@@ -48,7 +41,7 @@ class Activity extends Model
     public static function bootLogsActivity()
     {
         static::created(function ($model) {
-            $model->logActivity('create', 'Created Activity: ' . $model->name);
+            $model->logActivity('create', 'Created Objective: ' . $model->name);
         });
 
         static::updated(function ($model) {
@@ -57,12 +50,11 @@ class Activity extends Model
             
             $changes = [];
             foreach ($dirty as $key => $value) {
-                // Get original for better context if needed, but keeping it short for view
                 $original = $model->getOriginal($key);
                 $changes[] = "$key: '$original' -> '$value'";
             }
             
-            $description = 'Updated Activity: ' . $model->name;
+            $description = 'Updated Objective: ' . $model->name;
             if (count($changes) > 0) {
                  $description .= '. Changes: ' . implode(', ', $changes);
             }
@@ -71,10 +63,9 @@ class Activity extends Model
         });
 
         static::deleted(function ($model) {
-            $model->logActivity('delete', 'Deleted Activity: ' . $model->name);
+            $model->logActivity('delete', 'Deleted Objective: ' . $model->name);
         });
     }
-    
 
     protected $casts = [
         'start_date' => 'date',
@@ -97,25 +88,32 @@ class Activity extends Model
         return $this->belongsTo(User::class, 'created_by');
     }
 
+    public function reports()
+    {
+        return $this->hasMany(ObjectiveReport::class);
+    }
 
     public function indicators()
     {
-        return $this->hasMany(ActivityIndicator::class);
+        return $this->hasMany(ActivityIndicator::class, 'activity_id'); // Keeping old FK if not migrated
     }
 
     public function documents()
     {
-        return $this->hasMany(ActivityDocument::class);
+        return $this->hasMany(ActivityDocument::class, 'activity_id');
     }
 
     public function progressLogs()
     {
-        return $this->hasMany(ActivityProgressLog::class)->orderBy('log_date', 'desc');
+        return $this->hasMany(ActivityProgressLog::class, 'activity_id')->orderBy('log_date', 'desc');
     }
 
-    public function customValues()
+    /**
+     * Calculate current progress based on reports.
+     */
+    public function getCurrentProgressAttribute()
     {
-        return $this->hasMany(ActivityCustomValue::class);
+        return $this->reports()->sum('quantity');
     }
 
     // Accessor for progress percentage

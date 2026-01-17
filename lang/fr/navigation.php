@@ -11,7 +11,7 @@ return [
     'categories' => 'Catégories',
     'expenses' => 'Dépenses',
     'evangelism' => 'Évangélisme',
-    'activities' => 'Activités',
+    'activities' => 'Objectifs',
     'hr' => 'RH',
     'workers' => 'Employés',
     'attendance' => 'Présence',

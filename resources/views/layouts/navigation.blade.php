@@ -17,7 +17,7 @@
                         {{ __('navigation.dashboard') }}
                     </x-nav-link>
                     
-                    <x-nav-link :href="route('activities.index')" :active="request()->routeIs('activities.*')" class="text-brand-100 hover:text-white border-transparent hover:border-white transition duration-150 ease-in-out">
+                    <x-nav-link :href="route('objectives.index')" :active="request()->routeIs('objectives.*')" class="text-brand-100 hover:text-white border-transparent hover:border-white transition duration-150 ease-in-out">
                         {{ __('Objectives') }}
                     </x-nav-link>
 
@@ -53,7 +53,7 @@
                         {{ __('navigation.evangelism') }}
                     </x-nav-link>
                     
-                    <x-nav-link :href="route('activities.index')" :active="request()->routeIs('activities.*')" class="text-brand-100 hover:text-white border-transparent hover:border-white transition duration-150 ease-in-out">
+                    <x-nav-link :href="route('objectives.index')" :active="request()->routeIs('objectives.*')" class="text-brand-100 hover:text-white border-transparent hover:border-white transition duration-150 ease-in-out">
                         {{ __('navigation.activities') }}
                     </x-nav-link>
                     

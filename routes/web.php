@@ -69,14 +69,15 @@ Route::middleware('auth')->group(function () {
     // Evangelism Reports (Permission-based - checked in controller)
     Route::resource('evangelism-reports', \App\Http\Controllers\EvangelismReportController::class);
     
-    // Activities (Permission-based - checked in controller)
-    // Activities (Pastor, Archid, Boss)
-    Route::get('activities/export', [\App\Http\Controllers\ActivityController::class, 'export'])->name('activities.export');
-    Route::post('activities/{activity}/approve', [\App\Http\Controllers\ActivityController::class, 'approve'])->name('activities.approve');
-    Route::post('activities/{activity}/reject', [\App\Http\Controllers\ActivityController::class, 'reject'])->name('activities.reject');
-    Route::post('activities/{activity}/complete', [\App\Http\Controllers\ActivityController::class, 'markComplete'])->name('activities.complete');
-    Route::post('activities/{activity}/progress', [\App\Http\Controllers\ActivityController::class, 'addProgressLog'])->name('activities.progress.add');
-    Route::resource('activities', \App\Http\Controllers\ActivityController::class);
+    // Objectives (Goals assigned by Heads)
+    Route::get('objectives/export', [\App\Http\Controllers\ObjectiveController::class, 'export'])->name('objectives.export');
+    Route::post('objectives/{objective}/approve', [\App\Http\Controllers\ObjectiveController::class, 'approve'])->name('objectives.approve');
+    Route::post('objectives/{objective}/reject', [\App\Http\Controllers\ObjectiveController::class, 'reject'])->name('objectives.reject');
+    Route::resource('objectives', \App\Http\Controllers\ObjectiveController::class);
+
+    // Objective Reports (Pastors reporting on Objectives)
+    Route::get('objectives/{objective}/report', [\App\Http\Controllers\ObjectiveReportController::class, 'create'])->name('objectives.report.create');
+    Route::post('objectives/{objective}/report', [\App\Http\Controllers\ObjectiveReportController::class, 'store'])->name('objectives.report.store');
     
     // Workers & HR
     Route::get('workers/export', [\App\Http\Controllers\WorkerController::class, 'export'])->name('workers.export');

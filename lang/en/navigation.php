@@ -11,7 +11,7 @@ return [
     'categories' => 'Categories',
     'expenses' => 'Expenses',
     'evangelism' => 'Evangelism',
-    'activities' => 'Activities',
+    'activities' => 'Objectives',
     'hr' => 'HR',
     'workers' => 'Workers',
     'attendance' => 'Attendance',

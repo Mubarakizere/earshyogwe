@@ -11,7 +11,7 @@ return [
     'categories' => 'Kategoria',
     'expenses' => 'Matumizi',
     'evangelism' => 'Uinjilisti',
-    'activities' => 'Shughuli',
+    'activities' => 'Malengo',
     'hr' => 'Wafanyakazi',
     'workers' => 'Wafanyakazi',
     'attendance' => 'Mahudhurio',

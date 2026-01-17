@@ -53,16 +53,16 @@ class RoleAndPermissionSeeder extends Seeder
             'view assigned evangelism',
             'view own evangelism',
             
-            // Activities
-            'create activities',
-            'edit activities',
-            'delete activities', // NEW
-            'approve activities', // NEW
-            'log activity progress', // Phase 1
-            'view all activities',
-            'view assigned activities',
-            'view own activities',
-            'view department activities',
+            // Objectives (Formerly Activities)
+            'create objectives',
+            'edit objectives',
+            'delete objectives',
+            'approve objectives',
+            'submit objective reports',
+            'view all objectives',
+            'view assigned objectives',
+            'view own objectives',
+            'view department objectives',
             
             // HR Management
             'manage all workers',
@@ -150,12 +150,12 @@ class RoleAndPermissionSeeder extends Seeder
             'approve expenses',
             'submit evangelism reports',
             'view assigned evangelism',
-            'create activities',
-            'edit activities',
-            'delete activities', // NEW
-            'approve activities', // NEW
-            'log activity progress', // Phase 1
-            'view assigned activities',
+            'create objectives',
+            'edit objectives',
+            'delete objectives', // NEW
+            'approve objectives', // NEW
+            'submit objective reports',
+            'view assigned objectives',
             'manage assigned workers',
             'manage contracts',
             'view retirement plans',
@@ -187,12 +187,12 @@ class RoleAndPermissionSeeder extends Seeder
             'submit evangelism reports',
             'mark diocese transfer',
             'view own evangelism',
-            'create activities',
-            'edit activities',
-            'delete activities', // NEW
-            'log activity progress', // Phase 1
-            'view own activities',
-            'view department activities',
+            'create objectives',
+            'edit objectives',
+            'delete objectives', // NEW
+            'submit objective reports',
+            'view own objectives',
+            'view department objectives',
             'manage own workers',
             'manage contracts',
             'view retirement plans',

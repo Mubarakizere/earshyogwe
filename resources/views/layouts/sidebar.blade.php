@@ -20,7 +20,7 @@
         </x-sidebar-link>
 
         <!-- Ministry Management Dropdown -->
-        <div x-data="{ open: {{ request()->routeIs('churches.*') || request()->routeIs('departments.*') || request()->routeIs('activities.*') || request()->routeIs('evangelism-reports.*') || request()->routeIs('attendances.*') || request()->routeIs('members.*') ? 'true' : 'false' }} }" class="space-y-1">
+        <div x-data="{ open: {{ request()->routeIs('churches.*') || request()->routeIs('departments.*') || request()->routeIs('objectives.*') || request()->routeIs('evangelism-reports.*') || request()->routeIs('attendances.*') || request()->routeIs('members.*') ? 'true' : 'false' }} }" class="space-y-1">
             <button @click="open = !open" class="flex items-center w-full px-2 py-2 text-sm font-medium rounded-md hover:bg-brand-800 hover:text-white group transition-colors focus:outline-none" :class="{ 'bg-brand-800 text-white': open, 'text-brand-200': !open }">
                 <svg class="w-5 h-5 mr-3 text-brand-400 group-hover:text-white transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" /></svg>
                 <span class="flex-1 text-left">Ministry</span>
@@ -39,9 +39,9 @@
                         Directorates
                     </a>
                 @endcanany
-                @canany(['view all activities', 'view assigned activities', 'view own activities'])
-                    <a href="{{ route('activities.index') }}" class="group flex items-center px-2 py-2 text-sm font-medium rounded-md hover:text-white hover:bg-brand-800 {{ request()->routeIs('activities.*') ? 'text-white bg-brand-800' : 'text-brand-200' }}">
-                        Activities
+                @canany(['view all objectives', 'view assigned objectives', 'view own objectives'])
+                    <a href="{{ route('objectives.index') }}" class="group flex items-center px-2 py-2 text-sm font-medium rounded-md hover:text-white hover:bg-brand-800 {{ request()->routeIs('objectives.*') ? 'text-white bg-brand-800' : 'text-brand-200' }}">
+                        Objectives
                     </a>
                 @endcanany
                 @canany(['view all evangelism', 'view assigned evangelism', 'view own evangelism'])

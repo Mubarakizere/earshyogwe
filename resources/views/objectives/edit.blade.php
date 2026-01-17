@@ -1,13 +1,13 @@
 <x-app-layout>
     <x-slot name="header">
-        <h2 class="font-semibold text-2xl text-gray-800 leading-tight">Edit Activity: {{ $activity->name }}</h2>
+        <h2 class="font-semibold text-2xl text-gray-800 leading-tight">Edit Objective: {{ $objective->name }}</h2>
     </x-slot>
 
     <div class="py-12">
         <div class="max-w-5xl mx-auto sm:px-6 lg:px-8">
             <div class="bg-white overflow-hidden shadow-xl rounded-lg">
-                <form action="{{ route('activities.update', $activity) }}" method="POST" enctype="multipart/form-data" 
-                      x-data="{ currentTab: 'basic', hasCustomFields: {{ \App\Models\CustomFieldDefinition::where('department_id', $activity->department_id)->active()->count() > 0 ? 'true' : 'false' }} }">
+                <form action="{{ route('objectives.update', $objective) }}" method="POST" enctype="multipart/form-data" 
+                      x-data="{ currentTab: 'basic', hasCustomFields: {{ \App\Models\CustomFieldDefinition::where('department_id', $objective->department_id)->active()->count() > 0 ? 'true' : 'false' }} }">
                     @csrf
                     @method('PUT')
 
@@ -53,13 +53,13 @@
                                         <select name="church_id" required class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-purple-500 focus:border-purple-500">
                                             <option value="">Select Church</option>
                                             @foreach($churches as $church)
-                                                <option value="{{ $church->id }}" {{ old('church_id', $activity->church_id) == $church->id ? 'selected' : '' }}>{{ $church->name }}</option>
+                                                <option value="{{ $church->id }}" {{ old('church_id', $objective->church_id) == $church->id ? 'selected' : '' }}>{{ $church->name }}</option>
                                             @endforeach
                                         </select>
                                         @error('church_id') <p class="text-red-500 text-xs mt-1">{{ $message }}</p> @enderror
                                     </div>
                                 @else
-                                    <input type="hidden" name="church_id" value="{{ $activity->church_id }}">
+                                    <input type="hidden" name="church_id" value="{{ $objective->church_id }}">
                                 @endif
 
                                 <div>
@@ -69,7 +69,7 @@
                                             class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-purple-500 focus:border-purple-500">
                                         <option value="">Select Department</option>
                                         @foreach($departments as $department)
-                                            <option value="{{ $department->id }}" {{ old('department_id', $activity->department_id) == $department->id ? 'selected' : '' }}>{{ $department->name }}</option>
+                                            <option value="{{ $department->id }}" {{ old('department_id', $objective->department_id) == $department->id ? 'selected' : '' }}>{{ $department->name }}</option>
                                         @endforeach
                                     </select>
                                     @error('department_id') <p class="text-red-500 text-xs mt-1">{{ $message }}</p> @enderror
@@ -77,8 +77,8 @@
                             </div>
 
                             <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-2">Activity Name <span class="text-red-500">*</span></label>
-                                <input type="text" name="name" value="{{ old('name', $activity->name) }}" required 
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Objective Name <span class="text-red-500">*</span></label>
+                                <input type="text" name="name" value="{{ old('name', $objective->name) }}" required 
                                        placeholder="e.g., Bible Distribution Campaign"
                                        class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-purple-500 focus:border-purple-500">
                                 @error('name') <p class="text-red-500 text-xs mt-1">{{ $message }}</p> @enderror
@@ -89,13 +89,13 @@
                                     <label class="block text-sm font-medium text-gray-700 mb-2">Category</label>
                                     <select name="activity_category" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-purple-500 focus:border-purple-500">
                                         <option value="">Select Category</option>
-                                        <option value="Evangelism" {{ old('activity_category', $activity->activity_category) == 'Evangelism' ? 'selected' : '' }}>Evangelism</option>
-                                        <option value="Infrastructure" {{ old('activity_category', $activity->activity_category) == 'Infrastructure' ? 'selected' : '' }}>Infrastructure</option>
-                                        <option value="Finance" {{ old('activity_category', $activity->activity_category) == 'Finance' ? 'selected' : '' }}>Finance</option>
-                                        <option value="Training" {{ old('activity_category', $activity->activity_category) == 'Training' ? 'selected' : '' }}>Training</option>
-                                        <option value="Social" {{ old('activity_category', $activity->activity_category) == 'Social' ? 'selected' : '' }}>Social Services</option>
-                                        <option value="Worship" {{ old('activity_category', $activity->activity_category) == 'Worship' ? 'selected' : '' }}>Worship</option>
-                                        <option value="Other" {{ old('activity_category', $activity->activity_category) == 'Other' ? 'selected' : '' }}>Other</option>
+                                        <option value="Evangelism" {{ old('activity_category', $objective->activity_category) == 'Evangelism' ? 'selected' : '' }}>Evangelism</option>
+                                        <option value="Infrastructure" {{ old('activity_category', $objective->activity_category) == 'Infrastructure' ? 'selected' : '' }}>Infrastructure</option>
+                                        <option value="Finance" {{ old('activity_category', $objective->activity_category) == 'Finance' ? 'selected' : '' }}>Finance</option>
+                                        <option value="Training" {{ old('activity_category', $objective->activity_category) == 'Training' ? 'selected' : '' }}>Training</option>
+                                        <option value="Social" {{ old('activity_category', $objective->activity_category) == 'Social' ? 'selected' : '' }}>Social Services</option>
+                                        <option value="Worship" {{ old('activity_category', $objective->activity_category) == 'Worship' ? 'selected' : '' }}>Worship</option>
+                                        <option value="Other" {{ old('activity_category', $objective->activity_category) == 'Other' ? 'selected' : '' }}>Other</option>
                                     </select>
                                     @error('activity_category') <p class="text-red-500 text-xs mt-1">{{ $message }}</p> @enderror
                                 </div>
@@ -103,10 +103,10 @@
                                 <div>
                                     <label class="block text-sm font-medium text-gray-700 mb-2">Priority <span class="text-red-500">*</span></label>
                                     <select name="priority_level" required class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-purple-500 focus:border-purple-500">
-                                        <option value="low" {{ old('priority_level', $activity->priority_level) == 'low' ? 'selected' : '' }}>Low</option>
-                                        <option value="medium" {{ old('priority_level', $activity->priority_level) == 'medium' ? 'selected' : '' }}>Medium</option>
-                                        <option value="high" {{ old('priority_level', $activity->priority_level) == 'high' ? 'selected' : '' }}>High</option>
-                                        <option value="critical" {{ old('priority_level', $activity->priority_level) == 'critical' ? 'selected' : '' }}>Critical</option>
+                                        <option value="low" {{ old('priority_level', $objective->priority_level) == 'low' ? 'selected' : '' }}>Low</option>
+                                        <option value="medium" {{ old('priority_level', $objective->priority_level) == 'medium' ? 'selected' : '' }}>Medium</option>
+                                        <option value="high" {{ old('priority_level', $objective->priority_level) == 'high' ? 'selected' : '' }}>High</option>
+                                        <option value="critical" {{ old('priority_level', $objective->priority_level) == 'critical' ? 'selected' : '' }}>Critical</option>
                                     </select>
                                     @error('priority_level') <p class="text-red-500 text-xs mt-1">{{ $message }}</p> @enderror
                                 </div>
@@ -115,8 +115,8 @@
                             <div>
                                 <label class="block text-sm font-medium text-gray-700 mb-2">Description & Objectives</label>
                                 <textarea name="description" rows="4" 
-                                          placeholder="What is this activity about? What are the goals?"
-                                          class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-purple-500 focus:border-purple-500">{{ old('description', $activity->description) }}</textarea>
+                                          placeholder="What is this objective about? What are the goals?"
+                                          class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-purple-500 focus:border-purple-500">{{ old('description', $objective->description) }}</textarea>
                                 <p class="text-xs text-gray-500 mt-1">Brief description and what you want to achieve</p>
                                 @error('description') <p class="text-red-500 text-xs mt-1">{{ $message }}</p> @enderror
                             </div>
@@ -134,14 +134,14 @@
                             <div class="grid grid-cols-3 gap-6">
                                 <div>
                                     <label class="block text-sm font-medium text-gray-700 mb-2">Start Date <span class="text-red-500">*</span></label>
-                                    <input type="date" name="start_date" value="{{ old('start_date', $activity->start_date?->format('Y-m-d')) }}" required 
+                                    <input type="date" name="start_date" value="{{ old('start_date', $objective->start_date?->format('Y-m-d')) }}" required 
                                            class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-purple-500 focus:border-purple-500">
                                     @error('start_date') <p class="text-red-500 text-xs mt-1">{{ $message }}</p> @enderror
                                 </div>
 
                                 <div>
                                     <label class="block text-sm font-medium text-gray-700 mb-2">End Date</label>
-                                    <input type="date" name="end_date" value="{{ old('end_date', $activity->end_date?->format('Y-m-d')) }}" 
+                                    <input type="date" name="end_date" value="{{ old('end_date', $objective->end_date?->format('Y-m-d')) }}" 
                                            class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-purple-500 focus:border-purple-500">
                                     <p class="text-xs text-gray-500 mt-1">Leave blank if ongoing</p>
                                     @error('end_date') <p class="text-red-500 text-xs mt-1">{{ $message }}</p> @enderror
@@ -150,10 +150,10 @@
                                 <div>
                                     <label class="block text-sm font-medium text-gray-700 mb-2">Status <span class="text-red-500">*</span></label>
                                     <select name="status" required class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-purple-500 focus:border-purple-500">
-                                        <option value="planned" {{ old('status', $activity->status) == 'planned' ? 'selected' : '' }}>Planned</option>
-                                        <option value="in_progress" {{ old('status', $activity->status) == 'in_progress' ? 'selected' : '' }}>In Progress</option>
-                                        <option value="completed" {{ old('status', $activity->status) == 'completed' ? 'selected' : '' }}>Completed</option>
-                                        <option value="cancelled" {{ old('status', $activity->status) == 'cancelled' ? 'selected' : '' }}>Cancelled</option>
+                                        <option value="planned" {{ old('status', $objective->status) == 'planned' ? 'selected' : '' }}>Planned</option>
+                                        <option value="in_progress" {{ old('status', $objective->status) == 'in_progress' ? 'selected' : '' }}>In Progress</option>
+                                        <option value="completed" {{ old('status', $objective->status) == 'completed' ? 'selected' : '' }}>Completed</option>
+                                        <option value="cancelled" {{ old('status', $objective->status) == 'cancelled' ? 'selected' : '' }}>Cancelled</option>
                                     </select>
                                     @error('status') <p class="text-red-500 text-xs mt-1">{{ $message }}</p> @enderror
                                 </div>
@@ -162,7 +162,7 @@
                             <div class="grid grid-cols-3 gap-6">
                                 <div>
                                     <label class="block text-sm font-medium text-gray-700 mb-2">Target Value <span class="text-red-500">*</span></label>
-                                    <input type="number" name="target" value="{{ old('target', $activity->target) }}" required min="0" 
+                                    <input type="number" name="target" value="{{ old('target', $objective->target) }}" required min="0" 
                                            placeholder="e.g., 10000"
                                            class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-purple-500 focus:border-purple-500">
                                     @error('target') <p class="text-red-500 text-xs mt-1">{{ $message }}</p> @enderror
@@ -170,7 +170,7 @@
 
                                 <div>
                                     <label class="block text-sm font-medium text-gray-700 mb-2">Unit</label>
-                                    <input type="text" name="target_unit" value="{{ old('target_unit', $activity->target_unit) }}" 
+                                    <input type="text" name="target_unit" value="{{ old('target_unit', $objective->target_unit) }}" 
                                            placeholder="e.g., Bibles, People"
                                            class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-purple-500 focus:border-purple-500">
                                     <p class="text-xs text-gray-500 mt-1">What are you measuring?</p>
@@ -180,10 +180,10 @@
                                 <div>
                                     <label class="block text-sm font-medium text-gray-700 mb-2">Track Progress</label>
                                     <select name="tracking_frequency" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-purple-500 focus:border-purple-500">
-                                        <option value="daily" {{ old('tracking_frequency', $activity->tracking_frequency) == 'daily' ? 'selected' : '' }}>Daily</option>
-                                        <option value="weekly" {{ old('tracking_frequency', $activity->tracking_frequency) == 'weekly' ? 'selected' : '' }}>Weekly</option>
-                                        <option value="biweekly" {{ old('tracking_frequency', $activity->tracking_frequency) == 'biweekly' ? 'selected' : '' }}>Bi-Weekly</option>
-                                        <option value="monthly" {{ old('tracking_frequency', $activity->tracking_frequency) == 'monthly' ? 'selected' : '' }}>Monthly</option>
+                                        <option value="daily" {{ old('tracking_frequency', $objective->tracking_frequency) == 'daily' ? 'selected' : '' }}>Daily</option>
+                                        <option value="weekly" {{ old('tracking_frequency', $objective->tracking_frequency) == 'weekly' ? 'selected' : '' }}>Weekly</option>
+                                        <option value="biweekly" {{ old('tracking_frequency', $objective->tracking_frequency) == 'biweekly' ? 'selected' : '' }}>Bi-Weekly</option>
+                                        <option value="monthly" {{ old('tracking_frequency', $objective->tracking_frequency) == 'monthly' ? 'selected' : '' }}>Monthly</option>
                                     </select>
                                     @error('tracking_frequency') <p class="text-red-500 text-xs mt-1">{{ $message }}</p> @enderror
                                 </div>
@@ -191,7 +191,7 @@
 
                             <div>
                                 <label class="block text-sm font-medium text-gray-700 mb-2">Responsible Person</label>
-                                <input type="text" name="responsible_person" value="{{ old('responsible_person', $activity->responsible_person) }}" 
+                                <input type="text" name="responsible_person" value="{{ old('responsible_person', $objective->responsible_person) }}" 
                                        placeholder="Name of person leading this activity"
                                        class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-purple-500 focus:border-purple-500">
                                 @error('responsible_person') <p class="text-red-500 text-xs mt-1">{{ $message }}</p> @enderror
@@ -209,7 +209,7 @@
                                     </button>
                                     <button type="submit" 
                                             class="px-6 py-3 bg-green-600 hover:bg-green-700 text-white font-semibold rounded-lg transition">
-                                        ✓ Update Activity
+                                        ✓ Update Objective
                                     </button>
                                 </div>
                             </div>
@@ -217,30 +217,6 @@
 
                         {{-- TAB 3: OPTIONAL DETAILS --}}
                         <div x-show="currentTab === 'optional'" class="space-y-6">
-                            {{-- Location --}}
-                            <div class="border border-gray-200 rounded-lg p-6 bg-gray-50">
-                                <h4 class="font-semibold text-gray-900 mb-4">📍 Location (Optional)</h4>
-                                
-                                <div class="grid grid-cols-2 gap-4 mb-4">
-                                    <div>
-                                        <label class="block text-sm font-medium text-gray-700 mb-2">Location Name</label>
-                                        <input type="text" name="location_name" value="{{ old('location_name', $activity->location_name) }}" 
-                                               placeholder="e.g., Church Hall"
-                                               class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-purple-500 focus:border-purple-500">
-                                        @error('location_name') <p class="text-red-500 text-xs mt-1">{{ $message }}</p> @enderror
-                                    </div>
-
-                                    <div>
-                                        <label class="block text-sm font-medium text-gray-700 mb-2">Region</label>
-                                        <input type="text" name="location_region" value="{{ old('location_region', $activity->location_region) }}" 
-                                               placeholder="Province/District"
-                                               class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-purple-500 focus:border-purple-500">
-                                        @error('location_region') <p class="text-red-500 text-xs mt-1">{{ $message }}</p> @enderror
-                                    </div>
-                                </div>
-
-                            {{-- Location REMOVED --}}
-
 
                             {{-- Budget --}}
                             <div class="border border-gray-200 rounded-lg p-6 bg-gray-50">
@@ -248,7 +224,7 @@
                                 <div class="grid grid-cols-2 gap-4">
                                     <div>
                                         <label class="block text-sm font-medium text-gray-700 mb-2">Budget Estimate (RWF)</label>
-                                        <input type="number" name="budget_estimate" value="{{ old('budget_estimate', $activity->budget_estimate) }}" min="0" step="1000" 
+                                        <input type="number" name="budget_estimate" value="{{ old('budget_estimate', $objective->budget_estimate) }}" min="0" step="1000" 
                                                placeholder="0"
                                                class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-purple-500 focus:border-purple-500">
                                         @error('budget_estimate') <p class="text-red-500 text-xs mt-1">{{ $message }}</p> @enderror
@@ -258,11 +234,11 @@
                                         <label class="block text-sm font-medium text-gray-700 mb-2">Funding Source</label>
                                         <select name="funding_source" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-purple-500 focus:border-purple-500">
                                             <option value="">Select Source</option>
-                                            <option value="Church" {{ old('funding_source', $activity->funding_source) == 'Church' ? 'selected' : '' }}>Church</option>
-                                            <option value="Diocese" {{ old('funding_source', $activity->funding_source) == 'Diocese' ? 'selected' : '' }}>Diocese</option>
-                                            <option value="Donation" {{ old('funding_source', $activity->funding_source) == 'Donation' ? 'selected' : '' }}>Donation</option>
-                                            <option value="Grant" {{ old('funding_source', $activity->funding_source) == 'Grant' ? 'selected' : '' }}>Grant</option>
-                                            <option value="Mixed" {{ old('funding_source', $activity->funding_source) == 'Mixed' ? 'selected' : '' }}>Mixed</option>
+                                            <option value="Church" {{ old('funding_source', $objective->funding_source) == 'Church' ? 'selected' : '' }}>Church</option>
+                                            <option value="Diocese" {{ old('funding_source', $objective->funding_source) == 'Diocese' ? 'selected' : '' }}>Diocese</option>
+                                            <option value="Donation" {{ old('funding_source', $objective->funding_source) == 'Donation' ? 'selected' : '' }}>Donation</option>
+                                            <option value="Grant" {{ old('funding_source', $objective->funding_source) == 'Grant' ? 'selected' : '' }}>Grant</option>
+                                            <option value="Mixed" {{ old('funding_source', $objective->funding_source) == 'Mixed' ? 'selected' : '' }}>Mixed</option>
                                         </select>
                                         @error('funding_source') <p class="text-red-500 text-xs mt-1">{{ $message }}</p> @enderror
                                     </div>
@@ -274,16 +250,27 @@
                                 <h4 class="font-semibold text-gray-900 mb-4">👥 Target Beneficiaries (Optional)</h4>
                                 <textarea name="target_beneficiaries" rows="2" 
                                           placeholder="Who will benefit? e.g., Youth, Families, Community members"
-                                          class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-purple-500 focus:border-purple-500">{{ old('target_beneficiaries', $activity->target_beneficiaries) }}</textarea>
+                                          class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-purple-500 focus:border-purple-500">{{ old('target_beneficiaries', $objective->target_beneficiaries) }}</textarea>
                                 @error('target_beneficiaries') <p class="text-red-500 text-xs mt-1">{{ $message }}</p> @enderror
                             </div>
 
+                            {{-- Detailed Objectives --}}
+                            <div class="border border-gray-200 rounded-lg p-6 bg-gray-50">
+                                <h4 class="font-semibold text-gray-900 mb-4">Detailed Objectives/Expected Outcomes (Optional)</h4>
+                                <textarea name="objectives" rows="2" 
+                                          placeholder="Detailed breakdown of objectives..."
+                                          class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-purple-500 focus:border-purple-500 mb-2">{{ old('objectives', $objective->objectives) }}</textarea>
+                                <textarea name="expected_outcomes" rows="2" 
+                                          placeholder="Expected outcomes..."
+                                          class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-purple-500 focus:border-purple-500">{{ old('expected_outcomes', $objective->expected_outcomes) }}</textarea>
+                            </div>
+
                             {{-- Existing Documents --}}
-                            @if($activity->documents && count($activity->documents) > 0)
+                            @if($objective->documents && count($objective->documents) > 0)
                             <div class="border border-gray-200 rounded-lg p-6 bg-gray-50">
                                 <h4 class="font-semibold text-gray-900 mb-4">📎 Existing Documents</h4>
                                 <div class="grid grid-cols-2 gap-3">
-                                    @foreach($activity->documents as $index => $doc)
+                                    @foreach($objective->documents as $index => $doc)
                                         <div class="flex items-center justify-between bg-white p-3 rounded border">
                                             <a href="{{ Storage::url($doc->file_path) }}" target="_blank" class="text-sm text-purple-600 hover:underline flex-1 truncate">
                                                 📄 {{ $doc->file_name ?? 'Document ' . ($index + 1) }}
@@ -318,9 +305,9 @@
                                     @endphp
                                     
                                     @if($deptFieldsCount > 0)
-                                        <div x-show="document.querySelector('[name=department_id]')?.value == '{{ $department->id }}'" style="display: {{ $activity->department_id == $department->id ? 'block' : 'none' }};">
+                                        <div x-show="document.querySelector('[name=department_id]')?.value == '{{ $department->id }}'" style="display: {{ $objective->department_id == $department->id ? 'block' : 'none' }};">
                                             <p class="text-sm text-gray-600 mb-4">Custom fields for {{ $department->name }}:</p>
-                                            <x-custom-fields-form :departmentId="$department->id" :activityId="$activity->id" />
+                                            <x-custom-fields-form :departmentId="$department->id" :activityId="$objective->id" />
                                         </div>
                                     @endif
                                 @endforeach
@@ -333,7 +320,7 @@
                                 </button>
                                 <button type="submit" 
                                         class="px-8 py-3 bg-green-600 hover:bg-green-700 text-white font-semibold rounded-lg shadow-md transition">
-                                    ✓ Update Activity
+                                    ✓ Update Objective
                                 </button>
                             </div>
                         </div>

@@ -5,11 +5,11 @@
                 <h2 class="font-semibold text-2xl text-gray-800 leading-tight flex items-center gap-3">
                     {{ __('Objectives') }}
                     
-                    @can('view all activities')
+                    @can('view all objectives')
                         <span class="px-3 py-1 text-xs font-bold tracking-wider uppercase bg-purple-100 text-purple-700 rounded-full border border-purple-200">
                             Diocese View
                         </span>
-                    @elsecan('view assigned activities')
+                    @elsecan('view assigned objectives')
                         <span class="px-3 py-1 text-xs font-bold tracking-wider uppercase bg-blue-100 text-blue-700 rounded-full border border-blue-200">
                             Archdeaconry
                         </span>
@@ -19,19 +19,19 @@
                         </span>
                     @endcan
                 </h2>
-                <p class="text-sm text-gray-500 mt-1">Manage and track church activities and progress.</p>
+                <p class="text-sm text-gray-500 mt-1">Manage and track church objectives and progress.</p>
             </div>
             
             <div class="flex gap-2">
-                <a href="{{ route('activities.export', request()->query()) }}" class="inline-flex items-center px-4 py-2 bg-white border border-gray-300 rounded-md font-semibold text-xs text-gray-700 uppercase tracking-widest shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 disabled:opacity-25 transition">
+                <a href="{{ route('objectives.export', request()->query()) }}" class="inline-flex items-center px-4 py-2 bg-white border border-gray-300 rounded-md font-semibold text-xs text-gray-700 uppercase tracking-widest shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 disabled:opacity-25 transition">
                     <svg class="w-4 h-4 mr-2 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
                     Export
                 </a>
 
-                @can('create activities')
-                <a href="{{ route('activities.create') }}" class="inline-flex items-center px-4 py-2 bg-purple-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-purple-700 focus:bg-purple-700 active:bg-purple-900 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 transition">
+                @can('create objectives')
+                <a href="{{ route('objectives.create') }}" class="inline-flex items-center px-4 py-2 bg-purple-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-purple-700 focus:bg-purple-700 active:bg-purple-900 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 transition">
                     <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
-                    New Activity
+                    New Objective
                 </a>
                 @endcan
             </div>
@@ -46,7 +46,7 @@
                 <!-- Total -->
                 <div class="bg-gradient-to-br from-purple-500 to-indigo-600 rounded-lg shadow-lg p-5 text-white relative overflow-hidden">
                     <div class="relative z-10">
-                        <p class="text-purple-100 text-xs font-bold uppercase tracking-wider">Total Activities</p>
+                        <p class="text-purple-100 text-xs font-bold uppercase tracking-wider">Total Objectives</p>
                         <h3 class="text-3xl font-bold mt-1">{{ number_format($stats['total']) }}</h3>
                         <p class="text-xs text-purple-200 mt-1">All time records</p>
                     </div>
@@ -99,13 +99,19 @@
                     </div>
                 </div>
 
-                <!-- Directorate Folders (Visible when no department selected) -->
-                @if(!request('department_id') && !request('search'))
+                @php
+                    $isOverview = request('tab') == 'overview';
+                    $hasFilters = request()->hasAny(['search', 'status', 'priority', 'church_id', 'department_id']);
+                    $showFolders = $isOverview && !$hasFilters;
+                @endphp
+
+                <!-- Directorate Folders (Visible only on Overview tab with no filters) -->
+                @if($showFolders)
                     <div class="mb-8">
                         <h3 class="text-lg font-medium text-gray-900 mb-4">Directorates</h3>
                         <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
                             @foreach($departments as $dept)
-                                <a href="{{ route('activities.index', array_merge(request()->query(), ['department_id' => $dept->id])) }}" 
+                                <a href="{{ route('objectives.index', ['tab' => 'overview', 'department_id' => $dept->id]) }}" 
                                    class="group bg-white p-6 rounded-lg shadow-sm border border-gray-200 hover:shadow-md hover:border-purple-300 transition-all duration-200 flex flex-col items-center text-center cursor-pointer">
                                     
                                     <!-- Folder Icon -->
@@ -118,7 +124,7 @@
                                     <h4 class="font-bold text-gray-900 group-hover:text-purple-700 transition-colors">{{ $dept->name }}</h4>
                                     
                                     <span class="mt-2 text-xs font-medium bg-gray-100 text-gray-600 px-2.5 py-0.5 rounded-full">
-                                        View Activities
+                                        View Objectives
                                     </span>
                                 </a>
                             @endforeach
@@ -132,16 +138,16 @@
                  <!-- Tabs -->
                 <div class="border-b border-gray-200">
                     <nav class="-mb-px flex space-x-8" aria-label="Tabs">
-                        <a href="{{ route('activities.index', ['tab' => 'my_activities']) }}" 
+                        <a href="{{ route('objectives.index', ['tab' => 'my_activities']) }}" 
                            class="{{ request('tab', 'my_activities') == 'my_activities' ? 'border-purple-500 text-purple-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300' }} whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm">
-                            My Activities
+                            My Objectives
                         </a>
-                        <a href="{{ route('activities.index', ['tab' => 'overview']) }}" 
+                        <a href="{{ route('objectives.index', ['tab' => 'overview']) }}" 
                            class="{{ request('tab') == 'overview' ? 'border-purple-500 text-purple-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300' }} whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm">
-                            All Activities
+                            All Objectives
                         </a>
-                        @can('approve activities')
-                        <a href="{{ route('activities.index', ['tab' => 'approvals']) }}" 
+                        @can('approve objectives')
+                        <a href="{{ route('objectives.index', ['tab' => 'approvals']) }}" 
                            class="{{ request('tab') == 'approvals' ? 'border-purple-500 text-purple-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300' }} whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm flex items-center">
                             Approvals
                             @if($stats['pending_approval'] > 0)
@@ -152,10 +158,10 @@
                     </nav>
                 </div>
 
-                <!-- Advanced Filter Bar -->
+                <!-- Advanced Filter Bar (Always visible to allow searching which switches to list view) -->
                 <div class="bg-white p-4 rounded-lg shadow-sm border border-gray-200">
-                    <form method="GET" action="{{ route('activities.index') }}">
-                        <input type="hidden" name="tab" value="{{ request('tab') }}">
+                    <form method="GET" action="{{ route('objectives.index') }}">
+                        <input type="hidden" name="tab" value="{{ request('tab', 'my_activities') }}">
                         <div class="grid grid-cols-1 md:grid-cols-12 gap-4 items-end">
                             
                             <!-- Search -->
@@ -169,7 +175,7 @@
                                     </div>
                                     <input type="text" name="search" id="search" value="{{ request('search') }}" 
                                         class="focus:ring-purple-500 focus:border-purple-500 block w-full pl-10 sm:text-sm border-gray-300 rounded-md" 
-                                        placeholder="Name, Description...">
+                                        placeholder="Objective, Description...">
                                 </div>
                             </div>
                             
@@ -218,7 +224,7 @@
                                     Filter
                                 </button>
                                 @if(request()->hasAny(['search', 'status', 'church_id', 'department_id', 'start_date']))
-                                    <a href="{{ route('activities.index', ['tab' => request('tab')]) }}" class="bg-white border border-gray-300 rounded-md shadow-sm py-2 px-3 inline-flex justify-center text-gray-700 hover:bg-gray-50 hover:text-gray-900 transition" title="Clear Filters">
+                                    <a href="{{ route('objectives.index', ['tab' => request('tab')]) }}" class="bg-white border border-gray-300 rounded-md shadow-sm py-2 px-3 inline-flex justify-center text-gray-700 hover:bg-gray-50 hover:text-gray-900 transition" title="Clear Filters">
                                         <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
                                     </a>
                                 @endif
@@ -228,11 +234,12 @@
                 </div>
             </div>
 
-            <!-- Activities Grid/List -->
+            <!-- Objectives Grid/List (Visible when folders NOT shown) -->
+            @if(!$showFolders)
             <div class="bg-white overflow-hidden shadow-xl rounded-lg border border-gray-100">
-                @if($activities->count() > 0)
+                @if($objectives->count() > 0)
                     <div class="divide-y divide-gray-100">
-                        @foreach($activities as $activity)
+                        @foreach($objectives as $objective)
                             <div class="p-6 hover:bg-gray-50 transition duration-150 ease-in-out relative group">
                                 <div class="flex flex-col md:flex-row justify-between items-start gap-4">
                                     
@@ -240,16 +247,16 @@
                                     <div class="flex-1 min-w-0">
                                         <div class="flex items-center gap-2 mb-2 flex-wrap">
                                             {{-- Priority Badge --}}
-                                            @if($activity->priority_level)
-                                                @if($activity->priority_level === 'critical')
+                                            @if($objective->priority_level)
+                                                @if($objective->priority_level === 'critical')
                                                     <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold bg-red-100 text-red-800 border border-red-200">
                                                         🔥 Critical
                                                     </span>
-                                                @elseif($activity->priority_level === 'high')
+                                                @elseif($objective->priority_level === 'high')
                                                     <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold bg-orange-100 text-orange-800 border border-orange-200">
                                                         ⚡ High
                                                     </span>
-                                                @elseif($activity->priority_level === 'medium')
+                                                @elseif($objective->priority_level === 'medium')
                                                     <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800 border border-yellow-200">
                                                         Medium
                                                     </span>
@@ -261,15 +268,15 @@
                                             @endif
 
                                             {{-- Status Badge --}}
-                                            @if($activity->status === 'completed')
+                                            @if($objective->status === 'completed')
                                                 <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800 border border-green-200">
                                                     Completed
                                                 </span>
-                                            @elseif($activity->status === 'in_progress')
+                                            @elseif($objective->status === 'in_progress')
                                                 <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800 border border-blue-200">
                                                     In Progress
                                                 </span>
-                                            @elseif($activity->status === 'planned')
+                                            @elseif($objective->status === 'planned')
                                                 <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800 border border-gray-200">
                                                     Planned
                                                 </span>
@@ -280,59 +287,47 @@
                                             @endif
 
                                             {{-- Approval Badge --}}
-                                            @if($activity->approval_status === 'pending')
+                                            @if($objective->approval_status === 'pending')
                                                 <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800 border border-yellow-200 animate-pulse">
                                                     Pending Approval
                                                 </span>
-                                            @elseif($activity->approval_status === 'rejected')
+                                            @elseif($objective->approval_status === 'rejected')
                                                 <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-50 text-red-600 border border-red-200">
                                                     Rejected
                                                 </span>
                                             @endif
                                             
                                             <span class="text-xs text-gray-400">|</span>
-                                            <span class="text-xs text-gray-500 font-medium">{{ $activity->department->name }}</span>
+                                            <span class="text-xs text-gray-500 font-medium">{{ $objective->department->name }}</span>
                                             
                                             {{-- Category --}}
-                                            @if($activity->activity_category)
+                                            @if($objective->activity_category)
                                                 <span class="text-xs text-gray-400">•</span>
-                                                <span class="text-xs text-purple-600 font-medium">{{ $activity->activity_category }}</span>
+                                                <span class="text-xs text-purple-600 font-medium">{{ $objective->activity_category }}</span>
                                             @endif
                                         </div>
 
                                         <h3 class="text-xl font-bold text-gray-900 group-hover:text-purple-600 transition truncate">
-                                            <a href="{{ route('activities.show', $activity) }}">{{ $activity->name }}</a>
+                                            <a href="{{ route('objectives.show', $objective) }}">{{ $objective->name }}</a>
                                         </h3>
                                         
                                         <div class="flex items-center text-sm text-gray-500 mt-1 gap-4 flex-wrap">
                                             <span class="flex items-center">
                                                 <svg class="flex-shrink-0 mr-1.5 h-4 w-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path></svg>
-                                                {{ $activity->church->name }}
+                                                {{ $objective->church->name }}
                                             </span>
                                             <span class="flex items-center">
                                                 <svg class="flex-shrink-0 mr-1.5 h-4 w-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
-                                                {{ $activity->start_date->format('M d, Y') }}
-                                                @if($activity->duration_days)
-                                                    <span class="ml-1 text-xs text-gray-400">({{ $activity->duration_days }} days)</span>
+                                                {{ $objective->start_date->format('M d, Y') }}
+                                                @if($objective->duration_days)
+                                                    <span class="ml-1 text-xs text-gray-400">({{ $objective->duration_days }} days)</span>
                                                 @endif
                                             </span>
-                                            @if($activity->location_name)
-                                                <span class="flex items-center">
-                                                    <svg class="flex-shrink-0 mr-1.5 h-4 w-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
-                                                    {{ $activity->location_name }}
-                                                </span>
-                                            @endif
-                                            @if($activity->responsible_person)
-                                                <span class="flex items-center">
-                                                    <svg class="flex-shrink-0 mr-1.5 h-4 w-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path></svg>
-                                                    {{ $activity->responsible_person }}
-                                                </span>
-                                            @endif
                                             {{-- Tracking Frequency --}}
-                                            @if($activity->tracking_frequency)
+                                            @if($objective->tracking_frequency)
                                                 <span class="flex items-center text-xs bg-indigo-50 text-indigo-700 px-2 py-1 rounded">
                                                     <svg class="flex-shrink-0 mr-1 h-3 w-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path></svg>
-                                                    {{ ucfirst($activity->tracking_frequency) }} tracking
+                                                    {{ ucfirst($objective->tracking_frequency) }} tracking
                                                 </span>
                                             @endif
                                         </div>
@@ -342,27 +337,30 @@
                                     <div class="w-full md:w-1/4 mt-4 md:mt-0">
                                         <div class="flex justify-between text-xs font-semibold text-gray-500 mb-1">
                                             <span>Progress</span>
-                                            <span>{{ $activity->progress_percentage }}%</span>
+                                            <span>{{ $objective->progress_percentage }}%</span>
                                         </div>
                                         <div class="w-full bg-gray-100 rounded-full h-2">
-                                            <div class="bg-gradient-to-r from-purple-500 to-indigo-500 h-2 rounded-full transition-all duration-500" style="width: {{ $activity->progress_percentage }}%"></div>
+                                            <div class="bg-gradient-to-r from-purple-500 to-indigo-500 h-2 rounded-full transition-all duration-500" style="width: {{ $objective->progress_percentage }}%"></div>
                                         </div>
                                         <div class="mt-2 text-xs text-gray-400 text-right">
-                                            Target: {{ number_format($activity->target) }} {{ $activity->target_unit ?? 'units' }}
+                                            Target: {{ number_format($objective->target) }} {{ $objective->target_unit ?? 'units' }}
                                         </div>
                                     </div>
 
                                     {{-- Right: Actions --}}
                                     <div class="flex items-center md:flex-col justify-end gap-2 mt-4 md:mt-0 md:ml-4">
-                                        <a href="{{ route('activities.show', $activity) }}" class="text-indigo-600 hover:text-indigo-900 text-sm font-medium hover:bg-indigo-50 px-3 py-1 rounded transition">View</a>
+                                        @can('submit objective reports')
+                                        <a href="{{ route('objectives.report.create', $objective) }}" class="text-green-600 hover:text-green-900 text-sm font-medium hover:bg-green-50 px-3 py-1 rounded transition">Report</a>
+                                        @endcan
+                                        <a href="{{ route('objectives.show', $objective) }}" class="text-indigo-600 hover:text-indigo-900 text-sm font-medium hover:bg-indigo-50 px-3 py-1 rounded transition">View</a>
                                         
-                                        @can('edit activities')
-                                        <a href="{{ route('activities.edit', $activity) }}" class="text-gray-600 hover:text-gray-900 text-sm font-medium hover:bg-gray-100 px-3 py-1 rounded transition">Edit</a>
+                                        @can('edit objectives')
+                                        <a href="{{ route('objectives.edit', $objective) }}" class="text-gray-600 hover:text-gray-900 text-sm font-medium hover:bg-gray-100 px-3 py-1 rounded transition">Edit</a>
                                         @endcan
 
-                                        @can('delete activities')
+                                        @can('delete objectives')
                                         <button type="button" 
-                                            @click="deleteOpen = true; deleteRoute = '{{ route('activities.destroy', $activity) }}'"
+                                            @click="deleteOpen = true; deleteRoute = '{{ route('objectives.destroy', $objective) }}'"
                                             class="text-red-500 hover:text-red-700 text-sm font-medium hover:bg-red-50 px-3 py-1 rounded transition">
                                             Delete
                                         </button>
@@ -373,27 +371,27 @@
                         @endforeach
                     </div>
                     <div class="px-6 py-4 bg-gray-50 border-t border-gray-200">
-                        {{ $activities->links() }}
+                        {{ $objectives->links() }}
                     </div>
                 @else
                     <div class="text-center py-12">
                         <div class="mx-auto h-24 w-24 bg-gray-100 rounded-full flex items-center justify-center mb-4">
                             <svg class="h-10 w-10 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"></path></svg>
                         </div>
-                        <h3 class="text-lg font-medium text-gray-900">No activities found</h3>
-                        <p class="mt-2 text-sm text-gray-500">Get started by creating a new activity or adjusting your filters.</p>
+                        <h3 class="text-lg font-medium text-gray-900">No objectives found</h3>
+                        <p class="mt-2 text-sm text-gray-500">Get started by creating a new objective or adjusting your filters.</p>
                         <div class="mt-6">
-                            @can('create activities')
-                            <a href="{{ route('activities.create') }}" class="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-purple-600 hover:bg-purple-700 focus:outline-none">
+                            @can('create objectives')
+                            <a href="{{ route('objectives.create') }}" class="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-purple-600 hover:bg-purple-700 focus:outline-none">
                                 <svg class="-ml-1 mr-2 h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
-                                Create Activity
+                                Create Objective
                             </a>
                             @endcan
                         </div>
                     </div>
                 @endif
             </div>
-
+            @endif
             <!-- Delete Modal -->
             <div x-show="deleteOpen" style="display: none;" class="fixed inset-0 z-50 overflow-y-auto">
                 <div class="flex items-center justify-center min-h-screen px-4 pt-4 pb-20 text-center sm:block sm:p-0">
@@ -406,8 +404,8 @@
                                     <svg class="h-6 w-6 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
                                 </div>
                                 <div class="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left">
-                                    <h3 class="text-lg leading-6 font-medium text-gray-900">Delete Activity</h3>
-                                    <div class="mt-2"><p class="text-sm text-gray-500">Are you sure you want to delete this activity? This action cannot be undone.</p></div>
+                                    <h3 class="text-lg leading-6 font-medium text-gray-900">Delete Objective</h3>
+                                    <div class="mt-2"><p class="text-sm text-gray-500">Are you sure you want to delete this objective? This action cannot be undone.</p></div>
                                 </div>
                             </div>
                         </div>

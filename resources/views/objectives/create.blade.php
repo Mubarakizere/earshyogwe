@@ -6,7 +6,7 @@
     <div class="py-12">
         <div class="max-w-5xl mx-auto sm:px-6 lg:px-8">
             <div class="bg-white overflow-hidden shadow-xl rounded-lg">
-                <form action="{{ route('activities.store') }}" method="POST" enctype="multipart/form-data" 
+                <form action="{{ route('objectives.store') }}" method="POST" enctype="multipart/form-data" 
                       x-data="{ currentTab: 'basic', hasCustomFields: false }">
                     @csrf
 
@@ -114,7 +114,7 @@
                             <div>
                                 <label class="block text-sm font-medium text-gray-700 mb-2">Description & Objectives</label>
                                 <textarea name="description" rows="4" 
-                                          placeholder="What is this activity about? What are the goals?"
+                                          placeholder="What is this objective about? What are the goals?"
                                           class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-purple-500 focus:border-purple-500">{{ old('description') }}</textarea>
                                 <p class="text-xs text-gray-500 mt-1">Brief description and what you want to achieve</p>
                                 @error('description') <p class="text-red-500 text-xs mt-1">{{ $message }}</p> @enderror
@@ -188,9 +188,9 @@
                             </div>
 
                             <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-2">Responsible Person</label>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Responsible Person (Coordinator)</label>
                                 <input type="text" name="responsible_person" value="{{ old('responsible_person') }}" 
-                                       placeholder="Name of person leading this activity"
+                                       placeholder="Name of person coordinating this objective"
                                        class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-purple-500 focus:border-purple-500">
                                 @error('responsible_person') <p class="text-red-500 text-xs mt-1">{{ $message }}</p> @enderror
                             </div>
@@ -207,7 +207,7 @@
                                     </button>
                                     <button type="submit" 
                                             class="px-6 py-3 bg-green-600 hover:bg-green-700 text-white font-semibold rounded-lg transition">
-                                        ✓ Create Activity
+                                        ✓ Create Objective
                                     </button>
                                 </div>
                             </div>
@@ -215,12 +215,11 @@
 
                         {{-- TAB 3: OPTIONAL DETAILS --}}
                         <div x-show="currentTab === 'optional'" class="space-y-6">
-                            {{-- Location REMOVED --}}
-
 
                             {{-- Budget --}}
+                            {{-- Note: This is PLANNING budget, not SPENT budget. --}}
                             <div class="border border-gray-200 rounded-lg p-6 bg-gray-50">
-                                <h4 class="font-semibold text-gray-900 mb-4">Budget (Optional)</h4>
+                                <h4 class="font-semibold text-gray-900 mb-4">Budget Plan (Optional)</h4>
                                 <div class="grid grid-cols-2 gap-4">
                                     <div>
                                         <label class="block text-sm font-medium text-gray-700 mb-2">Budget Estimate (RWF)</label>
@@ -252,6 +251,17 @@
                                           placeholder="Who will benefit? e.g., Youth, Families, Community members"
                                           class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-purple-500 focus:border-purple-500">{{ old('target_beneficiaries') }}</textarea>
                                 @error('target_beneficiaries') <p class="text-red-500 text-xs mt-1">{{ $message }}</p> @enderror
+                            </div>
+
+                             {{-- Expected activity --}}
+                            <div class="border border-gray-200 rounded-lg p-6 bg-gray-50">
+                                <h4 class="font-semibold text-gray-900 mb-4">Detailed Objectives/Expected Outcomes (Optional)</h4>
+                                <textarea name="objectives" rows="2" 
+                                          placeholder="Detailed breakdown of objectives..."
+                                          class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-purple-500 focus:border-purple-500 mb-2">{{ old('objectives') }}</textarea>
+                                <textarea name="expected_outcomes" rows="2" 
+                                          placeholder="Expected outcomes..."
+                                          class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-purple-500 focus:border-purple-500">{{ old('expected_outcomes') }}</textarea>
                             </div>
 
                             {{-- Documents --}}

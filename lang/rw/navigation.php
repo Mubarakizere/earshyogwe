@@ -11,7 +11,7 @@ return [
     'categories' => 'Ibyiciro',
     'expenses' => 'Amafaranga Yakoreshejwe',
     'evangelism' => 'Ivanjili',
-    'activities' => 'Ibikorwa',
+    'activities' => 'Intego',
     'hr' => 'Abakozi',
     'workers' => 'Abakozi',
     'attendance' => 'Kwitabira',

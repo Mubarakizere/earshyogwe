@@ -2,11 +2,11 @@
     <x-slot name="header">
         <div class="flex flex-col md:flex-row justify-between items-center gap-4">
             <h2 class="font-semibold text-xl text-gray-800 leading-tight">
-                {{ __('Objective Details') }} <!-- Was Activity Details -->
+                {{ __('Objective Details') }}
             </h2>
             <div class="flex gap-2">
-                <a href="{{ route('activities.index') }}" class="text-sm text-gray-600 hover:text-gray-900">
-                    &larr; Back to Activities
+                <a href="{{ route('objectives.index') }}" class="text-sm text-gray-600 hover:text-gray-900">
+                    &larr; Back to Objectives
                 </a>
             </div>
         </div>
@@ -14,7 +14,6 @@
 
     <div class="py-12" x-data="{ 
         showDeleteModal: false,
-        completionModalOpen: false,
         approveModalOpen: false,
         docModalOpen: false,
         docUrl: '',
@@ -27,22 +26,31 @@
                 {{-- MAIN CONTENT (Left Column) --}}
                 <div class="lg:col-span-2 space-y-6">
                     
-                    {{-- Activity Header & Description --}}
+                    {{-- Objective Header & Description --}}
                     <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
                         <div class="p-6 border-b border-gray-200">
                             <div class="flex justify-between items-start">
                                 <div>
                                     <div class="flex items-center gap-2 mb-2">
                                         <span class="px-2.5 py-0.5 rounded-full text-xs font-medium bg-purple-100 text-purple-800">
-                                            {{ $activity->department->name ?? 'General' }}
+                                            {{ $objective->department->name ?? 'General' }}
                                         </span>
-                                        <span class="text-sm text-gray-500">{{ $activity->church->name }}</span>
+                                        <span class="text-sm text-gray-500">{{ $objective->church->name }}</span>
                                     </div>
-                                    <h1 class="text-2xl font-bold text-gray-900">{{ $activity->name }}</h1>
+                                    <h1 class="text-2xl font-bold text-gray-900">{{ $objective->name }}</h1>
+                                    @if($objective->objectives)
+                                        <div class="text-sm text-gray-500 mt-1 italic">{{ $objective->objectives }}</div>
+                                    @endif
                                 </div>
                                 <div class="flex gap-2">
-                                    @can('edit activities')
-                                        <a href="{{ route('activities.edit', $activity) }}" 
+                                    @can('submit objective reports')
+                                    <a href="{{ route('objectives.report.create', $objective) }}" class="inline-flex items-center px-4 py-2 bg-green-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 transition">
+                                        Submit Report
+                                    </a>
+                                    @endcan
+
+                                    @can('edit objectives')
+                                        <a href="{{ route('objectives.edit', $objective) }}" 
                                            class="inline-flex items-center px-4 py-2 bg-white border border-gray-300 rounded-md font-semibold text-xs text-gray-700 uppercase tracking-widest shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 disabled:opacity-25 transition">
                                             Edit
                                         </a>
@@ -53,20 +61,27 @@
                         <div class="p-6">
                             <h3 class="text-lg font-medium text-gray-900 mb-4">Description</h3>
                             <div class="prose max-w-none text-gray-600">
-                                {{ $activity->description ?? 'No description available.' }}
+                                {{ $objective->description ?? 'No description available.' }}
                             </div>
+
+                            @if($objective->expected_outcomes)
+                                <h4 class="text-md font-medium text-gray-900 mt-6 mb-2">Expected Outcomes</h4>
+                                <div class="prose max-w-none text-gray-600">
+                                    {{ $objective->expected_outcomes }}
+                                </div>
+                            @endif
                         </div>
                     </div>
 
                     {{-- Documents --}}
+                    @if($objective->documents && $objective->documents->count() > 0)
                     <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
                         <div class="p-6 border-b border-gray-200">
                             <h3 class="text-lg font-medium text-gray-900">Attachments</h3>
                         </div>
                         <div class="p-6">
-                            @if($activity->documents && $activity->documents->count() > 0)
                                 <ul class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                                    @foreach($activity->documents as $doc)
+                                    @foreach($objective->documents as $doc)
                                         @php
                                             $extension = strtolower(pathinfo($doc->file_path, PATHINFO_EXTENSION));
                                             $type = in_array($extension, ['jpg', 'jpeg', 'png', 'gif']) ? 'image' : ($extension === 'pdf' ? 'pdf' : 'other');
@@ -100,78 +115,79 @@
                                         </li>
                                     @endforeach
                                 </ul>
-                            @else
-                                <p class="text-sm text-gray-500">No documents attached.</p>
-                            @endif
                         </div>
                     </div>
+                     @endif
 
-                    {{-- Custom Fields --}}
-                    @if($activity->customValues && $activity->customValues->count() > 0)
-                        <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
-                            <div class="px-4 py-5 sm:p-6">
-                                <h3 class="text-lg leading-6 font-medium text-gray-900 mb-4">Additional Details</h3>
-                                <dl class="grid grid-cols-1 gap-x-4 gap-y-8 sm:grid-cols-2">
-                                    @foreach($activity->customValues as $customValue)
-                                        <div class="sm:col-span-1">
-                                            <dt class="text-sm font-medium text-gray-500">{{ $customValue->fieldDefinition->field_name }}</dt>
-                                            <dd class="mt-1 text-sm text-gray-900">
-                                                @if($customValue->fieldDefinition->field_type === 'checkbox')
-                                                    {{ $customValue->field_value ? 'Yes' : 'No' }}
-                                                @elseif($customValue->fieldDefinition->field_type === 'date')
-                                                    {{ \Carbon\Carbon::parse($customValue->field_value)->format('d M Y') }}
-                                                @else
-                                                    {{ $customValue->field_value }}
-                                                @endif
-                                            </dd>
-                                        </div>
-                                    @endforeach
-                                </dl>
-                            </div>
-                        </div>
-                    @endif
-
-                    {{-- Completion Report --}}
-                    @if($activity->status === 'completed' && $activity->completion_summary)
-                         <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg border-l-4 border-green-500">
-                            <div class="p-6">
-                                <h3 class="text-lg font-medium text-gray-900 mb-4 flex items-center">
-                                    <svg class="w-5 h-5 text-green-500 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-                                    Completion Report
-                                </h3>
-                                <div class="prose max-w-none text-gray-600 mb-6">
-                                    {{ $activity->completion_summary }}
-                                </div>
-                                <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 pt-4 border-t border-gray-100">
-                                    <div>
-                                        <span class="block text-xs font-medium text-gray-500 uppercase">Attendance</span>
-                                        <span class="block text-xl font-bold text-gray-900">{{ number_format($activity->attendance_count) }}</span>
-                                    </div>
-                                    <div>
-                                        <span class="block text-xs font-medium text-gray-500 uppercase">Salvations</span>
-                                        <span class="block text-xl font-bold text-gray-900">{{ number_format($activity->salvation_count) }}</span>
-                                    </div>
-                                    <div>
-                                        <span class="block text-xs font-medium text-gray-500 uppercase">Budget</span>
-                                        <span class="block text-lg font-semibold text-gray-900">{{ number_format($activity->budget_estimate) }}</span>
-                                    </div>
-                                    <div>
-                                        <span class="block text-xs font-medium text-gray-500 uppercase">Spent</span>
-                                        <span class="block text-lg font-semibold {{ $activity->financial_spent > $activity->budget_estimate ? 'text-red-600' : 'text-green-600' }}">{{ number_format($activity->financial_spent) }}</span>
-                                    </div>
-                                </div>
-                            </div>
-                         </div>
-                    @endif
-
-                    {{-- Activity Reports / Timeline --}}
-                    @if($activity->status !== 'cancelled')
+                    {{-- Objective Reports List --}}
+                    @if($objective->reports && $objective->reports->count() > 0)
                         <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
                             <div class="p-6 border-b border-gray-200">
-                                <h3 class="text-lg font-medium text-gray-900">Activity Reports</h3>
+                                <h3 class="text-lg font-medium text-gray-900">Reports Submitted</h3>
                             </div>
-                            <div class="p-6">
-                                @include('activities.partials.progress-timeline', ['activity' => $activity])
+                            <div class="divide-y divide-gray-200">
+                                @foreach($objective->reports as $report)
+                                    <div class="p-6">
+                                        <div class="flex justify-between items-start mb-2">
+                                            <div>
+                                                <h4 class="text-sm font-bold text-gray-900 group-hover:text-purple-600">
+                                                    Report Date: {{ \Carbon\Carbon::parse($report->report_date)->format('M d, Y') }}
+                                                </h4>
+                                                <p class="text-xs text-gray-500">Submitted by {{ $report->responsible_person }}</p>
+                                            </div>
+                                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800 border border-blue-200">
+                                                {{ ucfirst($report->status) }}
+                                            </span>
+                                        </div>
+                                        
+                                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+                                            <div>
+                                                <h5 class="text-xs font-semibold text-gray-500 uppercase">Activities Done</h5>
+                                                <p class="text-sm text-gray-700 mt-1 whitespace-pre-wrap">{{ $report->activities_description }}</p>
+                                            </div>
+                                            <div>
+                                                <h5 class="text-xs font-semibold text-gray-500 uppercase">Results / Outcome</h5>
+                                                <p class="text-sm text-gray-700 mt-1 whitespace-pre-wrap">{{ $report->results_outcome }}</p>
+                                            </div>
+                                        </div>
+
+                                        <div class="flex items-center gap-6 mt-4 pt-4 border-t border-gray-50">
+                                            <div>
+                                                <span class="text-xs font-semibold text-gray-500 uppercase block">Quantity</span>
+                                                <span class="text-sm font-bold text-gray-900">{{ number_format($report->quantity) }} {{ $objective->target_unit }}</span>
+                                            </div>
+                                            
+                                            @if($report->budget_spent > 0)
+                                            <div>
+                                                <span class="text-xs font-semibold text-gray-500 uppercase block">Budget Spent</span>
+                                                <span class="text-sm font-bold text-gray-900">{{ number_format($report->budget_spent) }} RWF</span>
+                                            </div>
+                                            @endif
+
+                                            @if($report->location)
+                                            <div>
+                                                <span class="text-xs font-semibold text-gray-500 uppercase block">Location</span>
+                                                <span class="text-sm text-gray-700">{{ $report->location }}</span>
+                                            </div>
+                                            @endif
+                                        </div>
+                                    </div>
+                                @endforeach
+                            </div>
+                        </div>
+                    @else
+                        <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg p-8 text-center">
+                            <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                            </svg>
+                            <h3 class="mt-2 text-sm font-medium text-gray-900">No reports yet</h3>
+                            <p class="mt-1 text-sm text-gray-500">Get started by submitting the first report for this objective.</p>
+                            <div class="mt-6">
+                                @can('submit objective reports')
+                                <a href="{{ route('objectives.report.create', $objective) }}" class="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                                    Submit Report
+                                </a>
+                                @endcan
                             </div>
                         </div>
                     @endif
@@ -194,23 +210,19 @@
                                         'cancelled' => 'bg-red-100 text-red-800',
                                     ];
                                 @endphp
-                                <span class="px-3 py-1 rounded-full text-sm font-semibold {{ $statusClasses[$activity->status] ?? 'bg-gray-100 text-gray-800' }}">
-                                    {{ ucfirst(str_replace('_', ' ', $activity->status)) }}
+                                <span class="px-3 py-1 rounded-full text-sm font-semibold {{ $statusClasses[$objective->status] ?? 'bg-gray-100 text-gray-800' }}">
+                                    {{ ucfirst(str_replace('_', ' ', $objective->status)) }}
                                 </span>
                             </div>
 
                             <div class="space-y-4 pt-4 border-t border-gray-100">
                                 <div>
                                     <span class="block text-sm font-medium text-gray-500">Start Date</span>
-                                    <span class="block text-base font-semibold text-gray-900">{{ $activity->start_date->format('M d, Y') }}</span>
+                                    <span class="block text-base font-semibold text-gray-900">{{ $objective->start_date->format('M d, Y') }}</span>
                                 </div>
                                 <div>
                                     <span class="block text-sm font-medium text-gray-500">End Date</span>
-                                    <span class="block text-base font-semibold text-gray-900">{{ $activity->end_date ? $activity->end_date->format('M d, Y') : 'Ongoing' }}</span>
-                                </div>
-                                <div>
-                                    <span class="block text-sm font-medium text-gray-500">Responsible Person</span>
-                                    <span class="block text-base font-semibold text-gray-900">{{ $activity->responsible_person ?? 'Unassigned' }}</span>
+                                    <span class="block text-base font-semibold text-gray-900">{{ $objective->end_date ? $objective->end_date->format('M d, Y') : 'Ongoing' }}</span>
                                 </div>
                             </div>
                         </div>
@@ -222,41 +234,32 @@
                             <h3 class="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-4">Progress</h3>
                             
                             <div class="mb-2 flex justify-between items-end">
-                                <span class="text-3xl font-bold text-gray-900">{{ number_format($activity->current_progress) }}</span>
-                                <span class="text-sm text-gray-500 mb-1">of {{ number_format($activity->target) }}</span>
+                                <span class="text-3xl font-bold text-gray-900">{{ number_format($objective->progress_percentage) }}%</span>
+                                <span class="text-sm text-gray-500 mb-1">Target: {{ number_format($objective->target) }} {{ $objective->target_unit }}</span>
                             </div>
                             
                             <div class="w-full bg-gray-200 rounded-full h-2.5 mb-4">
-                                <div class="bg-indigo-600 h-2.5 rounded-full" style="width: {{ $activity->target > 0 ? min(round(($activity->current_progress / $activity->target) * 100), 100) : 0 }}%"></div>
+                                <div class="bg-indigo-600 h-2.5 rounded-full" style="width: {{ $objective->progress_percentage }}%"></div>
                             </div>
                             
                             <div class="text-right text-sm text-gray-500">
-                                {{ $activity->target > 0 ? round(($activity->current_progress / $activity->target) * 100) : 0 }}% Complete
+                                Based on {{ $objective->reports->count() }} reports
                             </div>
 
-                            @if($activity->status === 'in_progress' && $activity->approval_status === 'approved')
-                                @can('edit activities')
-                                    <div class="mt-6">
-                                        <button @click="completionModalOpen = true" class="w-full inline-flex justify-center items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none">
-                                            Mark as Complete
-                                        </button>
-                                    </div>
-                                @endcan
-                            @endif
                         </div>
                     </div>
 
                     {{-- Approval Actions --}}
-                    @if($activity->approval_status === 'pending' && auth()->user()->can('approve activities'))
+                    @if($objective->approval_status === 'pending' && auth()->user()->can('approve objectives'))
                         <div class="bg-yellow-50 overflow-hidden shadow-sm sm:rounded-lg border border-yellow-200">
                             <div class="p-6">
                                 <h3 class="text-lg font-medium text-yellow-800 mb-2">Needs Approval</h3>
-                                <p class="text-sm text-yellow-700 mb-4">This activity is pending high-level approval.</p>
+                                <p class="text-sm text-yellow-700 mb-4">This objective is pending high-level approval.</p>
                                 <div class="flex space-x-3">
                                     <button @click="$dispatch('open-approve-modal')" class="flex-1 inline-flex justify-center items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-yellow-600 hover:bg-yellow-700 focus:outline-none">
                                         Approve
                                     </button>
-                                    <form action="{{ route('activities.reject', $activity) }}" method="POST" onsubmit="return confirm('Reject this activity?');" class="flex-1">
+                                    <form action="{{ route('objectives.reject', $objective) }}" method="POST" onsubmit="return confirm('Reject this objective?');" class="flex-1">
                                         @csrf
                                         <button type="submit" class="w-full inline-flex justify-center items-center px-4 py-2 border border-yellow-300 shadow-sm text-sm font-medium rounded-md text-yellow-700 bg-white hover:bg-yellow-50 focus:outline-none">
                                             Reject
@@ -268,10 +271,10 @@
                     @endif
 
                     {{-- Admin Actions --}}
-                    @can('delete activities')
+                    @can('delete objectives')
                         <div class="mt-8 pt-6 border-t border-gray-200">
                             <button @click="showDeleteModal = true" class="w-full inline-flex justify-center items-center px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-red-600 bg-white hover:bg-red-50 focus:outline-none">
-                                Delete Activity
+                                Delete Objective
                             </button>
                         </div>
                     @endcan
@@ -298,60 +301,20 @@
                                 </svg>
                             </div>
                             <div class="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left">
-                                <h3 class="text-lg leading-6 font-medium text-gray-900" id="modal-title">Delete Activity</h3>
+                                <h3 class="text-lg leading-6 font-medium text-gray-900" id="modal-title">Delete Objective</h3>
                                 <div class="mt-2 text-sm text-gray-500">
-                                    <p>Are you sure you want to delete this activity? This action cannot be undone.</p>
+                                    <p>Are you sure you want to delete this objective? This action cannot be undone.</p>
                                 </div>
                             </div>
                         </div>
                     </div>
                     <div class="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
-                        <form action="{{ route('activities.destroy', $activity) }}" method="POST">
+                        <form action="{{ route('objectives.destroy', $objective) }}" method="POST">
                             @csrf @method('DELETE')
                             <button type="submit" class="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-red-600 text-base font-medium text-white hover:bg-red-700 focus:outline-none sm:ml-3 sm:w-auto sm:text-sm">Delete</button>
                         </form>
                         <button type="button" @click="showDeleteModal = false" class="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm">Cancel</button>
                     </div>
-                </div>
-            </div>
-        </div>
-
-        {{-- Completion Modal --}}
-        <div x-show="completionModalOpen" class="fixed inset-0 z-50 overflow-y-auto" style="display: none;">
-            <div class="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
-                 <div x-show="completionModalOpen" class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" @click="completionModalOpen = false"></div>
-                <span class="hidden sm:inline-block sm:align-middle sm:h-screen">&#8203;</span>
-                <div x-show="completionModalOpen" class="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg w-full">
-                    <form action="{{ route('activities.complete', $activity) }}" method="POST">
-                        @csrf
-                        <div class="bg-white px-4 pt-5 pb-4 sm:p-6">
-                            <h3 class="text-lg leading-6 font-medium text-gray-900 mb-4">Complete Activity Report</h3>
-                            <div class="space-y-4">
-                                <div>
-                                    <label class="block text-sm font-medium text-gray-700">Completion Summary *</label>
-                                    <textarea name="completion_summary" rows="3" required class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"></textarea>
-                                </div>
-                                <div class="grid grid-cols-2 gap-4">
-                                    <div>
-                                        <label class="block text-sm font-medium text-gray-700">Attendance</label>
-                                        <input type="number" name="attendance_count" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
-                                    </div>
-                                    <div>
-                                        <label class="block text-sm font-medium text-gray-700">Salvations</label>
-                                        <input type="number" name="salvation_count" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
-                                    </div>
-                                </div>
-                                <div>
-                                     <label class="block text-sm font-medium text-gray-700">Actual Financial Spent (RWF)</label>
-                                     <input type="number" name="financial_spent" step="100" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
-                                </div>
-                            </div>
-                        </div>
-                        <div class="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
-                            <button type="submit" class="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-indigo-600 text-base font-medium text-white hover:bg-indigo-700 focus:outline-none sm:ml-3 sm:w-auto sm:text-sm">Submit</button>
-                            <button type="button" @click="completionModalOpen = false" class="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm">Cancel</button>
-                        </div>
-                    </form>
                 </div>
             </div>
         </div>
@@ -369,15 +332,15 @@
                                 <svg class="h-6 w-6 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" /></svg>
                             </div>
                             <div class="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left">
-                                <h3 class="text-lg leading-6 font-medium text-gray-900">Approve Activity</h3>
+                                <h3 class="text-lg leading-6 font-medium text-gray-900">Approve Objective</h3>
                                 <div class="mt-2 text-sm text-gray-500">
-                                    <p>Are you sure you want to approve this activity? This will unlock "In Progress" actions.</p>
+                                    <p>Are you sure you want to approve this objective? This will unlock "In Progress" actions.</p>
                                 </div>
                             </div>
                         </div>
                     </div>
                     <div class="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
-                        <form action="{{ route('activities.approve', $activity) }}" method="POST">
+                        <form action="{{ route('objectives.approve', $objective) }}" method="POST">
                             @csrf
                             <button type="submit" class="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-green-600 text-base font-medium text-white hover:bg-green-700 focus:outline-none sm:ml-3 sm:w-auto sm:text-sm">Approve</button>
                         </form>

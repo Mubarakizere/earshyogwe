@@ -30,7 +30,7 @@ class Department extends Model
 
         // Auto-create permission when department is created
         static::created(function ($department) {
-            $permissionName = "view {$department->slug} activities";
+            $permissionName = "view {$department->slug} objectives";
             \Spatie\Permission\Models\Permission::firstOrCreate(['name' => $permissionName]);
             
             // Auto-assign permission to head if one is set
@@ -45,7 +45,7 @@ class Department extends Model
         // Handle head changes on update
         static::updated(function ($department) {
             if ($department->isDirty('head_id')) {
-                $permissionName = "view {$department->slug} activities";
+                $permissionName = "view {$department->slug} objectives";
                 $oldHeadId = $department->getOriginal('head_id');
                 $newHeadId = $department->head_id;
 
@@ -69,7 +69,7 @@ class Department extends Model
 
         // Auto-delete permission when department is deleted
         static::deleted(function ($department) {
-            $permissionName = "view {$department->slug} activities";
+            $permissionName = "view {$department->slug} objectives";
             $permission = \Spatie\Permission\Models\Permission::where('name', $permissionName)->first();
             if ($permission) {
                 $permission->delete();
@@ -131,6 +131,6 @@ class Department extends Model
      */
     public function getPermissionNameAttribute()
     {
-        return "view {$this->slug} activities";
+        return "view {$this->slug} objectives";
     }
 }
