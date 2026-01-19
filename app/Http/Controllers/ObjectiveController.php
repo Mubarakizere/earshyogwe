@@ -368,37 +368,47 @@ class ObjectiveController extends Controller
             return $baseQuery;
         }
         
-        // ... (Logic same as before but for Objectives)
-        
-        // Check for department-specific permissions
         $allowedDepartmentIds = [];
-        $departments = Department::all();
         
-        foreach ($departments as $dept) {
-            $permissionName = "view {$dept->slug} objectives";
-            if ($user->can($permissionName)) {
-                $allowedDepartmentIds[] = $dept->id;
+        // 1. Check for department-specific permissions
+        // Optimize by getting all relevant permissions at once
+        $permissions = $user->getAllPermissions()->pluck('name')->toArray();
+        $deptSlugs = [];
+        foreach ($permissions as $perm) {
+            if (str_starts_with($perm, 'view ') && str_ends_with($perm, ' objectives')) {
+                // Extract slug from "view {slug} objectives"
+                $slug = str_replace(['view ', ' objectives'], '', $perm);
+                if ($slug !== 'all' && $slug !== 'assigned' && $slug !== 'own') {
+                    $deptSlugs[] = $slug;
+                }
             }
         }
-        
-        if (!empty($allowedDepartmentIds)) {
-            return $baseQuery->whereIn('department_id', $allowedDepartmentIds);
+
+        if (!empty($deptSlugs)) {
+            $allowedDepartmentIds = Department::whereIn('slug', $deptSlugs)->pluck('id')->toArray();
         }
         
-        if ($user->can('view assigned objectives')) {
-            $churchIds = Church::where('archid_id', $user->id)->pluck('id');
-            return $baseQuery->whereIn('church_id', $churchIds);
-        }
-        
-        if ($user->can('view own objectives') && $user->church_id) {
-            return $baseQuery->where('church_id', $user->church_id);
-        }
-        
-        // Fallback for creator
-        // $baseQuery->orWhere('created_by', $user->id); // Careful with scopes
-        
-        // No permission
-        return $baseQuery->where('id', 0);
+        // 2. Build the query based on permissions
+        return $baseQuery->where(function ($q) use ($user, $allowedDepartmentIds) {
+            // Department specific access
+            if (!empty($allowedDepartmentIds)) {
+                $q->orWhereIn('department_id', $allowedDepartmentIds);
+            }
+
+            // Assigned objectives (ARCHID)
+            if ($user->can('view assigned objectives')) {
+                $churchIds = Church::where('archid_id', $user->id)->pluck('id');
+                $q->orWhereIn('church_id', $churchIds);
+            }
+
+            // Own objectives (Pastor/User in church)
+            if ($user->can('view own objectives') && $user->church_id) {
+                $q->orWhere('church_id', $user->church_id);
+            }
+
+            // Creator access
+            $q->orWhere('created_by', $user->id);
+        });
     }
     
     private function getVisibleChurches($user)
@@ -424,6 +434,14 @@ class ObjectiveController extends Controller
 
         if ($user->can('view all objectives')) {
             return;
+        }
+
+        // Check department specific permission
+        if ($objective->department_id) {
+            $dept = $objective->department()->first();
+            if ($dept && $user->can($dept->permission_name)) {
+                return;
+            }
         }
 
         if ($user->can('view assigned objectives')) {

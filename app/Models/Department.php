@@ -30,7 +30,7 @@ class Department extends Model
 
         // Auto-create permission when department is created
         static::created(function ($department) {
-            $permissionName = "view {$department->slug} objectives";
+            $permissionName = $department->permission_name;
             \Spatie\Permission\Models\Permission::firstOrCreate(['name' => $permissionName]);
             
             // Auto-assign permission to head if one is set
@@ -42,10 +42,12 @@ class Department extends Model
             }
         });
 
-        // Handle head changes on update
+        // Handle changes on update
         static::updated(function ($department) {
+            $permissionName = $department->permission_name;
+
+            // Handle head changes
             if ($department->isDirty('head_id')) {
-                $permissionName = "view {$department->slug} objectives";
                 $oldHeadId = $department->getOriginal('head_id');
                 $newHeadId = $department->head_id;
 
@@ -65,14 +67,30 @@ class Department extends Model
                     }
                 }
             }
+
+            // Handle slug changes
+            if ($department->isDirty('slug')) {
+                $oldSlug = $department->getOriginal('slug');
+                $oldPermissionName = "view {$oldSlug} objectives";
+                $newPermissionName = $department->permission_name;
+
+                $permission = \Spatie\Permission\Models\Permission::where('name', $oldPermissionName)->first();
+                if ($permission) {
+                    $permission->update(['name' => $newPermissionName]);
+                } else {
+                    \Spatie\Permission\Models\Permission::firstOrCreate(['name' => $newPermissionName]);
+                }
+            }
         });
 
-        // Auto-delete permission when department is deleted
+        // Auto-delete permission when department is deleted (if it's a force delete or we want to clean up)
         static::deleted(function ($department) {
-            $permissionName = "view {$department->slug} objectives";
-            $permission = \Spatie\Permission\Models\Permission::where('name', $permissionName)->first();
-            if ($permission) {
-                $permission->delete();
+            if ($department->isForceDeleting()) {
+                $permissionName = $department->permission_name;
+                $permission = \Spatie\Permission\Models\Permission::where('name', $permissionName)->first();
+                if ($permission) {
+                    $permission->delete();
+                }
             }
         });
     }

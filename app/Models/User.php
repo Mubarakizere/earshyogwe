@@ -8,10 +8,12 @@ use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Spatie\Permission\Traits\HasRoles;
 
+use Illuminate\Database\Eloquent\SoftDeletes;
+
 class User extends Authenticatable
 {
     /** @use HasFactory<\Database\Factories\UserFactory> */
-    use HasFactory, Notifiable, HasRoles, \App\Traits\LogsActivity;
+    use HasFactory, Notifiable, HasRoles, \App\Traits\LogsActivity, SoftDeletes;
 
     /**
      * The attributes that are mass assignable.
