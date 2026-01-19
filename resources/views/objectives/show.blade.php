@@ -35,7 +35,7 @@
                                         <span class="px-2.5 py-0.5 rounded-full text-xs font-medium bg-purple-100 text-purple-800">
                                             {{ $objective->department->name ?? 'General' }}
                                         </span>
-                                        <span class="text-sm text-gray-500">{{ $objective->church->name }}</span>
+                                        <span class="text-sm text-gray-500">{{ $objective->church->name ?? 'Diocese-wide' }}</span>
                                     </div>
                                     <h1 class="text-2xl font-bold text-gray-900">{{ $objective->name }}</h1>
                                     @if($objective->objectives)
