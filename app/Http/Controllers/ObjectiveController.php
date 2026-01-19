@@ -375,14 +375,14 @@ class ObjectiveController extends Controller
         $permissions = $user->getAllPermissions()->pluck('name')->toArray();
         $deptSlugs = [];
         foreach ($permissions as $perm) {
-            if (str_starts_with($perm, 'view ') && str_ends_with($perm, ' objectives')) {
-                // Extract slug from "view {slug} objectives"
-                $slug = str_replace(['view ', ' objectives'], '', $perm);
-                if ($slug !== 'all' && $slug !== 'assigned' && $slug !== 'own') {
-                    $deptSlugs[] = $slug;
-                }
+        if (str_starts_with($perm, 'view ') && (str_ends_with($perm, ' objectives') || str_ends_with($perm, ' activities'))) {
+            // Extract slug from "view {slug} objectives" or "view {slug} activities"
+            $slug = str_replace(['view ', ' objectives', ' activities'], '', $perm);
+            if ($slug !== 'all' && $slug !== 'assigned' && $slug !== 'own') {
+                $deptSlugs[] = $slug;
             }
         }
+    }
 
         if (!empty($deptSlugs)) {
             $allowedDepartmentIds = Department::whereIn('slug', $deptSlugs)->pluck('id')->toArray();
@@ -439,7 +439,7 @@ class ObjectiveController extends Controller
         // Check department specific permission
         if ($objective->department_id) {
             $dept = $objective->department()->first();
-            if ($dept && $user->can($dept->permission_name)) {
+            if ($dept && ($user->can($dept->permission_name) || $user->can("view {$dept->slug} activities"))) {
                 return;
             }
         }

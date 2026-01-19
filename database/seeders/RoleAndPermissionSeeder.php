@@ -16,231 +16,119 @@ class RoleAndPermissionSeeder extends Seeder
         // Reset cached roles and permissions
         app()[\Spatie\Permission\PermissionRegistrar::class]->forgetCachedPermissions();
 
-        // Create permissions
-        $permissions = [
-            // Church Management
-            'view all churches',
-            'view assigned churches',
-            'view own church',
-            'create church',
-            'edit church',
-            'delete church',
-            
-            // Giving Management
-            'manage giving types',
-            'create giving types',
-            'edit giving types',
-            'delete giving types',
-            'enter givings',
-            'view all givings',
-            'view assigned givings',
-            'view own givings',
-            'mark diocese transfer',
-            'verify diocese receipt',
-            
-            // Expense Management
-            'manage expense categories',
-            'create expense categories',
-            'enter expenses',
-            'view all expenses',
-            'view assigned expenses',
-            'view own expenses',
-            'approve expenses',
-            
-            // Evangelism
-            'submit evangelism reports',
-            'view all evangelism',
-            'view assigned evangelism',
-            'view own evangelism',
-            
-            // Objectives (Formerly Activities)
-            'create objectives',
-            'edit objectives',
-            'delete objectives',
-            'approve objectives',
-            'submit objective reports',
-            'view all objectives',
-            'view assigned objectives',
-            'view own objectives',
-            'view department objectives',
-            
-            // HR Management
-            'manage all workers',
-            'manage assigned workers',
-            'manage own workers',
-            'create worker',
-            'edit worker',
-            'delete worker',
-            'manage contracts',
-            'view retirement plans',
-            
-            // User & Permission Management
-            'manage users',
-            'manage roles',
-            'assign roles',
-            'grant permissions',
-            'revoke permissions',
-            'assign archid to churches',
-            
-            // Department Management
-            'create departments',
-            'edit departments',
-            'view all departments',
-            'assign users to departments',
-            
-            // Population / Member Management
-            'create members',
-            'edit members',
-            'delete members',
-            'view all members',
-            'view assigned members',
-            'view own members',
-            
-            // Attendance Management
-            'create attendance',
-            'edit attendance',
-            'delete attendance',
-            'view all attendance',
-            'view assigned attendance',
-            'view own attendance',
-            
-            // Population Census
-            'create census',
-            'edit census',
-            'delete census',
-            'view all census',
-            'view assigned census',
-            'view own census',
-            
-            // Audit Logs
-            'view activity logs',
-            
-            // Service Types
-            'manage service types',
-            
-            // Institutions
-            'manage institutions',
-            
-            // Custom Fields (Phase 2)
-            'manage custom fields',
+        // Permissions organized by category
+        $permissionsByCategory = [
+            'Church' => [
+                'view all churches', 'view assigned churches', 'view own church',
+                'create church', 'edit church', 'delete church',
+            ],
+            'Giving' => [
+                'manage giving types', 'create giving types', 'edit giving types', 'delete giving types',
+                'enter givings', 'view all givings', 'view assigned givings', 'view own givings',
+                'mark diocese transfer', 'verify diocese receipt',
+            ],
+            'Expense' => [
+                'manage expense categories', 'create expense categories',
+                'enter expenses', 'view all expenses', 'view assigned expenses', 'view own expenses',
+                'approve expenses',
+            ],
+            'Objective' => [
+                'create objectives', 'edit objectives', 'delete objectives', 'approve objectives',
+                'submit objective reports', 'view all objectives', 'view assigned objectives', 'view own objectives',
+                'view department objectives',
+            ],
+            'Evangelism' => [
+                'submit evangelism reports', 'view all evangelism', 'view assigned evangelism', 'view own evangelism',
+            ],
+            'HR' => [
+                'manage all workers', 'manage assigned workers', 'manage own workers',
+                'create worker', 'edit worker', 'delete worker', 'manage contracts',
+                'view retirement plans', 'manage institutions',
+            ],
+            'Department' => [
+                'create departments', 'edit departments', 'view all departments', 'assign users to departments',
+            ],
+            'Attendance & Census' => [
+                'create attendance', 'edit attendance', 'delete attendance',
+                'view all attendance', 'view assigned attendance', 'view own attendance',
+                'create census', 'edit census', 'delete census',
+                'view all census', 'view assigned census', 'view own census',
+                'manage service types',
+            ],
+            'Member' => [
+                'create members', 'edit members', 'delete members',
+                'view all members', 'view assigned members', 'view own members',
+            ],
+            'System' => [
+                'manage users', 'manage roles', 'assign roles',
+                'grant permissions', 'revoke permissions',
+                'assign archid to churches', 'view activity logs', 'manage custom fields',
+            ],
         ];
 
-        foreach ($permissions as $permission) {
-            Permission::firstOrCreate(['name' => $permission]);
+        // 1. Create all permissions
+        foreach ($permissionsByCategory as $category => $perms) {
+            foreach ($perms as $permission) {
+                Permission::firstOrCreate(['name' => $permission]);
+            }
         }
 
-        // Create roles and assign permissions
+        // 2. Setup standard roles
+        $rolesData = [
+            'boss' => [
+                'all' => true,
+                'exclude' => ['mark diocese transfer'],
+            ],
+            'archid' => [
+                'view assigned churches', 'edit church', 'enter givings', 'view assigned givings',
+                'mark diocese transfer', 'enter expenses', 'view assigned expenses', 'approve expenses',
+                'submit evangelism reports', 'view assigned evangelism', 'create objectives', 'edit objectives',
+                'delete objectives', 'approve objectives', 'submit objective reports', 'view assigned objectives',
+                'manage assigned workers', 'manage contracts', 'view retirement plans', 'create departments',
+                'edit departments', 'assign users to departments', 'create members', 'edit members',
+                'view assigned members', 'create attendance', 'edit attendance', 'delete attendance',
+                'view assigned attendance', 'create census', 'edit census', 'delete census', 'view assigned census',
+            ],
+            'pastor' => [
+                'view own church', 'edit church', 'enter givings', 'view own givings', 'enter expenses',
+                'view own expenses', 'submit evangelism reports', 'mark diocese transfer', 'view own evangelism',
+                'create objectives', 'edit objectives', 'delete objectives', 'submit objective reports',
+                'view own objectives', 'view department objectives', 'manage own workers', 'manage contracts',
+                'view retirement plans', 'create departments', 'edit departments', 'assign users to departments',
+                'create members', 'edit members', 'view own members', 'create attendance', 'edit attendance',
+                'view own attendance', 'create census', 'edit census', 'view own census',
+            ],
+            'finance' => [
+                'view all givings', 'view all expenses', 'approve expenses', 'verify diocese receipt',
+                'manage expense categories', 'create expense categories', 'manage giving types',
+                'create giving types', 'manage service types',
+            ],
+            'hr' => [
+                'manage all workers', 'manage institutions', 'create worker', 'edit worker', 'delete worker',
+                'manage contracts', 'view retirement plans',
+            ],
+            'evangelism' => [
+                'view all evangelism', 'submit evangelism reports',
+            ],
+        ];
 
-        $boss = Role::firstOrCreate(['name' => 'boss']);
-        // Grant everything
-        $boss->syncPermissions(Permission::all());
-        // Remove 'mark diocese transfer' so Boss acts as Receiver only (like Finance)
-        $boss->revokePermissionTo('mark diocese transfer');
-
-        // ARCHID Role (Regional Supervisor) - Manages assigned churches
-        $archid = Role::firstOrCreate(['name' => 'archid']);
-        $archid->syncPermissions([
-            'view assigned churches',
-            'edit church',
-            'enter givings',
-            'view assigned givings',
-            'mark diocese transfer',
-            'enter expenses',
-            'view assigned expenses',
-            'approve expenses',
-            'submit evangelism reports',
-            'view assigned evangelism',
-            'create objectives',
-            'edit objectives',
-            'delete objectives', // NEW
-            'approve objectives', // NEW
-            'submit objective reports',
-            'view assigned objectives',
-            'manage assigned workers',
-            'manage contracts',
-            'view retirement plans',
-            'create departments',
-            'edit departments',
-            'assign users to departments',
-            'create members',
-            'edit members',
-            'view assigned members',
-            'create attendance',
-            'edit attendance',
-            'delete attendance',
-            'view assigned attendance',
-            'create census',
-            'edit census',
-            'delete census',
-            'view assigned census',
-        ]);
-
-        // PASTOR Role (Church Leader) - Manages own church
-        $pastor = Role::firstOrCreate(['name' => 'pastor']);
-        $pastor->syncPermissions([
-            'view own church',
-            'edit church',
-            'enter givings',
-            'view own givings',
-            'enter expenses',
-            'view own expenses',
-            'submit evangelism reports',
-            'mark diocese transfer',
-            'view own evangelism',
-            'create objectives',
-            'edit objectives',
-            'delete objectives', // NEW
-            'submit objective reports',
-            'view own objectives',
-            'view department objectives',
-            'manage own workers',
-            'manage contracts',
-            'view retirement plans',
-            'create departments',
-            'edit departments',
-            'assign users to departments',
-            'create members',
-            'edit members',
-            'view own members',
-            'create attendance',
-            'edit attendance',
-            'view own attendance',
-            'create census',
-            'edit census',
-            'view own census',
-        ]);
-
-        // FINANCE Role (Diocese Level)
-        $finance = Role::firstOrCreate(['name' => 'finance']);
-        $finance->syncPermissions([
-            'view all givings',
-            'view all expenses',
-            'approve expenses',
-            'verify diocese receipt',
-            'manage expense categories',
-            'create expense categories', // Finance should manage categories
-            'manage giving types',
-            'create giving types',        // Finance should manage giving types
-            'manage service types',
-        ]);
-
-        // HR Role (Diocese Level)
-        $hr = Role::firstOrCreate(['name' => 'hr']);
-        $hr->syncPermissions([
-            'manage all workers',
-            'manage institutions',
-            'create worker',
-            'edit worker',
-            'delete worker',
-            'manage contracts',
-            'view retirement plans',
-        ]);
-
-        // EVANGELISM Role (Diocese Level)
-        $evangelism = Role::firstOrCreate(['name' => 'evangelism']);
-        $evangelism->syncPermissions([
-            'view all evangelism',
-            'submit evangelism reports', // Maybe they want to submit too?
-        ]);
+        foreach ($rolesData as $roleName => $data) {
+            $role = Role::firstOrCreate(['name' => $roleName]);
+            
+            if (isset($data['all']) && $data['all']) {
+                $perms = Permission::all();
+                if (isset($data['exclude'])) {
+                    $perms = $perms->whereNotIn('name', $data['exclude']);
+                }
+                // use syncPermissions only for boss or when we want to be strict, 
+                // but for live updates, givePermissionTo is safer for others.
+                $role->syncPermissions($perms);
+            } else {
+                // For other roles, we ADD permissions rather than replacing them, 
+                // UNLESS you want to stay strictly strictly in sync.
+                // Re-syncing is better to ENSURE specific rules, but keep it clear.
+                $role->givePermissionTo($data);
+            }
+        }
     }
 }

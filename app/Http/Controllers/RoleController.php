@@ -117,38 +117,57 @@ class RoleController extends Controller
     {
         // Organize permissions into categories for the UI
         $groups = [
+            'Objective Management' => ['objective'],
+            'Directorates & Departments' => ['department'],
             'Church Management' => ['church'],
             'Giving Management' => ['giving'],
             'Expense Management' => ['expense'],
             'Evangelism' => ['evangelism'],
-            'Activities' => ['activit'],
-            'HR Management' => ['worker', 'contract', 'retirement'],
-            'User & Role' => ['user', 'role', 'permission'],
-            'Department' => ['department'],
-            'Population' => ['member', 'population'],
-            'Audit' => ['log'],
+            'HR Management' => ['worker', 'contract', 'retirement', 'institution'],
+            'Attendance Management' => ['attendance', 'service type'],
+            'Population & Census' => ['member', 'population', 'census'],
+            'User & Security' => ['user', 'role', 'permission', 'archid to churches'],
+            'Audit & System' => ['log', 'custom field'],
         ];
 
         $grouped = [];
+        $deptObjectives = [];
         $misc = [];
 
         foreach ($permissions as $perm) {
             $matched = false;
-            foreach ($groups as $groupName => $keywords) {
-                foreach ($keywords as $keyword) {
-                    if (str_contains($perm->name, $keyword)) {
-                        $grouped[$groupName][] = $perm;
-                        $matched = true;
-                        break;
-                    }
+
+            // Special handling for dynamic department objectives
+            if (str_starts_with($perm->name, 'view ') && (str_ends_with($perm->name, ' objectives') || str_ends_with($perm->name, ' activities'))) {
+                 $slug = str_replace(['view ', ' objectives', ' activities'], '', $perm->name);
+                 if (!in_array($slug, ['all', 'assigned', 'own'])) {
+                     $deptObjectives[] = $perm;
+                     $matched = true;
                 }
-                if ($matched) break;
             }
+
+            if (!$matched) {
+                foreach ($groups as $groupName => $keywords) {
+                    foreach ($keywords as $keyword) {
+                        if (str_contains(strtolower($perm->name), strtolower($keyword))) {
+                            $grouped[$groupName][] = $perm;
+                            $matched = true;
+                            break;
+                        }
+                    }
+                    if ($matched) break;
+                }
+            }
+
             if (!$matched) {
                 $misc[] = $perm;
             }
         }
         
+        if (!empty($deptObjectives)) {
+            $grouped['Departmental View (Specific)'] = $deptObjectives;
+        }
+
         if (!empty($misc)) {
             $grouped['Miscellaneous'] = $misc;
         }
