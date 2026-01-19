@@ -160,8 +160,18 @@ class ObjectiveController extends Controller
     {
         $this->authorize('create objectives');
         
+        $allowedDepartments = $this->getDepartmentsForUser(auth()->user());
+        
         $validated = $request->validate([
-            'department_id' => 'required|exists:departments,id',
+            'department_id' => [
+                'required',
+                'exists:departments,id',
+                function ($attribute, $value, $fail) use ($allowedDepartments) {
+                    if (!$allowedDepartments->contains('id', $value)) {
+                        $fail('The selected department is invalid or you do not have permission for it.');
+                    }
+                },
+            ],
             'church_id' => 'required|exists:churches,id',
             'name' => 'required|string|max:255',
             'description' => 'nullable|string',
@@ -283,8 +293,18 @@ class ObjectiveController extends Controller
         $this->authorize('edit objectives');
         $this->checkObjectiveScope($objective);
 
+        $allowedDepartments = $this->getDepartmentsForUser(auth()->user());
+
         $validated = $request->validate([
-            'department_id' => 'required|exists:departments,id',
+            'department_id' => [
+                'required',
+                'exists:departments,id',
+                function ($attribute, $value, $fail) use ($allowedDepartments) {
+                    if (!$allowedDepartments->contains('id', $value)) {
+                        $fail('The selected department is invalid or you do not have permission for it.');
+                    }
+                },
+            ],
             'name' => 'required|string|max:255',
             'description' => 'nullable|string',
             'target' => 'required|integer|min:0',
@@ -336,15 +356,35 @@ class ObjectiveController extends Controller
 
     private function getDepartmentsForUser($user)
     {
-        // Reusing existing logic...
-        if ($user->can('view all departments')) {
-            return Department::where('is_active', true)->get();
-        } elseif ($user->can('view assigned departments') || $user->can('view assigned objectives')) {
-            $churchIds = Church::where('archid_id', $user->id)->pluck('id');
-            return Department::whereIn('church_id', $churchIds)->where('is_active', true)->get();
-        } else {
-            return Department::where('church_id', $user->church_id)->where('is_active', true)->get();
+        // 1. Super Admin get all active departments
+        if ($user->can('view all objectives') || $user->can('view all departments')) {
+            return Department::where('is_active', true)->orderBy('name')->get();
         }
+
+        // 2. Head of department or specific department permissions
+        $permissions = $user->getAllPermissions()->pluck('name')->toArray();
+        $deptSlugs = [];
+        foreach ($permissions as $perm) {
+            if (str_starts_with($perm, 'view ') && (str_ends_with($perm, ' objectives') || str_ends_with($perm, ' activities'))) {
+                $slug = str_replace(['view ', ' objectives', ' activities'], '', $perm);
+                if (!in_array($slug, ['all', 'assigned', 'own'])) {
+                    $deptSlugs[] = $slug;
+                }
+            }
+        }
+
+        if (!empty($deptSlugs)) {
+            return Department::whereIn('slug', $deptSlugs)->where('is_active', true)->orderBy('name')->get();
+        }
+
+        // 3. ARCHID get departments in their region
+        if ($user->can('view assigned objectives')) {
+            $churchIds = Church::where('archid_id', $user->id)->pluck('id');
+            return Department::whereIn('church_id', $churchIds)->where('is_active', true)->orderBy('name')->get();
+        }
+
+        // 4. Default: User's own church departments
+        return Department::where('church_id', $user->church_id)->where('is_active', true)->orderBy('name')->get();
     }
 
     private function getChurchesForUser($user)
