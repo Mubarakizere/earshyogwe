@@ -99,38 +99,7 @@
                     </div>
                 </div>
 
-                @php
-                    $isOverview = request('tab') == 'overview';
-                    $hasFilters = request()->hasAny(['search', 'status', 'priority', 'church_id', 'department_id']);
-                    $showFolders = $isOverview && !$hasFilters;
-                @endphp
-
-                <!-- Directorate Folders (Visible only on Overview tab with no filters) -->
-                @if($showFolders)
-                    <div class="mb-8">
-                        <h3 class="text-lg font-medium text-gray-900 mb-4">Directorates</h3>
-                        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-                            @foreach($departments as $dept)
-                                <a href="{{ route('objectives.index', ['tab' => 'overview', 'department_id' => $dept->id]) }}" 
-                                   class="group bg-white p-6 rounded-lg shadow-sm border border-gray-200 hover:shadow-md hover:border-purple-300 transition-all duration-200 flex flex-col items-center text-center cursor-pointer">
-                                    
-                                    <!-- Folder Icon -->
-                                    <div class="w-16 h-16 bg-purple-50 text-purple-600 rounded-full flex items-center justify-center mb-4 group-hover:bg-purple-100 group-hover:scale-110 transition-transform">
-                                        <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z"></path>
-                                        </svg>
-                                    </div>
-                                    
-                                    <h4 class="font-bold text-gray-900 group-hover:text-purple-700 transition-colors">{{ $dept->name }}</h4>
-                                    
-                                    <span class="mt-2 text-xs font-medium bg-gray-100 text-gray-600 px-2.5 py-0.5 rounded-full">
-                                        View Objectives
-                                    </span>
-                                </a>
-                            @endforeach
-                        </div>
-                    </div>
-                @endif
+            <!-- Stats Grid Ends -->
             </div>
 
             <!-- Filters & Tabs -->
@@ -233,6 +202,58 @@
                     </form>
                 </div>
             </div>
+
+            @php
+                $isOverview = request('tab') == 'overview';
+                $hasFilters = request()->hasAny(['search', 'status', 'priority', 'church_id', 'department_id']);
+                $showFolders = $isOverview && !$hasFilters;
+            @endphp
+
+            <!-- Directorate Folders (Relocated below filters) -->
+            @if($showFolders)
+                <div class="mb-10">
+                    <div class="flex items-center gap-3 mb-8">
+                        <div class="h-10 w-1.5 bg-gradient-to-b from-purple-600 to-indigo-600 rounded-full shadow-sm"></div>
+                        <div>
+                            <h3 class="text-xl font-black text-gray-800 uppercase tracking-tight leading-none">Directorate Explorer</h3>
+                            <p class="text-xs text-gray-500 font-bold mt-1 uppercase tracking-widest">Select a department to view specific objectives</p>
+                        </div>
+                    </div>
+                    
+                    <div class="grid grid-cols-2 lg:grid-cols-4 xl:grid-cols-5 gap-6">
+                        @foreach($departments as $dept)
+                            <a href="{{ route('objectives.index', ['tab' => 'overview', 'department_id' => $dept->id]) }}" 
+                               class="group relative bg-white p-8 rounded-[2rem] shadow-sm border border-gray-100 hover:shadow-2xl hover:border-purple-200 hover:-translate-y-2 transition-all duration-500 ease-out flex flex-col items-center text-center overflow-hidden">
+                                
+                                <!-- Premium visual effects -->
+                                <div class="absolute inset-0 bg-gradient-to-br from-purple-50/0 via-transparent to-purple-50/30 opacity-0 group-hover:opacity-100 transition-opacity duration-700"></div>
+                                <div class="absolute -right-6 -top-6 w-24 h-24 bg-purple-100/20 rounded-full blur-2xl group-hover:bg-purple-200/40 transition-all duration-700 scale-0 group-hover:scale-150"></div>
+                                
+                                <!-- Folder Icon with Layered Design -->
+                                <div class="relative z-10 w-24 h-24 mb-6">
+                                    <div class="absolute inset-0 bg-purple-600 rounded-[1.75rem] rotate-6 group-hover:rotate-12 group-hover:scale-110 opacity-10 transition-all duration-500"></div>
+                                    <div class="absolute inset-0 bg-gradient-to-br from-purple-600 to-indigo-700 rounded-[1.75rem] flex items-center justify-center transform group-hover:scale-105 transition-all duration-500 shadow-lg shadow-purple-200 group-hover:shadow-purple-300">
+                                        <svg class="w-10 h-10 text-white transform group-hover:-rotate-3 transition-transform duration-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z"></path>
+                                        </svg>
+                                    </div>
+                                </div>
+                                
+                                <div class="relative z-10">
+                                    <h4 class="font-black text-gray-900 group-hover:text-purple-700 transition-colors text-sm uppercase tracking-tighter leading-tight">{{ $dept->name }}</h4>
+                                    
+                                    <div class="mt-4 flex items-center justify-center gap-1.5 py-1.5 px-3 rounded-full bg-gray-50 text-[10px] font-black text-gray-400 group-hover:bg-purple-50 group-hover:text-purple-600 transition-all duration-500">
+                                        <span class="uppercase tracking-widest">Open Directorate</span>
+                                        <svg class="w-3.5 h-3.5 transform group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M13 7l5 5m0 0l-5 5m5-5H6"></path>
+                                        </svg>
+                                    </div>
+                                </div>
+                            </a>
+                        @endforeach
+                    </div>
+                </div>
+            @endif
 
             <!-- Objectives Grid/List (Visible when folders NOT shown) -->
             @if(!$showFolders)

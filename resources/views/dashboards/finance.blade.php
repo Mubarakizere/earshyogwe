@@ -60,13 +60,13 @@
                     <div class="space-y-4">
                         @foreach($recentGivings->take(3) as $giving)
                             <div class="flex justify-between items-center text-sm border-b pb-2">
-                                <div><div class="font-medium text-green-600">+ {{ number_format($giving->amount) }}</div><div class="text-xs text-gray-500">{{ $giving->church->name }}</div></div>
+                                <div><div class="font-medium text-green-600">+ {{ number_format($giving->amount) }}</div><div class="text-xs text-gray-500">{{ $giving->church?->name ?? 'Diocese' }}</div></div>
                                 <div class="text-gray-400 text-xs">{{ $giving->created_at->format('M d') }}</div>
                             </div>
                         @endforeach
                         @foreach($recentExpenses->take(3) as $expense)
                             <div class="flex justify-between items-center text-sm border-b pb-2">
-                                <div><div class="font-medium text-red-600">- {{ number_format($expense->amount) }}</div><div class="text-xs text-gray-500">{{ $expense->church->name }}</div></div>
+                                <div><div class="font-medium text-red-600">- {{ number_format($expense->amount) }}</div><div class="text-xs text-gray-500">{{ $expense->church?->name ?? 'Diocese' }}</div></div>
                                 <div class="text-gray-400 text-xs">{{ $expense->created_at->format('M d') }}</div>
                             </div>
                         @endforeach
