@@ -102,15 +102,14 @@
                      <div class="hidden md:block md:col-span-3"></div>
                     @endif
 
-                    <!-- Status Filter -->
+                    <!-- Member Status Filter -->
                     <div class="md:col-span-2">
-                        <label class="block text-xs font-semibold text-gray-500 uppercase mb-1">Status</label>
-                        <select name="status" class="w-full py-2 rounded-lg border-gray-300 focus:ring-indigo-500 focus:border-indigo-500 text-sm">
+                        <label class="block text-xs font-semibold text-gray-500 uppercase mb-1">Member Status</label>
+                        <select name="member_status" class="w-full py-2 rounded-lg border-gray-300 focus:ring-indigo-500 focus:border-indigo-500 text-sm">
                             <option value="">All Statuses</option>
-                            <option value="Single" {{ request('status') == 'Single' ? 'selected' : '' }}>Single</option>
-                            <option value="Married" {{ request('status') == 'Married' ? 'selected' : '' }}>Married</option>
-                            <option value="Divorced" {{ request('status') == 'Divorced' ? 'selected' : '' }}>Divorced</option>
-                            <option value="Widowed" {{ request('status') == 'Widowed' ? 'selected' : '' }}>Widowed</option>
+                            <option value="active" {{ request('member_status') == 'active' ? 'selected' : '' }}>Active</option>
+                            <option value="inactive" {{ request('member_status') == 'inactive' ? 'selected' : '' }}>Inactive</option>
+                            <option value="deceased" {{ request('member_status') == 'deceased' ? 'selected' : '' }}>Deceased</option>
                         </select>
                     </div>
 
@@ -140,10 +139,10 @@
                         <thead class="bg-gray-50">
                             <tr>
                                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Name</th>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Church</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Parish</th>
                                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Demographics</th>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Group</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Member Status</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Church Groups</th>
                                 <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
                             </tr>
                         </thead>
@@ -173,15 +172,35 @@
                                         <div class="text-xs text-gray-500">{{ $member->education_level ?? '-' }}</div>
                                     </td>
                                     <td class="px-6 py-4 whitespace-nowrap">
-                                        <div class="flex flex-col">
-                                            <span class="text-xs text-gray-600">{{ $member->marital_status }}</span>
-                                            <span class="text-xs {{ $member->baptism_status == 'Baptized' || $member->baptism_status == 'Confirmed' ? 'text-green-600' : 'text-gray-400' }}">
-                                                {{ $member->baptism_status }}
-                                            </span>
-                                        </div>
+                                        @php
+                                            $statusColors = [
+                                                'active' => 'bg-green-100 text-green-800',
+                                                'inactive' => 'bg-yellow-100 text-yellow-800',
+                                                'deceased' => 'bg-gray-100 text-gray-800'
+                                            ];
+                                            $status = $member->status ?? 'active';
+                                        @endphp
+                                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium {{ $statusColors[$status] }}">
+                                            {{ ucfirst($status) }}
+                                        </span>
                                     </td>
-                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                        {{ $member->church_group ?? '-' }}
+                                    <td class="px-6 py-4">
+                                        @if($member->churchGroups && $member->churchGroups->count() > 0)
+                                            <div class="flex flex-wrap gap-1">
+                                                @foreach($member->churchGroups->take(2) as $group)
+                                                    <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-blue-100 text-blue-800">
+                                                        {{ $group->name }}
+                                                    </span>
+                                                @endforeach
+                                                @if($member->churchGroups->count() > 2)
+                                                    <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-gray-100 text-gray-600">
+                                                        +{{ $member->churchGroups->count() - 2 }}
+                                                    </span>
+                                                @endif
+                                            </div>
+                                        @else
+                                            <span class="text-xs text-gray-400">None</span>
+                                        @endif
                                     </td>
                                     <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium space-x-2">
                                         <!-- Actions -->

@@ -19,6 +19,17 @@
                             <div>
                                 <h3 class="text-3xl font-bold text-gray-900">{{ $member->name }}</h3>
                                 <p class="text-lg text-gray-600">{{ $member->church->name }}</p>
+                                @php
+                                    $statusColors = [
+                                        'active' => 'bg-green-100 text-green-800 border-green-200',
+                                        'inactive' => 'bg-yellow-100 text-yellow-800 border-yellow-200',
+                                        'deceased' => 'bg-gray-200 text-gray-800 border-gray-300'
+                                    ];
+                                    $status = $member->status ?? 'active';
+                                @endphp
+                                <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold border {{ $statusColors[$status] }} mt-2">
+                                    {{ ucfirst($status) }}
+                                </span>
                             </div>
                         </div>
                         <div class="flex gap-2">
@@ -73,8 +84,20 @@
                                     </dd>
                                 </div>
                                 <div class="grid grid-cols-3">
-                                    <dt class="text-sm font-medium text-blue-600">Church Group</dt>
-                                    <dd class="text-sm text-gray-900 col-span-2">{{ $member->church_group ?? 'None' }}</dd>
+                                    <dt class="text-sm font-medium text-blue-600">Church Groups</dt>
+                                    <dd class="text-sm text-gray-900 col-span-2">
+                                        @if($member->churchGroups && $member->churchGroups->count() > 0)
+                                            <div class="flex flex-wrap gap-1.5">
+                                                @foreach($member->churchGroups as $group)
+                                                    <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800 border border-blue-200">
+                                                        {{ $group->name }}
+                                                    </span>
+                                                @endforeach
+                                            </div>
+                                        @else
+                                            <span class="text-gray-400">None</span>
+                                        @endif
+                                    </dd>
                                 </div>
                                 <div class="grid grid-cols-3">
                                     <dt class="text-sm font-medium text-blue-600">Education</dt>
@@ -83,6 +106,47 @@
                             </dl>
                         </div>
                     </div>
+
+                    <!-- Status Information (if inactive or deceased) -->
+                    @if($member->status === 'inactive')
+                        <div class="mb-8 bg-yellow-50 p-6 rounded-lg border border-yellow-200">
+                            <h4 class="text-lg font-semibold mb-4 text-yellow-800 pb-2 border-b border-yellow-200">Inactive Status</h4>
+                            <dl class="space-y-3">
+                                @if($member->inactive_date)
+                                    <div class="grid grid-cols-3">
+                                        <dt class="text-sm font-medium text-yellow-700">Inactive Since</dt>
+                                        <dd class="text-sm text-gray-900 col-span-2">{{ $member->inactive_date->format('M d, Y') }}</dd>
+                                    </div>
+                                @endif
+                                @if($member->inactive_reason)
+                                    <div class="grid grid-cols-3">
+                                        <dt class="text-sm font-medium text-yellow-700">Reason</dt>
+                                        <dd class="text-sm text-gray-900 col-span-2">{{ $member->inactive_reason }}</dd>
+                                    </div>
+                                @endif
+                            </dl>
+                        </div>
+                    @endif
+
+                    @if($member->status === 'deceased')
+                        <div class="mb-8 bg-gray-100 p-6 rounded-lg border border-gray-300">
+                            <h4 class="text-lg font-semibold mb-4 text-gray-800 pb-2 border-b border-gray-300">Deceased Information</h4>
+                            <dl class="space-y-3">
+                                @if($member->deceased_date)
+                                    <div class="grid grid-cols-3">
+                                        <dt class="text-sm font-medium text-gray-700">Date of Death</dt>
+                                        <dd class="text-sm text-gray-900 col-span-2">{{ $member->deceased_date->format('M d, Y') }}</dd>
+                                    </div>
+                                @endif
+                                @if($member->deceased_cause)
+                                    <div class="grid grid-cols-3">
+                                        <dt class="text-sm font-medium text-gray-700">Cause/Notes</dt>
+                                        <dd class="text-sm text-gray-900 col-span-2">{{ $member->deceased_cause }}</dd>
+                                    </div>
+                                @endif
+                            </dl>
+                        </div>
+                    @endif
 
                     <!-- Additional Info -->
                     @if(!empty($member->extra_attributes))

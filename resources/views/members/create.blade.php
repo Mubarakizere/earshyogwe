@@ -109,7 +109,7 @@
                                     </label>
                                 @endforeach
                             </div>
-                             <x-input-error :messages="$errors->get('church_groups')\" class="mt-2" />
+                             <x-input-error :messages="$errors->get('church_groups')" class="mt-2" />
                         </div>
                     </div>
 

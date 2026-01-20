@@ -12,8 +12,8 @@ class MemberController extends Controller
     {
         $user = auth()->user();
         
-        // Base Query
-        $query = Member::with('church');
+        // Base Query - load church relationship and church groups
+        $query = Member::with(['church', 'churchGroups']);
 
         // 1. Role Scoping
         if ($user->can('view all members')) {
@@ -51,6 +51,11 @@ class MemberController extends Controller
             $query->where('marital_status', $request->status);
         }
 
+        // Filter by member status (active/inactive/deceased)
+        if ($request->filled('member_status')) {
+            $query->where('status', $request->member_status);
+        }
+
         // Clone query for REAL-TIME stats (based on current filters)
         $stats = [
             'total' => (clone $query)->count(),
@@ -81,6 +86,9 @@ class MemberController extends Controller
         if ($user->can('view own members') && !$user->can('view all members') && !$user->can('view assigned members') && $user->church_id != $member->church_id) {
              abort(403);
         }
+        
+        // Load church groups relationship
+        $member->load('churchGroups');
         
         return view('members.show', compact('member'));
     }
