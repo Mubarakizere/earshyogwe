@@ -6,7 +6,7 @@
     <div class="py-12" x-data="{ status: '{{ $member->status ?? 'active' }}' }">
         <div class="max-w-4xl mx-auto sm:px-6 lg:px-8">
             <div class="bg-white overflow-hidden shadow-xl rounded-lg">
-                <form action="{{ route('members.update', $member) }}" method="POST" class="p-8">
+                <form action="{{ route('members.update', $member) }}" method="POST" class="p-8" x-data="document.memberForm()">
                     @csrf
                     @method('PUT')
 
@@ -106,6 +106,44 @@
                             </div>
                         </div>
 
+                        <hr class="my-6 border-gray-100">
+
+                        <!-- Dynamic Extra Attributes Section -->
+                        <div class="mb-6">
+                            <div class="flex items-center justify-between mb-4">
+                                <h3 class="text-lg font-bold text-gray-800">Additional Details</h3>
+                                <button type="button" @click="addField()" class="text-sm font-semibold text-brand-600 hover:text-brand-800 flex items-center">
+                                    <svg class="w-4 h-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" /></svg>
+                                    Add Custom Field
+                                </button>
+                            </div>
+                            
+                            <div class="space-y-4">
+                                <template x-for="(field, index) in fields" :key="index">
+                                    <div class="flex items-start gap-4 p-4 bg-gray-50 rounded-lg border border-gray-200">
+                                        <div class="flex-1">
+                                            <label class="block text-xs font-semibold text-gray-500 uppercase">Field Name</label>
+                                            <input type="text" x-model="field.key" placeholder="e.g. Occupation" class="block w-full mt-1 text-sm border-gray-300 rounded-md focus:border-brand-500 focus:ring-brand-500">
+                                        </div>
+                                        <div class="flex-1">
+                                            <label class="block text-xs font-semibold text-gray-500 uppercase">Value</label>
+                                            <input type="text" 
+                                                   :name="'extra_attributes[' + (field.key || 'temp_' + index) + ']'" 
+                                                   x-model="field.value" 
+                                                   placeholder="e.g. Engineer" 
+                                                   class="block w-full mt-1 text-sm border-gray-300 rounded-md focus:border-brand-500 focus:ring-brand-500">
+                                        </div>
+                                        <button type="button" @click="removeField(index)" class="mt-6 text-gray-400 hover:text-red-500">
+                                            <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
+                                        </button>
+                                    </div>
+                                </template>
+                                <template x-if="fields.length === 0">
+                                    <p class="text-sm text-gray-400 italic">No additional details added yet.</p>
+                                </template>
+                            </div>
+                        </div>
+
                         <!-- Member Status Management -->
                         <div class="pt-6 mt-6 border-t">
                             <h4 class="font-semibold text-lg mb-4 text-gray-800">Member Status</h4>
@@ -171,4 +209,22 @@
             </div>
         </div>
     </div>
+
+    <script>
+        document.memberForm = () => ({
+            fields: [
+                @if($member->extra_attributes)
+                    @foreach($member->extra_attributes as $key => $value)
+                        { key: '{{ $key }}', value: '{{ $value }}' },
+                    @endforeach
+                @endif
+            ],
+            addField() {
+                this.fields.push({ key: '', value: '' });
+            },
+            removeField(index) {
+                this.fields.splice(index, 1);
+            }
+        });
+    </script>
 </x-app-layout>
