@@ -65,29 +65,54 @@
         <script type="text/javascript" src="https://translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"></script>
 
         <style>
-            /* Hide Google Translate default toolbar */
-            .goog-te-banner-frame.skiptranslate {
+            /* Aggressively hide ALL Google Translate UI elements */
+            .goog-te-banner-frame,
+            .goog-te-banner-frame.skiptranslate,
+            .skiptranslate,
+            iframe.skiptranslate,
+            .goog-te-ftab,
+            .goog-te-balloon-frame {
                 display: none !important;
+                visibility: hidden !important;
+                opacity: 0 !important;
+                height: 0 !important;
+                position: absolute !important;
+                top: -9999px !important;
             }
+            
             body {
                 top: 0px !important;
+                position: static !important;
             }
+            
             /* Position Google Translate element off-screen but keep it in DOM */
             #google_translate_element {
-                position: fixed;
-                top: -9999px;
-                left: -9999px;
-                z-index: -1;
+                position: fixed !important;
+                top: -9999px !important;
+                left: -9999px !important;
+                z-index: -1 !important;
+                width: 1px !important;
+                height: 1px !important;
+                overflow: hidden !important;
             }
+            
             .goog-te-gadget {
                 font-size: 0 !important;
+                color: transparent !important;
             }
+            
             .goog-te-gadget .goog-te-combo {
                 margin: 0 !important;
             }
+            
             /* Prevent translation from breaking layout */
             .translated-ltr {
                 margin-top: 0 !important;
+            }
+            
+            /* Hide the Google Translate top frame */
+            body > .skiptranslate {
+                display: none !important;
             }
         </style>
     </head>
