@@ -7,15 +7,56 @@ use Illuminate\Http\Request;
 
 class InstitutionController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
         $this->authorize('manage institutions');
 
-        $institutions = Institution::with('creator')
-            ->orderBy('name')
-            ->paginate(20);
+        $query = Institution::with('creator');
 
-        return view('institutions.index', compact('institutions'));
+        // Search by name
+        if ($request->filled('search')) {
+            $query->where('name', 'like', '%' . $request->search . '%');
+        }
+
+        // Filter by type
+        if ($request->filled('type')) {
+            $query->where('type', $request->type);
+        }
+
+        // Filter by status
+        if ($request->filled('status')) {
+            if ($request->status === 'active') {
+                $query->where('is_active', true);
+            } elseif ($request->status === 'inactive') {
+                $query->where('is_active', false);
+            }
+        }
+
+        $institutions = $query->orderBy('name')->paginate(20)->withQueryString();
+
+        // Get statistics for the UI
+        $stats = [
+            'total' => Institution::count(),
+            'active' => Institution::where('is_active', true)->count(),
+            'inactive' => Institution::where('is_active', false)->count(),
+            'by_type' => Institution::selectRaw('type, COUNT(*) as count')
+                ->groupBy('type')
+                ->pluck('count', 'type')
+                ->toArray(),
+        ];
+
+        // Institution types for filter options
+        $types = [
+            'diocese' => 'Diocese',
+            'health_center' => 'Health Center',
+            'health_post' => 'Health Post',
+            'primary_school' => 'Primary School',
+            'secondary_school' => 'Secondary School',
+            'university' => 'University',
+            'rw_project' => 'RW Project',
+        ];
+
+        return view('institutions.index', compact('institutions', 'stats', 'types'));
     }
 
     public function create()
