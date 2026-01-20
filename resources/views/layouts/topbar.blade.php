@@ -61,6 +61,9 @@
             </x-slot>
         </x-dropdown>
 
+        <!-- Language Switcher -->
+        <x-language-switcher />
+
         <!-- Profile Dropdown -->
         <x-dropdown align="right" width="48">
             <x-slot name="trigger">

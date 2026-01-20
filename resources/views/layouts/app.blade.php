@@ -49,10 +49,46 @@
                 });
             }
         </script>
+
+        <!-- Google Translate Integration -->
+        <script type="text/javascript">
+            function googleTranslateElementInit() {
+                new google.translate.TranslateElement({
+                    pageLanguage: 'en',
+                    includedLanguages: 'en,fr,rw,sw',
+                    layout: google.translate.TranslateElement.InlineLayout.SIMPLE,
+                    autoDisplay: false
+                }, 'google_translate_element');
+            }
+        </script>
+        <script type="text/javascript" src="//translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"></script>
+
+        <style>
+            /* Hide Google Translate default toolbar */
+            .goog-te-banner-frame.skiptranslate {
+                display: none !important;
+            }
+            body {
+                top: 0px !important;
+            }
+            .goog-te-gadget {
+                display: none !important;
+            }
+            #google_translate_element {
+                display: none !important;
+            }
+            /* Prevent translation from breaking layout */
+            .translated-ltr {
+                margin-top: 0 !important;
+            }
+        </style>
     </head>
     <body class="font-sans antialiased text-gray-900 bg-gray-50 h-screen overflow-hidden flex" 
           x-data="{ sidebarOpen: false, loading: true }" 
           x-init="window.onload = () => { setTimeout(() => loading = false, 800) }">
+
+        <!-- Hidden Google Translate Element -->
+        <div id="google_translate_element" style="display: none;"></div>
 
         <!-- Global Pro Loader -->
         <div x-show="loading" 
