@@ -169,9 +169,15 @@
             console.log('Triggering translation with select element');
             
             if (lang === 'en') {
-                // Reset to original language
-                select.value = '';
-                select.dispatchEvent(new Event('change'));
+                // Reset to original language by reloading the page
+                // Remove Google Translate hash from URL
+                if (window.location.hash.includes('googtrans')) {
+                    window.location.hash = '';
+                    window.location.reload();
+                } else {
+                    select.value = '';
+                    select.dispatchEvent(new Event('change'));
+                }
             } else {
                 // Change to selected language
                 select.value = lang;
