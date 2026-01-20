@@ -53,15 +53,16 @@
         <!-- Google Translate Integration -->
         <script type="text/javascript">
             function googleTranslateElementInit() {
+                console.log('Initializing Google Translate widget...');
                 new google.translate.TranslateElement({
                     pageLanguage: 'en',
                     includedLanguages: 'en,fr,rw,sw',
-                    layout: google.translate.TranslateElement.InlineLayout.SIMPLE,
-                    autoDisplay: false
+                    layout: google.translate.TranslateElement.InlineLayout.VERTICAL
                 }, 'google_translate_element');
+                console.log('Google Translate widget initialized');
             }
         </script>
-        <script type="text/javascript" src="//translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"></script>
+        <script type="text/javascript" src="https://translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"></script>
 
         <style>
             /* Hide Google Translate default toolbar */
@@ -71,11 +72,18 @@
             body {
                 top: 0px !important;
             }
-            .goog-te-gadget {
-                display: none !important;
-            }
+            /* Position Google Translate element off-screen but keep it in DOM */
             #google_translate_element {
-                display: none !important;
+                position: fixed;
+                top: -9999px;
+                left: -9999px;
+                z-index: -1;
+            }
+            .goog-te-gadget {
+                font-size: 0 !important;
+            }
+            .goog-te-gadget .goog-te-combo {
+                margin: 0 !important;
             }
             /* Prevent translation from breaking layout */
             .translated-ltr {
@@ -87,8 +95,8 @@
           x-data="{ sidebarOpen: false, loading: true }" 
           x-init="window.onload = () => { setTimeout(() => loading = false, 800) }">
 
-        <!-- Hidden Google Translate Element -->
-        <div id="google_translate_element" style="display: none;"></div>
+        <!-- Hidden Google Translate Element (positioned off-screen) -->
+        <div id="google_translate_element"></div>
 
         <!-- Global Pro Loader -->
         <div x-show="loading" 

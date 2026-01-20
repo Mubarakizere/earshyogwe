@@ -112,13 +112,41 @@
         'sw': 'SW'
     };
 
+    // Flag to check if Google Translate is ready
+    let googleTranslateReady = false;
+
+    // Check if Google Translate is loaded
+    function waitForGoogleTranslate(callback, maxAttempts = 100) {
+        let attempts = 0;
+        const checkInterval = setInterval(function() {
+            attempts++;
+            const select = document.querySelector('.goog-te-combo');
+            if (select && select.options && select.options.length > 0) {
+                clearInterval(checkInterval);
+                googleTranslateReady = true;
+                console.log('Google Translate select element found with', select.options.length, 'options');
+                if (callback) callback();
+            } else if (attempts >= maxAttempts) {
+                clearInterval(checkInterval);
+                console.error('Google Translate failed to load after ' + attempts + ' attempts');
+                console.log('Checking if google_translate_element exists:', !!document.querySelector('#google_translate_element'));
+                console.log('Checking if any goog-te elements exist:', document.querySelectorAll('[class*="goog-te"]').length);
+            }
+        }, 200);
+    }
+
     // Change language function
     function changeLanguage(lang) {
+        console.log('Changing language to:', lang);
+        
         // Save preference to localStorage
         localStorage.setItem('preferredLanguage', lang);
         
         // Update current language display
-        document.getElementById('current-lang-text').textContent = langNames[lang];
+        const langText = document.getElementById('current-lang-text');
+        if (langText) {
+            langText.textContent = langNames[lang];
+        }
         
         // Update active indicator
         document.querySelectorAll('.lang-option').forEach(option => {
@@ -130,47 +158,68 @@
             }
         });
         
-        // Trigger Google Translate
-        if (lang === 'en') {
-            // Reset to original language
-            var select = document.querySelector('.goog-te-combo');
-            if (select) {
+        // Function to actually trigger the translation
+        function triggerTranslation() {
+            const select = document.querySelector('.goog-te-combo');
+            if (!select) {
+                console.error('Google Translate select not found');
+                return;
+            }
+
+            console.log('Triggering translation with select element');
+            
+            if (lang === 'en') {
+                // Reset to original language
                 select.value = '';
                 select.dispatchEvent(new Event('change'));
+            } else {
+                // Change to selected language
+                select.value = lang;
+                select.dispatchEvent(new Event('change'));
             }
+        }
+
+        // If Google Translate is ready, trigger immediately
+        if (googleTranslateReady) {
+            triggerTranslation();
         } else {
-            // Wait for Google Translate to load
-            var checkExist = setInterval(function() {
-                var select = document.querySelector('.goog-te-combo');
-                if (select) {
-                    clearInterval(checkExist);
-                    select.value = lang;
-                    select.dispatchEvent(new Event('change'));
-                }
-            }, 100);
+            // Wait for it to be ready
+            waitForGoogleTranslate(triggerTranslation);
         }
     }
 
-    // Load saved language preference on page load
-    document.addEventListener('DOMContentLoaded', function() {
-        const savedLang = localStorage.getItem('preferredLanguage') || 'en';
+    // Initialize on page load
+    window.addEventListener('load', function() {
+        console.log('Page loaded, initializing language switcher');
         
-        // Update UI to show saved language
-        document.getElementById('current-lang-text').textContent = langNames[savedLang];
-        
-        // Update active indicator
-        document.querySelectorAll('.lang-option').forEach(option => {
-            const indicator = option.querySelector('.active-lang-indicator');
-            if (option.dataset.lang === savedLang) {
-                indicator.style.opacity = '1';
+        // Wait for Google Translate to be ready
+        waitForGoogleTranslate(function() {
+            console.log('Google Translate is ready');
+            
+            const savedLang = localStorage.getItem('preferredLanguage') || 'en';
+            console.log('Saved language preference:', savedLang);
+            
+            // Update UI to show saved language
+            const langText = document.getElementById('current-lang-text');
+            if (langText) {
+                langText.textContent = langNames[savedLang];
+            }
+            
+            // Update active indicator
+            document.querySelectorAll('.lang-option').forEach(option => {
+                const indicator = option.querySelector('.active-lang-indicator');
+                if (option.dataset.lang === savedLang) {
+                    indicator.style.opacity = '1';
+                }
+            });
+            
+            // Apply saved language
+            if (savedLang !== 'en') {
+                setTimeout(function() {
+                    changeLanguage(savedLang);
+                }, 500);
             }
         });
-        
-        // Apply saved language after a short delay to ensure Google Translate is loaded
-        if (savedLang !== 'en') {
-            setTimeout(function() {
-                changeLanguage(savedLang);
-            }, 1500);
-        }
     });
 </script>
+
