@@ -104,6 +104,14 @@ class WorkerController extends Controller
             $query->where('church_id', $request->church_id);
         }
 
+        // Filter by institution type
+        if ($request->filled('institution_type')) {
+            $query->whereHas('institution', function($q) use ($request) {
+                $q->where('type', $request->institution_type);
+            });
+        }
+
+        // Filter by specific institution
         if ($request->filled('institution_id')) {
             $query->where('institution_id', $request->institution_id);
         }
@@ -137,7 +145,47 @@ class WorkerController extends Controller
             'overdue' => $allWorkers->filter(fn($w) => $w->years_to_retirement !== null && $w->years_to_retirement < 0)->count(),
         ];
         
-        return view('workers.index', compact('workers', 'churches', 'institutions', 'stats'));
+        // 6. Institution Statistics for Filter Chips
+        $institutionStats = [];
+        foreach ($institutions as $institution) {
+            $count = (clone $statsQuery)->where('institution_id', $institution->id)->count();
+            $institutionStats[$institution->id] = $count;
+        }
+        
+        // Group institutions by type with counts
+        $institutionsByType = [];
+        $typeCounts = [];
+        foreach ($institutions as $institution) {
+            $type = $institution->type;
+            if (!isset($institutionsByType[$type])) {
+                $institutionsByType[$type] = [];
+                $typeCounts[$type] = 0;
+            }
+            $institutionsByType[$type][] = $institution;
+            $typeCounts[$type] += $institutionStats[$institution->id] ?? 0;
+        }
+        
+        // Institution type labels
+        $typeLabels = [
+            'diocese' => 'Diocese',
+            'health_center' => 'Health Center',
+            'health_post' => 'Health Post',
+            'primary_school' => 'Primary School',
+            'secondary_school' => 'Secondary School',
+            'university' => 'University',
+            'rw_project' => 'RW Project',
+        ];
+        
+        return view('workers.index', compact(
+            'workers', 
+            'churches', 
+            'institutions', 
+            'stats', 
+            'institutionStats', 
+            'institutionsByType',
+            'typeCounts',
+            'typeLabels'
+        ));
     }
 
     public function create()

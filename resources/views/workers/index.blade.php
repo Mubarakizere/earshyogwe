@@ -84,74 +84,144 @@
                 </div>
             </div>
 
-            <!-- Advanced Filter Bar -->
-            <div class="bg-white p-4 rounded-lg shadow-sm border border-gray-200 mb-6">
+
+            <!-- Search and Filters Section -->
+            <div class="bg-white rounded-xl shadow-lg p-6 mb-6 border border-gray-100">
                 <form method="GET" action="{{ route('workers.index') }}">
-                    <div class="grid grid-cols-1 md:grid-cols-12 gap-4 items-end">
-                        
-                        <!-- Search -->
-                        <div class="md:col-span-4">
-                            <label for="search" class="block text-xs font-medium text-gray-500 mb-1">Search</label>
-                            <div class="relative rounded-md shadow-sm">
-                                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                    <svg class="h-4 w-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
-                                </div>
-                                <input type="text" name="search" id="search" value="{{ request('search') }}" 
-                                    class="focus:ring-teal-500 focus:border-teal-500 block w-full pl-10 sm:text-sm border-gray-300 rounded-md" 
-                                    placeholder="Name, position, or phone...">
+                    <!-- Enhanced Search Bar -->
+                    <div class="mb-6">
+                        <label class="block text-sm font-semibold text-gray-700 mb-3">Search Workers</label>
+                        <div class="relative">
+                            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                <svg class="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                                </svg>
+                            </div>
+                            <input 
+                                type="text" 
+                                name="search" 
+                                value="{{ request('search') }}"
+                                placeholder="Search by name, job title, email, or phone..." 
+                                class="block w-full pl-10 pr-3 py-3 border border-gray-300 rounded-lg leading-5 bg-white placeholder-gray-500 focus:outline-none focus:placeholder-gray-400 focus:ring-2 focus:ring-teal-500 focus:border-teal-500 transition duration-150 text-sm"
+                            >
+                        </div>
+                    </div>
+
+                    <!-- Institution Filters -->
+                    <div class="space-y-4">
+                        <!-- Filter by Institution Type -->
+                        <div>
+                            <label class="block text-sm font-semibold text-gray-700 mb-3">Filter by Institution Type</label>
+                            <div class="flex flex-wrap gap-2">
+                                <button 
+                                    type="submit" 
+                                    name="institution_type" 
+                                    value="" 
+                                    class="px-4 py-2 rounded-lg font-medium text-sm transition-all duration-200 {{ !request('institution_type') && !request('institution_id') ? 'bg-teal-600 text-white shadow-md' : 'bg-gray-100 text-gray-700 hover:bg-gray-200' }}">
+                                    All Institutions
+                                    <span class="ml-1 text-xs opacity-75">({{ $stats['total'] }})</span>
+                                </button>
+                                @foreach($institutionsByType as $type => $typeInstitutions)
+                                    <button 
+                                        type="submit"
+                                        name="institution_type" 
+                                        value="{{ $type }}"
+                                        onclick="document.querySelector('input[name=institution_id]').value = '';"
+                                        class="px-4 py-2 rounded-lg font-medium text-sm transition-all duration-200 {{ request('institution_type') === $type ? 'bg-teal-600 text-white shadow-md' : 'bg-gray-100 text-gray-700 hover:bg-gray-200' }}">
+                                        {{ $typeLabels[$type] ?? ucwords(str_replace('_', ' ', $type)) }}
+                                        <span class="ml-1 text-xs opacity-75">({{ $typeCounts[$type] ?? 0 }})</span>
+                                    </button>
+                                @endforeach
                             </div>
                         </div>
 
-                        <!-- Church Filter (Dynamic) -->
-                        <div class="md:col-span-3">
-                            @if($churches->count() > 1)
-                                <label for="church_id" class="block text-xs font-medium text-gray-500 mb-1">Church</label>
-                                <select name="church_id" id="church_id" class="focus:ring-teal-500 focus:border-teal-500 block w-full sm:text-sm border-gray-300 rounded-md">
-                                    <option value="">All Churches</option>
-                                    @foreach($churches as $church)
-                                        <option value="{{ $church->id }}" {{ request('church_id') == $church->id ? 'selected' : '' }}>{{ $church->name }}</option>
-                                    @endforeach
-                                </select>
-                            @else
-                                <label class="block text-xs font-medium text-gray-400 mb-1">Church</label>
-                                <input type="text" disabled value="{{ $churches->first()->name ?? 'N/A' }}" class="block w-full sm:text-sm border-gray-200 bg-gray-50 rounded-md text-gray-500">
-                            @endif
-                        </div>
+                        <!-- Individual Institutions (Show based on selected type or all) -->
+                        @php
+                            $selectedType = request('institution_type');
+                            $displayInstitutions = $selectedType && isset($institutionsByType[$selectedType]) 
+                                ? $institutionsByType[$selectedType] 
+                                : [];
+                        @endphp
 
-                         <!-- Institution Filter -->
-                         <div class="md:col-span-2">
-                             <label for="institution_id" class="block text-xs font-medium text-gray-500 mb-1">Institution</label>
-                             <select name="institution_id" id="institution_id" class="focus:ring-teal-500 focus:border-teal-500 block w-full sm:text-sm border-gray-300 rounded-md">
-                                 <option value="">All Institutions</option>
-                                 @foreach($institutions as $institution)
-                                     <option value="{{ $institution->id }}" {{ request('institution_id') == $institution->id ? 'selected' : '' }}>{{ $institution->name }}</option>
-                                 @endforeach
-                             </select>
-                         </div>
+                        @if(count($displayInstitutions) > 0 || !request('institution_type'))
+                            <div>
+                                <label class="block text-sm font-semibold text-gray-700 mb-3">
+                                    {{ request('institution_type') ? 'Select ' . ($typeLabels[request('institution_type')] ?? 'Institution') : 'Select Specific Institution' }}
+                                </label>
+                                <div class="flex flex-wrap gap-2 max-h-40 overflow-y-auto p-2 bg-gray-50 rounded-lg border border-gray-200">
+                                    @if(!request('institution_type'))
+                                        <p class="text-xs text-gray-500 italic w-full">Select an institution type above to see specific institutions</p>
+                                    @else
+                                        @foreach($displayInstitutions as $institution)
+                                            <button 
+                                                type="submit"
+                                                name="institution_id" 
+                                                value="{{ $institution->id }}"
+                                                class="px-3 py-1.5 rounded-md font-medium text-xs transition-all duration-200 {{ request('institution_id') == $institution->id ? 'bg-indigo-600 text-white shadow-md' : 'bg-white text-gray-700 hover:bg-indigo-50 border border-gray-300' }}">
+                                                {{ $institution->name }}
+                                                <span class="ml-1 opacity-75">({{ $institutionStats[$institution->id] ?? 0 }})</span>
+                                            </button>
+                                        @endforeach
+                                    @endif
+                                </div>
+                            </div>
+                        @endif
 
-                        <!-- Status -->
-                        <div class="md:col-span-2">
-                             <label for="status" class="block text-xs font-medium text-gray-500 mb-1">Status</label>
-                             <select name="status" id="status" class="focus:ring-teal-500 focus:border-teal-500 block w-full sm:text-sm border-gray-300 rounded-md">
-                                 <option value="">All Statuses</option>
-                                 <option value="active" {{ request('status') == 'active' ? 'selected' : '' }}>Active</option>
-                                 <option value="retired" {{ request('status') == 'retired' ? 'selected' : '' }}>Retired</option>
-                                 <option value="terminated" {{ request('status') == 'terminated' ? 'selected' : '' }}>Terminated</option>
-                             </select>
-                        </div>
-                        
-                        <!-- Filter Buttons -->
-                        <div class="md:col-span-1 flex space-x-2">
-                            <button type="submit" class="w-full bg-gray-800 border border-transparent rounded-md shadow-sm py-2 px-2 inline-flex justify-center text-sm font-medium text-white hover:bg-gray-900 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-teal-500 transition">
-                                <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z"></path></svg>
-                            </button>
-                            @if(request()->hasAny(['search', 'church_id', 'institution_id', 'status']))
-                                <a href="{{ route('workers.index') }}" class="bg-white border border-gray-300 rounded-md shadow-sm py-2 px-2 inline-flex justify-center text-gray-700 hover:bg-gray-50 hover:text-gray-900 transition" title="Clear Filters">
-                                    <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
-                                </a>
-                            @endif
+                        <!-- Status Filter -->
+                        <div>
+                            <label class="block text-sm font-semibold text-gray-700 mb-3">Filter by Status</label>
+                            <div class="flex flex-wrap gap-2">
+                                <button 
+                                    type="submit" 
+                                    name="status" 
+                                    value="" 
+                                    class="px-4 py-2 rounded-lg font-medium text-sm transition-all duration-200 {{ !request('status') ? 'bg-gray-600 text-white shadow-md' : 'bg-gray-100 text-gray-700 hover:bg-gray-200' }}">
+                                    All Status
+                                </button>
+                                <button 
+                                    type="submit" 
+                                    name="status" 
+                                    value="active" 
+                                    class="px-4 py-2 rounded-lg font-medium text-sm transition-all duration-200 {{ request('status') === 'active' ? 'bg-green-600 text-white shadow-md' : 'bg-gray-100 text-gray-700 hover:bg-gray-200' }}">
+                                    Active
+                                </button>
+                                <button 
+                                    type="submit" 
+                                    name="status" 
+                                    value="retired" 
+                                    class="px-4 py-2 rounded-lg font-medium text-sm transition-all duration-200 {{ request('status') === 'retired' ? 'bg-gray-600 text-white shadow-md' : 'bg-gray-100 text-gray-700 hover:bg-gray-200' }}">
+                                    Retired
+                                </button>
+                                <button 
+                                    type="submit" 
+                                    name="status" 
+                                    value="terminated" 
+                                    class="px-4 py-2 rounded-lg font-medium text-sm transition-all duration-200 {{ request('status') === 'terminated' ? 'bg-red-600 text-white shadow-md' : 'bg-gray-100 text-gray-700 hover:bg-gray-200' }}">
+                                    Terminated
+                                </button>
+                            </div>
                         </div>
                     </div>
+
+                    <!-- Hidden inputs to preserve certain filters -->
+                    @if(request('search'))
+                        <input type="hidden" name="search_preserve" value="{{ request('search') }}">
+                    @endif
+                    @if(request('institution_type'))
+                        <input type="hidden" name="institution_type_preserve" value="{{ request('institution_type') }}">
+                    @endif
+
+                    <!-- Clear Filters Button -->
+                    @if(request()->hasAny(['search', 'institution_id', 'institution_type', 'status']))
+                        <div class="flex justify-end mt-6">
+                            <a href="{{ route('workers.index') }}" class="px-6 py-2 bg-gray-600 hover:bg-gray-700 text-white font-semibold rounded-lg shadow-md transition duration-200 flex items-center">
+                                <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                                </svg>
+                                Clear All Filters
+                            </a>
+                        </div>
+                    @endif
                 </form>
             </div>
 
