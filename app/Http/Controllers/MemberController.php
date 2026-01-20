@@ -141,7 +141,9 @@ class MemberController extends Controller
              $churches = Church::where('id', $user->church_id)->get();
         }
 
-        return view('members.create', compact('churches'));
+        $churchGroups = \App\Models\ChurchGroup::orderBy('name')->get();
+
+        return view('members.create', compact('churches', 'churchGroups'));
     }
 
     public function store(Request $request)
@@ -158,10 +160,20 @@ class MemberController extends Controller
             'baptism_status' => 'required|in:Baptized,Confirmed,None',
             'church_group' => 'nullable|string',
             'education_level' => 'nullable|string',
-            'extra_attributes' => 'nullable|array', // JSON field
+            'extra_attributes' => 'nullable|array',
+            'church_groups' => 'nullable|array',
+            'church_groups.*' => 'exists:church_groups,id',
         ]);
 
-        Member::create($validated);
+        $churchGroupIds = $validated['church_groups'] ?? [];
+        unset($validated['church_groups']);
+
+        $member = Member::create($validated);
+        
+        // Attach church groups
+        if (!empty($churchGroupIds)) {
+            $member->churchGroups()->attach($churchGroupIds);
+        }
 
         return redirect()->route('members.index')->with('success', 'Member added successfully.');
     }
@@ -176,8 +188,11 @@ class MemberController extends Controller
              abort(403);
         }
 
-        $churches = Church::all(); // Simplified for edit context, can be restricted if needed
-        return view('members.edit', compact('member', 'churches'));
+        $churches = Church::all();
+        $churchGroups = \App\Models\ChurchGroup::orderBy('name')->get();
+        $member->load('churchGroups');
+        
+        return view('members.edit', compact('member', 'churches', 'churchGroups'));
     }
 
     public function update(Request $request, Member $member)
@@ -195,9 +210,22 @@ class MemberController extends Controller
             'church_group' => 'nullable|string',
             'education_level' => 'nullable|string',
             'extra_attributes' => 'nullable|array',
+            'status' => 'required|in:active,inactive,deceased',
+            'inactive_reason' => 'required_if:status,inactive|nullable|string',
+            'inactive_date' => 'nullable|date',
+            'deceased_date' => 'required_if:status,deceased|nullable|date',
+            'deceased_cause' => 'nullable|string',
+            'church_groups' => 'nullable|array',
+            'church_groups.*' => 'exists:church_groups,id',
         ]);
 
+        $churchGroupIds = $validated['church_groups'] ?? [];
+        unset($validated['church_groups']);
+
         $member->update($validated);
+        
+        // Sync church groups
+        $member->churchGroups()->sync($churchGroupIds);
 
         return redirect()->route('members.index')->with('success', 'Member updated successfully.');
     }

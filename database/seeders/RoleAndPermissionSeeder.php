@@ -62,7 +62,7 @@ class RoleAndPermissionSeeder extends Seeder
             'System' => [
                 'manage users', 'manage roles', 'assign roles',
                 'grant permissions', 'revoke permissions',
-                'assign archid to churches', 'view activity logs', 'manage custom fields',
+                'assign archid to churches', 'view activity logs', 'manage custom fields', 'manage church groups',
             ],
         ];
 

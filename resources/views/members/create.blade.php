@@ -98,11 +98,18 @@
                             <x-input-error :messages="$errors->get('education_level')" class="mt-2" />
                         </div>
 
-                        <!-- Church Group -->
-                        <div>
-                            <x-input-label for="church_group" :value="__('Church Group / Fellowship')" />
-                            <x-text-input id="church_group" class="block mt-1 w-full" type="text" name="church_group" :value="old('church_group')" placeholder="e.g. Mothers' Union (MU)" />
-                             <x-input-error :messages="$errors->get('church_group')" class="mt-2" />
+                        <!-- Church Groups (Multiple Selection) -->
+                        <div class="col-span-1 md:col-span-2">
+                            <x-input-label for="church_groups" :value="__('Church Groups / Fellowships')" />
+                            <div class="mt-2 grid grid-cols-2 md:grid-cols-3 gap-3 p-4 bg-gray-50 rounded-lg border border-gray-200">
+                                @foreach($churchGroups as $group)
+                                    <label class="flex items-center space-x-2 cursor-pointer hover:text-brand-600">
+                                        <input type="checkbox" name="church_groups[]" value="{{ $group->id }}" class="rounded border-gray-300 text-brand-600 focus:ring-brand-500">
+                                        <span class="text-sm">{{ $group->name }}</span>
+                                    </label>
+                                @endforeach
+                            </div>
+                             <x-input-error :messages="$errors->get('church_groups')\" class="mt-2" />
                         </div>
                     </div>
 

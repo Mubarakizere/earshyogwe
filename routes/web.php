@@ -66,6 +66,9 @@ Route::middleware('auth')->group(function () {
     Route::post('expenses/{expense}/approve', [\App\Http\Controllers\ExpenseController::class, 'approve'])->name('expenses.approve');
     Route::post('expenses/{expense}/reject', [\App\Http\Controllers\ExpenseController::class, 'reject'])->name('expenses.reject');
     
+    // Church Groups Management
+    Route::resource('church-groups', \App\Http\Controllers\ChurchGroupController::class)->middleware(['permission:manage church groups']);
+    
     // Evangelism Reports (Permission-based - checked in controller)
     Route::resource('evangelism-reports', \App\Http\Controllers\EvangelismReportController::class);
     

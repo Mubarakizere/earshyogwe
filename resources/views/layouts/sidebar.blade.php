@@ -157,8 +157,8 @@
                 @endcanany
 
                 <!-- Settings Sub-group -->
-                @canany(['manage giving types', 'manage expense categories', 'manage service types', 'manage custom fields'])
-                <div x-data="{ settingsOpen: {{ request()->routeIs('giving-types.*') || request()->routeIs('expense-categories.*') || request()->routeIs('service-types.*') || request()->routeIs('custom-fields.*') ? 'true' : 'false' }} }" class="space-y-1">
+                @canany(['manage giving types', 'manage expense categories', 'manage service types', 'manage custom fields', 'manage church groups'])
+                <div x-data="{ settingsOpen: {{ request()->routeIs('giving-types.*') || request()->routeIs('expense-categories.*') || request()->routeIs('service-types.*') || request()->routeIs('custom-fields.*') || request()->routeIs('church-groups.*') ? 'true' : 'false' }} }" class="space-y-1">
                     <button @click="settingsOpen = !settingsOpen" class="flex items-center w-full px-2 py-2 text-xs font-medium rounded-md hover:bg-brand-800 hover:text-white transition-colors" :class="{ 'text-white': settingsOpen, 'text-brand-300': !settingsOpen }">
                         <svg class="w-4 h-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4" /></svg>
                         <span class="flex-1 text-left">Settings</span>
@@ -185,6 +185,11 @@
                         @can('manage custom fields')
                             <a href="{{ route('custom-fields.index') }}" class="group flex items-center px-2 py-1.5 text-xs font-medium rounded-md hover:text-white hover:bg-brand-800 {{ request()->routeIs('custom-fields.*') ? 'text-white bg-brand-800' : 'text-brand-200' }}">
                                 Custom Fields
+                            </a>
+                        @endcan
+                        @can('manage church groups')
+                            <a href="{{ route('church-groups.index') }}" class="group flex items-center px-2 py-1.5 text-xs font-medium rounded-md hover:text-white hover:bg-brand-800 {{ request()->routeIs('church-groups.*') ? 'text-white bg-brand-800' : 'text-brand-200' }}">
+                                Church Groups
                             </a>
                         @endcan
                     </div>

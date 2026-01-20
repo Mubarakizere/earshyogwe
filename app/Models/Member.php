@@ -50,11 +50,18 @@ class Member extends Model
         'church_group',
         'education_level',
         'extra_attributes',
+        'status',
+        'inactive_reason',
+        'inactive_date',
+        'deceased_date',
+        'deceased_cause',
     ];
 
     protected $casts = [
         'dob' => 'date',
         'extra_attributes' => 'array',
+        'inactive_date' => 'date',
+        'deceased_date' => 'date',
     ];
 
     public function church()
@@ -66,5 +73,39 @@ class Member extends Model
     public function getAgeAttribute()
     {
         return $this->dob ? Carbon::parse($this->dob)->age : null;
+    }
+
+    /**
+     * Get the church groups this member belongs to.
+     */
+    public function churchGroups()
+    {
+        return $this->belongsToMany(ChurchGroup::class, 'church_group_member')
+                    ->withTimestamps()
+                    ->withPivot('joined_date');
+    }
+
+    /**
+     * Scope a query to only include active members.
+     */
+    public function scopeActive($query)
+    {
+        return $query->where('status', 'active');
+    }
+
+    /**
+     * Scope a query to only include inactive members.
+     */
+    public function scopeInactive($query)
+    {
+        return $query->where('status', 'inactive');
+    }
+
+    /**
+     * Scope a query to only include deceased members.
+     */
+    public function scopeDeceased($query)
+    {
+        return $query->where('status', 'deceased');
     }
 }
