@@ -41,12 +41,12 @@
             <!-- Filter Bar -->
             <div class="bg-white rounded-lg shadow-sm p-5 mb-8 border border-gray-100">
                 <form action="{{ route('expenses.index') }}" method="GET" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4">
-                    <!-- Church (Visible if multiple available) -->
+                    <!-- Parish (Visible if multiple available) -->
                     @if($churches->count() > 1 || auth()->user()->can('view all churches'))
                     <div>
-                        <label class="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1">Church</label>
+                        <label class="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1">Parish</label>
                         <select name="church_id" class="w-full text-sm rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
-                            <option value="">All Churches</option>
+                            <option value="">All Parishes</option>
                             @foreach($churches as $church)
                                 <option value="{{ $church->id }}" {{ request('church_id') == $church->id ? 'selected' : '' }}>{{ $church->name }}</option>
                             @endforeach

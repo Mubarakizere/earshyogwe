@@ -12,9 +12,9 @@
                     <div class="space-y-6">
                         @if($churches->count() > 1)
                             <div>
-                                <label for="church_id" class="block text-sm font-medium text-gray-700 mb-2">Church <span class="text-red-500">*</span></label>
+                                <label for="church_id" class="block text-sm font-medium text-gray-700 mb-2">Parish <span class="text-red-500">*</span></label>
                                 <select name="church_id" id="church_id" required class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
-                                    <option value="">Select Church</option>
+                                    <option value="">Select Parish</option>
                                     @foreach($churches as $church)
                                         <option value="{{ $church->id }}">{{ $church->name }}</option>
                                     @endforeach

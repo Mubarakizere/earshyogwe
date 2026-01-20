@@ -43,7 +43,7 @@
             <div class="bg-white rounded-lg shadow-sm border border-gray-100 p-6 mb-6">
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
                     <div>
-                        <p class="text-xs text-gray-500 font-medium uppercase tracking-wider mb-1">Church</p>
+                        <p class="text-xs text-gray-500 font-medium uppercase tracking-wider mb-1">Parish</p>
                         <h3 class="text-xl font-bold text-gray-900">{{ $church->name }}</h3>
                     </div>
                     <div>
@@ -231,7 +231,7 @@
                         <svg class="h-6 w-6 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
                     </div>
                     <h3 class="text-lg font-bold text-gray-900 text-center mb-2">Delete All Offerings</h3>
-                    <p class="text-sm text-gray-500 text-center mb-2">Are you sure you want to delete <strong>ALL {{ $records->count() }} offering records</strong> for this date and church?</p>
+                    <p class="text-sm text-gray-500 text-center mb-2">Are you sure you want to delete <strong>ALL {{ $records->count() }} offering records</strong> for this date and parish?</p>
                     <p class="text-xs text-red-600 text-center mb-6 font-medium">This action cannot be undone!</p>
                     <form action="{{ route('givings.destroyBulk', ['date' => $date, 'church_id' => $church->id]) }}" method="POST" class="flex justify-center space-x-3">
                         @csrf @method('DELETE')

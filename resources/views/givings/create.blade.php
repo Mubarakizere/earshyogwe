@@ -36,15 +36,15 @@
                     @endif
 
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
-                        <!-- Church Selection -->
+                        <!-- Parish Selection -->
                         @if($churches->count() > 1)
                             <div>
                                 <label for="church_id" class="block text-sm font-medium text-gray-700 mb-2">
-                                    Church <span class="text-red-500">*</span>
+                                    Parish <span class="text-red-500">*</span>
                                 </label>
                                 <select name="church_id" id="church_id" required
                                     class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 @error('church_id') border-red-500 @enderror">
-                                    <option value="">Select Church</option>
+                                    <option value="">Select Parish</option>
                                     @foreach($churches as $church)
                                         <option value="{{ $church->id }}" {{ old('church_id') == $church->id ? 'selected' : '' }}>
                                             {{ $church->name }}

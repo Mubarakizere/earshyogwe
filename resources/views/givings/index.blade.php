@@ -71,18 +71,18 @@
                         <input type="date" name="end_date" value="{{ request('end_date') }}" class="w-full text-sm rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
                     </div>
 
-                    <!-- Church Filter (Role Based) (Col 5-9) -->
+                    <!-- Parish Filter (Role Based) (Col 5-9) -->
                     <div class="md:col-span-5">
                         @if($churches->count() > 1)
-                            <label class="block text-xs font-medium text-gray-500 mb-1">Church</label>
+                            <label class="block text-xs font-medium text-gray-500 mb-1">Parish</label>
                             <select name="church_id" class="w-full text-sm rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
-                                <option value="">All Churches</option>
+                                <option value="">All Parishes</option>
                                 @foreach($churches as $church)
                                     <option value="{{ $church->id }}" {{ request('church_id') == $church->id ? 'selected' : '' }}>{{ $church->name }}</option>
                                 @endforeach
                             </select>
                         @elseif($churches->count() == 1)
-                            <label class="block text-xs font-medium text-gray-500 mb-1">Church</label>
+                            <label class="block text-xs font-medium text-gray-500 mb-1">Parish</label>
                             <input type="text" disabled value="{{ $churches->first()->name }}" class="w-full text-sm bg-gray-50 rounded-md border-gray-200 text-gray-500 cursor-not-allowed">
                         @endif
                     </div>
@@ -109,7 +109,7 @@
                                 <thead class="bg-gray-50">
                                     <tr>
                                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
-                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Church</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Parish</th>
                                         <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Total Amount</th>
                                         <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Diocese Share</th>
                                         <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
@@ -128,7 +128,7 @@
                                                         {{ $giving->church ? substr($giving->church->name, 0, 2) : '??' }}
                                                     </div>
                                                     <div class="ml-3">
-                                                        <div class="text-sm font-medium text-gray-900">{{ $giving->church ? $giving->church->name : 'Church Not Found' }}</div>
+                                                        <div class="text-sm font-medium text-gray-900">{{ $giving->church ? $giving->church->name : 'Parish Not Found' }}</div>
                                                         <div class="text-xs text-gray-500">{{ $giving->last_entered_by ? 'Entry by: '. $giving->enteredBy->name : '' }}</div>
                                                     </div>
                                                 </div>
