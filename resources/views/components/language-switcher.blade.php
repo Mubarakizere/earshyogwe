@@ -169,16 +169,58 @@
             console.log('Triggering translation with select element');
             
             if (lang === 'en') {
-                // Reset to original language by reloading the page
-                // Remove Google Translate hash from URL
-                if (window.location.hash.includes('googtrans')) {
-                    window.location.hash = '';
-                    window.location.reload();
-                } else {
-                    select.value = '';
-                    select.dispatchEvent(new Event('change'));
+                // Reset to English - completely clear translation
+                console.log('Resetting to English - clearing translation');
+                
+                // Set a flag to indicate we're resetting to English
+                sessionStorage.setItem('googleTranslateReset', 'true');
+                
+                // Function to delete cookie with all possible paths and domains
+                function deleteCookie(name) {
+                    // Get all possible domain variations
+                    const hostname = window.location.hostname;
+                    const domains = [
+                        hostname,
+                        '.' + hostname,
+                        hostname.split('.').slice(-2).join('.'),
+                        '.' + hostname.split('.').slice(-2).join('.')
+                    ];
+                    
+                    // Get all possible paths
+                    const paths = ['/', window.location.pathname];
+                    
+                    // Try to delete cookie with all combinations
+                    domains.forEach(domain => {
+                        paths.forEach(path => {
+                            document.cookie = name + '=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=' + path + ';';
+                            document.cookie = name + '=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=' + path + '; domain=' + domain + ';';
+                        });
+                    });
+                    
+                    // Also try without specifying domain
+                    document.cookie = name + '=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
                 }
+                
+                // Delete all Google Translate cookies
+                deleteCookie('googtrans');
+                deleteCookie('googtrans_' + window.location.hostname.replace(/\./g, '_'));
+                
+                console.log('Cookies cleared');
+                
+                // Remove hash
+                if (window.location.hash) {
+                    window.location.hash = '';
+                }
+                
+                // Clear localStorage
+                localStorage.setItem('preferredLanguage', 'en');
+                
+                // Force clean reload
+                window.location.reload(true);
             } else {
+                // Remove the reset flag when translating to another language
+                sessionStorage.removeItem('googleTranslateReset');
+                
                 // Change to selected language
                 select.value = lang;
                 select.dispatchEvent(new Event('change'));
@@ -197,6 +239,32 @@
     // Initialize on page load
     window.addEventListener('load', function() {
         console.log('Page loaded, initializing language switcher');
+        
+        // Check if we just reset to English
+        const wasReset = sessionStorage.getItem('googleTranslateReset');
+        if (wasReset === 'true') {
+            console.log('Page was just reset to English - skipping auto-translate');
+            sessionStorage.removeItem('googleTranslateReset');
+            localStorage.setItem('preferredLanguage', 'en');
+            
+            // Update UI to show English
+            const langText = document.getElementById('current-lang-text');
+            if (langText) {
+                langText.textContent = 'EN';
+            }
+            
+            // Update active indicator for English
+            document.querySelectorAll('.lang-option').forEach(option => {
+                const indicator = option.querySelector('.active-lang-indicator');
+                if (option.dataset.lang === 'en') {
+                    indicator.style.opacity = '1';
+                } else {
+                    indicator.style.opacity = '0';
+                }
+            });
+            
+            return; // Exit early - don't auto-translate
+        }
         
         // Wait for Google Translate to be ready
         waitForGoogleTranslate(function() {
@@ -219,7 +287,7 @@
                 }
             });
             
-            // Apply saved language
+            // Apply saved language (only if not English)
             if (savedLang !== 'en') {
                 setTimeout(function() {
                     changeLanguage(savedLang);
