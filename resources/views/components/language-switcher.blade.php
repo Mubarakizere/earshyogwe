@@ -2,12 +2,12 @@
 <div x-data="{ open: false }" @click.away="open = false" class="relative">
     {{-- Switcher Button --}}
     <button @click="open = !open" 
-            class="flex items-center space-x-2 px-3 py-2 rounded-lg bg-white border border-gray-200 hover:border-brand-300 hover:bg-brand-50 transition-all duration-200 shadow-sm hover:shadow-md group">
-        <svg class="h-5 w-5 text-gray-600 group-hover:text-brand-600 transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            class="flex items-center space-x-1 sm:space-x-2 px-2 sm:px-3 py-2 rounded-lg bg-white border border-gray-200 hover:border-brand-300 hover:bg-brand-50 transition-all duration-200 shadow-sm hover:shadow-md group">
+        <svg class="h-5 w-5 sm:h-5 sm:w-5 text-gray-600 group-hover:text-brand-600 transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5h12M9 3v2m1.048 9.5A18.022 18.022 0 016.412 9m6.088 9h7M11 21l5-10 5 10M12.751 5C11.783 10.77 8.07 15.61 3 18.129" />
         </svg>
         <span class="text-sm font-medium text-gray-700 group-hover:text-brand-700 hidden sm:block" id="current-lang-text">EN</span>
-        <svg class="h-4 w-4 text-gray-500 group-hover:text-brand-500 transition-transform" :class="{ 'rotate-180': open }" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <svg class="h-4 w-4 text-gray-500 group-hover:text-brand-500 transition-transform hidden sm:block" :class="{ 'rotate-180': open }" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
         </svg>
     </button>

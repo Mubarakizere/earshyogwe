@@ -18,7 +18,7 @@
     </div>
 
     <!-- Right Side Actions -->
-    <div class="ml-4 flex items-center md:ml-6 space-x-4">
+    <div class="ml-2 sm:ml-4 flex items-center md:ml-6 space-x-2 sm:space-x-4">
         <!-- Notification Bell -->
         <!-- Notification Bell -->
         <x-dropdown align="right" width="w-72 md:w-80">
