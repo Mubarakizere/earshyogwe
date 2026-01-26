@@ -111,6 +111,19 @@
                             <option value="inactive" {{ request('member_status') == 'inactive' ? 'selected' : '' }}>Inactive</option>
                             <option value="deceased" {{ request('member_status') == 'deceased' ? 'selected' : '' }}>Deceased</option>
                         </select>
+                        </select>
+                    </div>
+
+                    <!-- DOB From Filter -->
+                     <div class="md:col-span-2">
+                        <label class="block text-xs font-semibold text-gray-500 uppercase mb-1">DOB From</label>
+                        <input type="date" name="dob_from" value="{{ request('dob_from') }}" class="w-full py-2 rounded-lg border-gray-300 focus:ring-indigo-500 focus:border-indigo-500 text-sm">
+                    </div>
+
+                    <!-- DOB To Filter -->
+                     <div class="md:col-span-2">
+                        <label class="block text-xs font-semibold text-gray-500 uppercase mb-1">DOB To</label>
+                        <input type="date" name="dob_to" value="{{ request('dob_to') }}" class="w-full py-2 rounded-lg border-gray-300 focus:ring-indigo-500 focus:border-indigo-500 text-sm">
                     </div>
 
                      <!-- Gender Filter -->

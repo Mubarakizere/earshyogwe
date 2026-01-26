@@ -63,6 +63,15 @@ class MemberController extends Controller
             'female' => (clone $query)->where('sex', 'Female')->count(),
             'baptized' => (clone $query)->where('baptism_status', 'Baptized')->count(),
         ];
+        
+        // Date of Birth Filter
+        if ($request->filled('dob_from')) {
+            $query->whereDate('dob', '>=', $request->dob_from);
+        }
+
+        if ($request->filled('dob_to')) {
+            $query->whereDate('dob', '<=', $request->dob_to);
+        }
 
         $members = $query->latest()->paginate(15)->withQueryString();
 
