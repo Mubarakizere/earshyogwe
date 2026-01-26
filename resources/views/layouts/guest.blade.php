@@ -8,9 +8,9 @@
         <title>{{ config('app.name', 'Laravel') }}</title>
 
         <!-- SEO Meta Tags -->
-        <meta name="description" content="EAR Shyogwe Diocese Enterprise Management System">
-        <meta name="keywords" content="church, diocese, management, EAR Shyogwe">
-        <meta name="author" content="EAR Shyogwe Diocese">
+        <meta name="description" content="SMRS Enterprise Management System">
+        <meta name="keywords" content="church, diocese, management, SMRS">
+        <meta name="author" content="SMRS">
 
         <!-- Fonts -->
         <link rel="preconnect" href="https://fonts.bunny.net">
@@ -24,7 +24,7 @@
         <meta name="theme-color" content="#1e3a8a">
         <meta name="apple-mobile-web-app-capable" content="yes">
         <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-        <meta name="apple-mobile-web-app-title" content="EAR Shyogwe">
+        <meta name="apple-mobile-web-app-title" content="SMRS">
         <link rel="manifest" href="{{ asset('manifest.json') }}">
 
         <!-- Scripts -->
@@ -54,12 +54,12 @@
                      <div class="mb-6 inline-block p-4 rounded-full bg-white/10 backdrop-blur-sm border border-white/20">
                         <img src="/storage/logo/logo.jpg" alt="Logo" class="w-20 h-20 object-contain rounded-full">
                     </div>
-                    <h1 class="text-4xl font-extrabold text-white tracking-tight mb-4">EAR SHYOGWE DIOCESE</h1>
+                    <h1 class="text-4xl font-extrabold text-white tracking-tight mb-4">SMRS</h1>
                     <p class="text-brand-100 text-lg max-w-md mx-auto leading-relaxed">
                         Secure Enterprise Management System.<br>Excellence in Administration.
                     </p>
                     <div class="mt-12 text-sm text-brand-300">
-                        &copy; {{ date('Y') }} EAR SHYOGWE DIOCESE. All rights reserved.
+                        &copy; {{ date('Y') }} SMRS. All rights reserved.
                     </div>
                 </div>
             </div>

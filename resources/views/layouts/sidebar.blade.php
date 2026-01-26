@@ -7,7 +7,7 @@
     <div class="flex items-center justify-center h-16 bg-brand-950 shadow-sm border-b border-brand-800">
         <a href="{{ route('dashboard') }}" class="flex items-center gap-3 text-white font-bold text-lg tracking-tight">
             <img src="/storage/logo/logo.jpg" alt="Logo" class="w-8 h-8 rounded-full border border-brand-700">
-            <span class="hidden md:block truncate text-white">EAR SHYOGWE</span>
+            <span class="hidden md:block truncate text-white">SMRS</span>
         </a>
     </div>
 

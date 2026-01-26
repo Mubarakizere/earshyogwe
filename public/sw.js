@@ -1,4 +1,4 @@
-const CACHE_NAME = 'ear-shyogwe-v1';
+const CACHE_NAME = 'smrs-v1';
 const urlsToCache = [
     '/',
     '/dashboard',

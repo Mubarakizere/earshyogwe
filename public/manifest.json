@@ -1,7 +1,7 @@
 {
-    "name": "EAR Shyogwe Diocese Portal",
-    "short_name": "EAR Shyogwe",
-    "description": "Enterprise Management System for EAR Shyogwe Diocese",
+    "name": "SMRS System",
+    "short_name": "SMRS",
+    "description": "SMRS Enterprise Management System",
     "start_url": "/dashboard",
     "display": "standalone",
     "background_color": "#ffffff",

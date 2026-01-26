@@ -8,9 +8,9 @@
         <title>{{ config('app.name', 'Laravel') }}</title>
 
         <!-- SEO Meta Tags -->
-        <meta name="description" content="EAR Shyogwe Diocese Enterprise Management System">
-        <meta name="keywords" content="church, diocese, management, EAR Shyogwe">
-        <meta name="author" content="EAR Shyogwe Diocese">
+        <meta name="description" content="SMRS Enterprise Management System">
+        <meta name="keywords" content="church, diocese, management, SMRS">
+        <meta name="author" content="SMRS">
 
         <!-- Fonts -->
         <link rel="preconnect" href="https://fonts.bunny.net">
@@ -33,7 +33,7 @@
         <meta name="theme-color" content="#1e3a8a">
         <meta name="apple-mobile-web-app-capable" content="yes">
         <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-        <meta name="apple-mobile-web-app-title" content="EAR Shyogwe">
+        <meta name="apple-mobile-web-app-title" content="SMRS">
         <link rel="manifest" href="{{ asset('manifest.json') }}">
 
         <!-- Scripts -->
@@ -140,7 +140,7 @@
                 
                 <!-- Loading Text -->
                 <div class="mt-8 text-center animate-fade-in-up">
-                    <p class="text-brand-800 font-bold tracking-widest text-xs uppercase mb-1">EAR SHYOGWE DIOCESE</p>
+                    <p class="text-brand-800 font-bold tracking-widest text-xs uppercase mb-1">SMRS</p>
                     <div class="flex items-center justify-center space-x-1">
                         <div class="w-1.5 h-1.5 bg-brand-400 rounded-full animate-bounce delay-75"></div>
                         <div class="w-1.5 h-1.5 bg-brand-500 rounded-full animate-bounce delay-100"></div>
@@ -177,7 +177,7 @@
 
                 <div class="pb-6">
                     <footer class="text-center text-sm text-gray-400 mt-12 border-t border-gray-200 pt-6">
-                        &copy; {{ date('Y') }} EAR SHYOGWE DIOCESE. All rights reserved.
+                        &copy; {{ date('Y') }} SMRS. All rights reserved.
                     </footer>
                 </div>
             </main>
