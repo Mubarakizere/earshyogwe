@@ -286,7 +286,7 @@
                             </div>
                             
                             <div class="w-full bg-gray-200 rounded-full h-2.5 mb-4">
-                                <div class="bg-indigo-600 h-2.5 rounded-full" style="width: {{ $objective->progress_percentage }}%"></div>
+                                <div class="bg-indigo-600 h-2.5 rounded-full" style="width: {{ min(100, $objective->progress_percentage) }}%"></div>
                             </div>
                             
                             <div class="text-right text-sm text-gray-500">

@@ -361,7 +361,7 @@
                                             <span>{{ $objective->progress_percentage }}%</span>
                                         </div>
                                         <div class="w-full bg-gray-100 rounded-full h-2">
-                                            <div class="bg-gradient-to-r from-purple-500 to-indigo-500 h-2 rounded-full transition-all duration-500" style="width: {{ $objective->progress_percentage }}%"></div>
+                                            <div class="bg-gradient-to-r from-purple-500 to-indigo-500 h-2 rounded-full transition-all duration-500" style="width: {{ min(100, $objective->progress_percentage) }}%"></div>
                                         </div>
                                         <div class="mt-2 text-xs text-gray-400 text-right">
                                             Target: {{ number_format($objective->target) }} {{ $objective->target_unit ?? 'units' }}

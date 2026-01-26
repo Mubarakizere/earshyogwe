@@ -121,7 +121,7 @@ class Objective extends Model
     public function getProgressPercentageAttribute()
     {
         if ($this->target == 0) return 0;
-        return min(100, round(($this->current_progress / $this->target) * 100));
+        return round(($this->current_progress / $this->target) * 100);
     }
 
     // Scopes
