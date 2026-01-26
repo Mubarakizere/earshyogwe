@@ -18,6 +18,7 @@ class Objective extends Model
         'description',
         'start_date',
         'end_date',
+        'budget_estimate',
         'status', // planned, in_progress, completed, cancelled
         'target',
         'target_unit',

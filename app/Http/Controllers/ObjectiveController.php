@@ -179,6 +179,7 @@ class ObjectiveController extends Controller
             'target_unit' => 'nullable|string|max:50',
             'start_date' => 'required|date',
             'end_date' => 'nullable|date|after:start_date',
+            'budget_estimate' => 'nullable|numeric|min:0',
             'status' => 'required|in:planned,in_progress,completed,cancelled',
             'documents.*' => 'nullable|file|mimes:jpg,jpeg,png,pdf,doc,docx|max:5120',
             
@@ -213,6 +214,7 @@ class ObjectiveController extends Controller
             'target_unit' => $validated['target_unit'] ?? null,
             'start_date' => $validated['start_date'],
             'end_date' => $validated['end_date'] ?? null,
+            'budget_estimate' => $validated['budget_estimate'] ?? null,
             'status' => $validated['status'],
             'approval_status' => $approvalStatus,
             'created_by' => auth()->id(),
@@ -311,6 +313,7 @@ class ObjectiveController extends Controller
             'target_unit' => 'nullable|string|max:50',
             'start_date' => 'required|date',
             'end_date' => 'nullable|date|after:start_date',
+            'budget_estimate' => 'nullable|numeric|min:0',
             'status' => 'required|in:planned,in_progress,completed,cancelled',
             'documents.*' => 'nullable|file|mimes:jpg,jpeg,png,pdf,doc,docx|max:5120',
             // Enhanced Fields
