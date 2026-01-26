@@ -150,30 +150,120 @@
                                 </div>
                             </div>
                             
-                            <div>
+                            <div x-data="fileUpload()" class="w-full">
                                 <label class="block text-sm font-bold text-gray-700 uppercase tracking-wider mb-2">
                                     {{ __('Supporting Documents (Optional)') }}
                                 </label>
-                                <div class="mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-gray-300 border-dashed rounded-lg hover:border-purple-400 transition-colors">
-                                    <div class="space-y-1 text-center">
-                                        <svg class="mx-auto h-12 w-12 text-gray-400" stroke="currentColor" fill="none" viewBox="0 0 48 48" aria-hidden="true">
+                                
+                                {{-- Drop Zone --}}
+                                <div 
+                                    @dragover.prevent="isDragging = true"
+                                    @dragleave.prevent="isDragging = false"
+                                    @drop.prevent="handleDrop($event)"
+                                    :class="{'border-purple-500 bg-purple-50': isDragging, 'border-gray-300 bg-gray-50': !isDragging}"
+                                    class="relative border-2 border-dashed rounded-lg p-8 transition-all duration-200 ease-in-out text-center cursor-pointer hover:bg-gray-100"
+                                >
+                                    <input type="file" name="documents[]" id="documents_input" multiple accept=".pdf,.jpg,.jpeg,.png" 
+                                           class="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                                           @change="handleFiles($event.target.files)">
+                                           
+                                    <div class="space-y-2 pointer-events-none">
+                                        <svg class="mx-auto h-12 w-12 text-gray-400" stroke="currentColor" fill="none" viewBox="0 0 48 48">
                                             <path d="M28 8H12a4 4 0 00-4 4v20m32-12v8m0 0v8a4 4 0 01-4 4H12a4 4 0 01-4-4v-4m32-4l-3.172-3.172a4 4 0 00-5.656 0L28 28M8 32l9.172-9.172a4 4 0 015.656 0L28 28m0 0l4 4m4-24h8m-4-4v8m-12 4h.02" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
                                         </svg>
-                                        <div class="flex text-sm text-gray-600 justify-center">
-                                            <label for="documents" class="relative cursor-pointer bg-white rounded-md font-medium text-purple-600 hover:text-purple-500 focus-within:outline-none focus-within:ring-2 focus-within:ring-offset-2 focus-within:ring-purple-500">
-                                                <span>Upload files</span>
-                                                <input id="documents" name="documents[]" type="file" class="sr-only" multiple accept=".pdf,.jpg,.jpeg,.png">
-                                            </label>
-                                            <p class="pl-1">or drag and drop</p>
+                                        <div class="text-sm text-gray-600">
+                                            <span class="font-medium text-purple-600 hover:text-purple-500">Upload a file</span>
+                                            <span class="pl-1">or drag and drop</span>
                                         </div>
-                                        <p class="text-xs text-gray-500">
-                                            PNG, JPG, PDF up to 5MB
-                                        </p>
+                                        <p class="text-xs text-gray-500">PNG, JPG, PDF up to 30MB</p>
                                     </div>
                                 </div>
+
+                                {{-- File Preview List --}}
+                                <template x-if="files.length > 0">
+                                    <ul class="mt-4 grid grid-cols-1 gap-3">
+                                        <template x-for="(file, index) in files" :key="index">
+                                            <li class="flex items-center justify-between p-3 bg-white border border-gray-200 rounded-lg shadow-sm">
+                                                <div class="flex items-center space-x-3 overflow-hidden">
+                                                    {{-- Icon/Thumbnail --}}
+                                                    <div class="flex-shrink-0 w-10 h-10 rounded bg-gray-100 flex items-center justify-center">
+                                                        <template x-if="file.type.includes('image')">
+                                                            <svg class="w-6 h-6 text-purple-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
+                                                        </template>
+                                                        <template x-if="file.type.includes('pdf')">
+                                                            <svg class="w-6 h-6 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z"></path></svg>
+                                                        </template>
+                                                    </div>
+                                                    
+                                                    <div class="min-w-0 flex-1">
+                                                        <p class="text-sm font-medium text-gray-900 truncate" x-text="file.name"></p>
+                                                        <p class="text-xs text-gray-500" x-text="formatSize(file.size)"></p>
+                                                    </div>
+                                                </div>
+                                                
+                                                <button type="button" @click="removeFile(index)" class="flex-shrink-0 ml-2 text-gray-400 hover:text-red-500 focus:outline-none">
+                                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                                                </button>
+                                            </li>
+                                        </template>
+                                    </ul>
+                                </template>
                             </div>
+
+                            <script>
+                                function fileUpload() {
+                                    return {
+                                        isDragging: false,
+                                        files: [],
+                                        handleDrop(event) {
+                                            this.isDragging = false;
+                                            this.handleFiles(event.dataTransfer.files);
+                                        },
+                                        handleFiles(fileList) {
+                                            for (let i = 0; i < fileList.length; i++) {
+                                                const file = fileList[i];
+                                                // Basic validation
+                                                if (file.size > 30 * 1024 * 1024) {
+                                                    alert('File ' + file.name + ' is too large (max 30MB)');
+                                                    continue;
+                                                }
+                                                this.files.push(file);
+                                            }
+                                            
+                                            // Sync with input (optional, mainly for visual list as the input itself captures the files for form submission if we don't interfere too much, 
+                                            // BUT standard file inputs are read-only for security. To make this work seamlessly with standard form submit, 
+                                            // we usually rely on the input's own change event or use AJAX.
+                                            // For this simple implementation, the input @change handles the binding. 
+                                            // However, to support dropping files and *submitting* them via standard POST, we need to manually assign them to the input or use a DataTransfer object.
+                                            
+                                            this.updateInputFiles();
+                                        },
+                                        removeFile(index) {
+                                            this.files.splice(index, 1);
+                                            this.updateInputFiles();
+                                        },
+                                        updateInputFiles() {
+                                            const dataTransfer = new DataTransfer();
+                                            this.files.forEach(file => dataTransfer.items.add(file));
+                                            document.getElementById('documents_input').files = dataTransfer.files;
+                                        },
+                                        formatSize(bytes) {
+                                            if (bytes === 0) return '0 Bytes';
+                                            const k = 1024;
+                                            const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+                                            const i = Math.floor(Math.log(bytes) / Math.log(k));
+                                            return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+                                        }
+                                    }
+                                }
+                            </script>
                         </div>
                     </div>
+
+                    {{-- Fix input ID for the script to find it --}}
+                    {{-- Note: The input inside the drag zone needs an ID or we reference it --}}
+                    {{-- I will modify the input in the block above to include id="documents_input" --}}
+
 
                     <div class="mt-8">
                         <label for="responsible_person" class="block text-sm font-bold text-gray-700 uppercase tracking-wider mb-2">

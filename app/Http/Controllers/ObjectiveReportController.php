@@ -37,7 +37,7 @@ class ObjectiveReportController extends Controller
             'location' => 'nullable|string',
             'budget_spent' => 'nullable|numeric|min:0',
             'responsible_person' => 'nullable|string',
-            'documents.*' => 'nullable|file|mimes:jpg,jpeg,png,pdf|max:5120', // Optional 5MB max
+            'documents.*' => 'nullable|file|mimes:jpg,jpeg,png,pdf|max:30720', // Optional 30MB max
         ]);
 
         $report = ObjectiveReport::create([
