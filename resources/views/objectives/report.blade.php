@@ -72,7 +72,7 @@
                             <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
                                 <div>
                                     <label for="quantity" class="block text-sm font-bold text-gray-700 uppercase tracking-wider mb-2">
-                                        {{ __('Quantity/Output') }} <span class="text-red-500">*</span>
+                                        {{ __('Indicator') }} <span class="text-red-500">*</span>
                                     </label>
                                     <div class="relative">
                                         <input type="number" name="quantity" id="quantity" step="0.01" 

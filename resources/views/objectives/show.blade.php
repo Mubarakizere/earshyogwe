@@ -153,7 +153,7 @@
 
                                         <div class="flex items-center gap-6 mt-4 pt-4 border-t border-gray-50">
                                             <div>
-                                                <span class="text-xs font-semibold text-gray-500 uppercase block">Quantity</span>
+                                                <span class="text-xs font-semibold text-gray-500 uppercase block">Indicator</span>
                                                 <span class="text-sm font-bold text-gray-900">{{ number_format($report->quantity) }} {{ $objective->target_unit }}</span>
                                             </div>
                                             
@@ -224,6 +224,21 @@
                                     <span class="block text-sm font-medium text-gray-500">End Date</span>
                                     <span class="block text-base font-semibold text-gray-900">{{ $objective->end_date ? $objective->end_date->format('M d, Y') : 'Ongoing' }}</span>
                                 </div>
+                                @if($objective->budget_estimate)
+                                <div>
+                                    <span class="block text-sm font-medium text-gray-500">Estimated Budget</span>
+                                    <div class="flex items-baseline gap-1">
+                                        <span class="block text-base font-semibold text-gray-900">{{ number_format($objective->budget_estimate) }}</span>
+                                        <span class="text-xs text-gray-500">RWF</span>
+                                    </div>
+                                </div>
+                                @endif
+                                @if($objective->funding_source)
+                                <div>
+                                    <span class="block text-sm font-medium text-gray-500">Funding Source</span>
+                                    <span class="block text-base font-semibold text-gray-900">{{ $objective->funding_source }}</span>
+                                </div>
+                                @endif
                             </div>
                         </div>
                     </div>
