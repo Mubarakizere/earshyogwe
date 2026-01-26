@@ -34,8 +34,8 @@ class ObjectiveReport extends Model
         return $this->belongsTo(Objective::class);
     }
 
-    public function user()
+    public function documents()
     {
-        return $this->belongsTo(User::class);
+        return $this->hasMany(ObjectiveReportDocument::class, 'objective_report_id');
     }
 }

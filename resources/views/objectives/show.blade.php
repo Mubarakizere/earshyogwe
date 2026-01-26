@@ -171,6 +171,25 @@
                                             </div>
                                             @endif
                                         </div>
+                                        
+                                        @if($report->documents && $report->documents->count() > 0)
+                                        <div class="mt-4 pt-4 border-t border-gray-100">
+                                            <h6 class="text-xs font-semibold text-gray-500 uppercase mb-2">Attachments</h6>
+                                            <div class="flex flex-wrap gap-2">
+                                                @foreach($report->documents as $doc)
+                                                    <a href="{{ Storage::url($doc->file_path) }}" target="_blank" 
+                                                       class="inline-flex items-center px-3 py-1.5 rounded-md text-xs font-medium bg-gray-100 text-gray-700 hover:bg-purple-100 hover:text-purple-700 border border-gray-200 transition-colors">
+                                                        @if($doc->file_type === 'image')
+                                                            <svg class="w-3 h-3 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
+                                                        @else
+                                                            <svg class="w-3 h-3 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z"></path></svg>
+                                                        @endif
+                                                        {{ $doc->file_name }}
+                                                    </a>
+                                                @endforeach
+                                            </div>
+                                        </div>
+                                        @endif
                                     </div>
                                 @endforeach
                             </div>

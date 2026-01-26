@@ -37,20 +37,37 @@ class ObjectiveReportController extends Controller
             'location' => 'nullable|string',
             'budget_spent' => 'nullable|numeric|min:0',
             'responsible_person' => 'nullable|string',
+            'documents.*' => 'nullable|file|mimes:jpg,jpeg,png,pdf|max:5120', // Optional 5MB max
         ]);
 
         $report = ObjectiveReport::create([
             'objective_id' => $objective->id,
             'user_id' => auth()->id(),
             'report_date' => $validated['report_date'],
-            'activities_description' => $validated['activities_description'], // "Activities" box
-            'results_outcome' => $validated['results_outcome'], // "Results (Outcome)" box
-            'quantity' => $validated['quantity'], // "Quantity/Output" box
-            'location' => $validated['location'], // "Location" box
-            'budget_spent' => $validated['budget_spent'] ?? 0, // "Budget" box
-            'responsible_person' => $validated['responsible_person'], // "Responsible Person" box
+            'activities_description' => $validated['activities_description'],
+            'results_outcome' => $validated['results_outcome'],
+            'quantity' => $validated['quantity'],
+            'location' => $validated['location'],
+            'budget_spent' => $validated['budget_spent'] ?? 0,
+            'responsible_person' => $validated['responsible_person'],
             'status' => 'submitted',
         ]);
+
+        if ($request->hasFile('documents')) {
+            foreach ($request->file('documents') as $document) {
+                $path = $document->store('report-documents', 'public');
+                $extension = strtolower($document->getClientOriginalExtension());
+                $type = in_array($extension, ['jpg', 'jpeg', 'png']) ? 'image' : 'pdf';
+                
+                \App\Models\ObjectiveReportDocument::create([
+                    'objective_report_id' => $report->id,
+                    'file_path' => $path,
+                    'file_name' => $document->getClientOriginalName(),
+                    'file_type' => $type,
+                    'uploaded_by' => auth()->id(),
+                ]);
+            }
+        }
 
         return redirect()->route('objectives.show', $objective)
             ->with('success', 'Report submitted successfully.');
