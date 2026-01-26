@@ -144,13 +144,11 @@
                                         <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
                                     @enderror
                                 </div>
-                                    @error('location')
-                                        <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
-                                    @enderror
-                                </div>
                             </div>
-                            
-                            <div x-data="fileUpload()" class="w-full">
+                        </div>
+                    </div> <!-- End Main Grid -->
+
+                    <div x-data="fileUpload()" class="w-full mt-6">
                                 <label class="block text-sm font-bold text-gray-700 uppercase tracking-wider mb-2">
                                     {{ __('Supporting Documents (Optional)') }}
                                 </label>
@@ -257,14 +255,7 @@
                                     }
                                 }
                             </script>
-                        </div>
-                    </div>
-
-                    {{-- Fix input ID for the script to find it --}}
-                    {{-- Note: The input inside the drag zone needs an ID or we reference it --}}
-                    {{-- I will modify the input in the block above to include id="documents_input" --}}
-
-
+                    
                     <div class="mt-8">
                         <label for="responsible_person" class="block text-sm font-bold text-gray-700 uppercase tracking-wider mb-2">
                             {{ __('Submitted By / Responsible Person') }} <span class="text-red-500">*</span>
