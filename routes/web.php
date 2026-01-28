@@ -110,6 +110,7 @@ Route::middleware('auth')->group(function () {
     
     // Attendance Management (Permission-based - checked in controller)
     Route::get('attendances/export', [\App\Http\Controllers\AttendanceController::class, 'export'])->name('attendances.export');
+    Route::delete('attendance-documents/{document}', [\App\Http\Controllers\AttendanceController::class, 'deleteDocument'])->name('attendance-documents.destroy');
     Route::resource('attendances', \App\Http\Controllers\AttendanceController::class);
     // Service Types Management  
     Route::resource('service-types', \App\Http\Controllers\ServiceTypeController::class)->middleware(['permission:manage service types']);

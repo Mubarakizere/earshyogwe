@@ -6,7 +6,7 @@
     <div class="py-12">
         <div class="max-w-4xl mx-auto sm:px-6 lg:px-8">
             <div class="bg-white overflow-hidden shadow-xl rounded-lg">
-                <form action="{{ route('attendances.update', $attendance) }}" method="POST" class="p-8">
+                <form action="{{ route('attendances.update', $attendance) }}" method="POST" enctype="multipart/form-data" class="p-8">
                     @csrf
                     @method('PUT')
 
@@ -70,6 +70,51 @@
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-2">Notes</label>
                             <textarea name="notes" rows="3" class="w-full px-4 py-3 border border-gray-300 rounded-lg">{{ $attendance->notes }}</textarea>
+                        </div>
+
+                        <!-- Existing Documents Section -->
+                        @if($attendance->documents && $attendance->documents->count() > 0)
+                        <div class="border-t border-gray-200 pt-6">
+                            <h3 class="text-lg font-semibold text-gray-900 mb-4">Attached Documents</h3>
+                            <div class="grid grid-cols-2 md:grid-cols-3 gap-4">
+                                @foreach($attendance->documents as $document)
+                                <div class="relative border rounded-lg p-3 bg-gray-50">
+                                    @if($document->is_image)
+                                        <a href="{{ $document->url }}" target="_blank">
+                                            <img src="{{ $document->url }}" alt="{{ $document->original_name }}" class="w-full h-24 object-cover rounded mb-2">
+                                        </a>
+                                    @else
+                                        <a href="{{ $document->url }}" target="_blank" class="flex items-center justify-center h-24 bg-red-50 rounded mb-2">
+                                            <svg class="w-12 h-12 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z"></path>
+                                            </svg>
+                                        </a>
+                                    @endif
+                                    <p class="text-xs text-gray-600 truncate">{{ $document->original_name }}</p>
+                                    <form action="{{ route('attendance-documents.destroy', $document) }}" method="POST" class="absolute top-1 right-1" onsubmit="return confirm('Delete this document?')">
+                                        @csrf
+                                        @method('DELETE')
+                                        <button type="submit" class="bg-red-500 text-white rounded-full p-1 hover:bg-red-600">
+                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                                            </svg>
+                                        </button>
+                                    </form>
+                                </div>
+                                @endforeach
+                            </div>
+                        </div>
+                        @endif
+
+                        <!-- Add New Documents Section -->
+                        <div class="border-t border-gray-200 pt-6">
+                            <h3 class="text-lg font-semibold text-gray-900 mb-2">Add Supporting Documents</h3>
+                            <p class="text-sm text-gray-500 mb-4">Optional: Attach PDF or image files</p>
+                            <div>
+                                <input type="file" name="documents[]" multiple accept=".pdf,.jpg,.jpeg,.png" 
+                                    class="w-full px-4 py-3 border border-gray-300 rounded-lg file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100">
+                                <p class="text-xs text-gray-400 mt-1">Accepted formats: PDF, JPG, PNG. Max 10MB per file.</p>
+                            </div>
                         </div>
 
                         <div class="flex items-center justify-between pt-6 border-t border-gray-200">

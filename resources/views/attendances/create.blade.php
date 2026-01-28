@@ -6,7 +6,7 @@
     <div class="py-12">
         <div class="max-w-4xl mx-auto sm:px-6 lg:px-8">
             <div class="bg-white overflow-hidden shadow-xl rounded-lg">
-                <form action="{{ route('attendances.store') }}" method="POST" class="p-8">
+                <form action="{{ route('attendances.store') }}" method="POST" enctype="multipart/form-data" class="p-8">
                     @csrf
 
                     <div class="space-y-6">
@@ -70,6 +70,17 @@
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-2">Notes</label>
                             <textarea name="notes" rows="3" class="w-full px-4 py-3 border border-gray-300 rounded-lg"></textarea>
+                        </div>
+
+                        <!-- Supporting Documents Section (Optional) -->
+                        <div class="border-t border-gray-200 pt-6">
+                            <h3 class="text-lg font-semibold text-gray-900 mb-2">Supporting Documents</h3>
+                            <p class="text-sm text-gray-500 mb-4">Optional: Attach PDF or image files (e.g., attendance sheets, photos)</p>
+                            <div>
+                                <input type="file" name="documents[]" multiple accept=".pdf,.jpg,.jpeg,.png" 
+                                    class="w-full px-4 py-3 border border-gray-300 rounded-lg file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100">
+                                <p class="text-xs text-gray-400 mt-1">Accepted formats: PDF, JPG, PNG. Max 10MB per file.</p>
+                            </div>
                         </div>
 
                         <div class="flex items-center justify-end space-x-4 pt-6 border-t border-gray-200">

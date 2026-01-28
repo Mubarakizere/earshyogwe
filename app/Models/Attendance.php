@@ -111,6 +111,11 @@ class Attendance extends Model
         return $this->belongsTo(ServiceType::class);
     }
 
+    public function documents()
+    {
+        return $this->hasMany(AttendanceDocument::class);
+    }
+
     // Scopes
     public function scopeForChurch($query, $churchId)
     {

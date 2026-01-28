@@ -16,7 +16,7 @@
 
             <!-- Filter Bar -->
             <div class="bg-white rounded-lg shadow-sm p-4 mb-6">
-                <form action="{{ route('attendances.index') }}" method="GET" class="grid grid-cols-1 md:grid-cols-5 gap-4">
+                <form action="{{ route('attendances.index') }}" method="GET" class="grid grid-cols-1 md:grid-cols-6 gap-4">
                     <!-- Date Range -->
                     <div>
                         <label class="block text-xs font-medium text-gray-500 mb-1">Start Date</label>
@@ -40,6 +40,19 @@
                         </select>
                     </div>
 
+                    <!-- Year Filter -->
+                    <div>
+                        <label class="block text-xs font-medium text-gray-500 mb-1">Year</label>
+                        <select name="year" class="w-full text-sm rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
+                            <option value="">All Years</option>
+                            @foreach($availableYears as $year)
+                                <option value="{{ $year }}" {{ $selectedYear == $year ? 'selected' : '' }}>
+                                    {{ $year }}
+                                </option>
+                            @endforeach
+                        </select>
+                    </div>
+
                     <!-- Church Filter (if user has access to multiple) -->
                     @if($churches->count() > 1)
                     <div>
@@ -51,9 +64,6 @@
                             @endforeach
                         </select>
                     </div>
-                    @else
-                        <!-- Spacer for alignment if single church -->
-                        <div class="hidden md:block"></div> 
                     @endif
 
                     <!-- Filter Actions -->

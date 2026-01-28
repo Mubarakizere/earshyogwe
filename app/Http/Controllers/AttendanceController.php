@@ -28,7 +28,14 @@ class AttendanceController extends Controller
             AVG(total_count) as average_attendance
         ')->first();
         
-        return view('attendances.index', compact('attendances', 'churches', 'totals', 'serviceTypes'));
+        // Get available years for the filter dropdown
+        $availableYears = Attendance::selectRaw('DISTINCT year')
+            ->orderBy('year', 'desc')
+            ->pluck('year');
+        
+        $selectedYear = $request->filled('year') ? $request->year : now()->year;
+        
+        return view('attendances.index', compact('attendances', 'churches', 'totals', 'serviceTypes', 'availableYears', 'selectedYear'));
     }
 
     public function export(Request $request)
@@ -120,12 +127,29 @@ class AttendanceController extends Controller
             'women_count' => 'required|integer|min:0',
             'children_count' => 'required|integer|min:0',
             'notes' => 'nullable|string',
+            'documents.*' => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:10240',
         ]);
 
-        Attendance::create([
+        $attendance = Attendance::create([
             ...$validated,
             'recorded_by' => auth()->id(),
         ]);
+
+        // Handle document uploads
+        if ($request->hasFile('documents')) {
+            foreach ($request->file('documents') as $file) {
+                $path = $file->store('attendance-documents', 'public');
+                $extension = strtolower($file->getClientOriginalExtension());
+                $fileType = in_array($extension, ['jpg', 'jpeg', 'png']) ? 'image' : 'pdf';
+                
+                $attendance->documents()->create([
+                    'file_path' => $path,
+                    'file_type' => $fileType,
+                    'original_name' => $file->getClientOriginalName(),
+                    'uploaded_by' => auth()->id(),
+                ]);
+            }
+        }
 
         return redirect()->route('attendances.index')
             ->with('success', 'Attendance recorded successfully!');
@@ -133,7 +157,7 @@ class AttendanceController extends Controller
 
     public function show(Attendance $attendance)
     {
-        $attendance->load(['church', 'serviceType', 'recorder']);
+        $attendance->load(['church', 'serviceType', 'recorder', 'documents']);
         return view('attendances.show', compact('attendance'));
     }
 
@@ -141,6 +165,7 @@ class AttendanceController extends Controller
     {
         $this->authorize('edit attendance');
         
+        $attendance->load('documents');
         $churches = $this->getChurchesForUser(auth()->user());
         $serviceTypes = \App\Models\ServiceType::where('is_active', true)->get();
         return view('attendances.edit', compact('attendance', 'churches', 'serviceTypes'));
@@ -159,12 +184,41 @@ class AttendanceController extends Controller
             'women_count' => 'required|integer|min:0',
             'children_count' => 'required|integer|min:0',
             'notes' => 'nullable|string',
+            'documents.*' => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:10240',
         ]);
 
         $attendance->update($validated);
 
+        // Handle new document uploads
+        if ($request->hasFile('documents')) {
+            foreach ($request->file('documents') as $file) {
+                $path = $file->store('attendance-documents', 'public');
+                $extension = strtolower($file->getClientOriginalExtension());
+                $fileType = in_array($extension, ['jpg', 'jpeg', 'png']) ? 'image' : 'pdf';
+                
+                $attendance->documents()->create([
+                    'file_path' => $path,
+                    'file_type' => $fileType,
+                    'original_name' => $file->getClientOriginalName(),
+                    'uploaded_by' => auth()->id(),
+                ]);
+            }
+        }
+
         return redirect()->route('attendances.index')
             ->with('success', 'Attendance updated successfully!');
+    }
+
+    public function deleteDocument($documentId)
+    {
+        $document = \App\Models\AttendanceDocument::findOrFail($documentId);
+        $this->authorize('edit attendance');
+        
+        // Delete file from storage
+        \Storage::disk('public')->delete($document->file_path);
+        $document->delete();
+
+        return back()->with('success', 'Document deleted successfully!');
     }
 
     public function destroy(Attendance $attendance)
