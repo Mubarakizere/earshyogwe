@@ -60,7 +60,9 @@ class Attendance extends Model
 
         static::deleted(function ($model) {
             $serviceName = $model->service_name ? "({$model->service_name})" : '';
-            $description = "Deleted Attendance: {$model->serviceType->name} {$serviceName} at {$model->church->name}";
+            $serviceTypeName = $model->serviceType?->name ?? 'Unknown';
+            $churchName = $model->church?->name ?? 'Unknown';
+            $description = "Deleted Attendance: {$serviceTypeName} {$serviceName} at {$churchName}";
             $model->logActivity('delete', $description);
         });
     }

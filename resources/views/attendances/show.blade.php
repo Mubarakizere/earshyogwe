@@ -249,13 +249,19 @@
         </div>
     </div>
 
+    @php
+        $documentsJson = $attendance->documents->map(function($doc) {
+            return [
+                'url' => $doc->url,
+                'name' => $doc->original_name,
+                'is_image' => $doc->is_image,
+                'is_pdf' => $doc->is_pdf
+            ];
+        })->values();
+    @endphp
+
     <script>
-        const documents = @json($attendance->documents->map(fn($doc) => [
-            'url' => $doc->url,
-            'name' => $doc->original_name,
-            'is_image' => $doc->is_image,
-            'is_pdf' => $doc->is_pdf
-        ]));
+        const documents = @json($documentsJson);
         
         let currentIndex = 0;
 
