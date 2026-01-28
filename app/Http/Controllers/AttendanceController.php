@@ -231,13 +231,14 @@ class AttendanceController extends Controller
             ->with('success', 'Attendance updated successfully!');
     }
 
-    public function deleteDocument($documentId)
+    public function deleteDocument(\App\Models\AttendanceDocument $document)
     {
-        $document = \App\Models\AttendanceDocument::findOrFail($documentId);
         $this->authorize('edit attendance');
         
         // Delete file from storage
-        \Storage::disk('public')->delete($document->file_path);
+        if (\Storage::disk('public')->exists($document->file_path)) {
+            \Storage::disk('public')->delete($document->file_path);
+        }
         $document->delete();
 
         return back()->with('success', 'Document deleted successfully!');
