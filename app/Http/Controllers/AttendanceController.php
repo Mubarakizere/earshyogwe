@@ -74,10 +74,14 @@ class AttendanceController extends Controller
     {
         $query = Attendance::with(['church', 'recorder', 'serviceType']);
         
-        // Role-based filtering: Boss and Archid see all, Pastor sees own parish
-        if ($user->hasRole('boss') || $user->hasRole('archid')) {
-            // Boss and Archid see all attendance records
+        // Role-based filtering
+        if ($user->hasRole('boss')) {
+            // Boss sees all attendance records
             // No restriction needed
+        } elseif ($user->hasRole('archid')) {
+            // Archid sees only parishes they manage
+            $churchIds = Church::where('archid_id', $user->id)->pluck('id');
+            $query->whereIn('church_id', $churchIds);
         } elseif ($user->hasRole('pastor')) {
             // Pastor sees only their own parish
             $query->where('church_id', $user->church_id);
@@ -85,7 +89,7 @@ class AttendanceController extends Controller
             // Users with 'view all attendance' permission see everything
             // No restriction needed
         } elseif ($user->can('view assigned attendance')) {
-            // Archid-level users see churches assigned to them
+            // Users with assigned permission see churches assigned to them
             $churchIds = Church::where('archid_id', $user->id)->pluck('id');
             $query->whereIn('church_id', $churchIds);
         } elseif ($user->can('view own attendance')) {
@@ -115,11 +119,10 @@ class AttendanceController extends Controller
             $query->whereDate('attendance_date', '<=', $request->end_date);
         }
 
-        // Year filter: only apply if explicitly selected or no date range specified
+        // Year filter: only apply if explicitly selected
         if ($request->filled('year') && $request->year !== '') {
             $query->where('year', $request->year);
         }
-        // Remove automatic year filter - show all years by default
 
         return $query;
     }
