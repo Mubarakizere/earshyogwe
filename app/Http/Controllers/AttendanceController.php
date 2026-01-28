@@ -33,7 +33,8 @@ class AttendanceController extends Controller
             ->orderBy('year', 'desc')
             ->pluck('year');
         
-        $selectedYear = $request->filled('year') ? $request->year : now()->year;
+        // Default to empty (All Years) unless explicitly filtered
+        $selectedYear = $request->filled('year') ? $request->year : '';
         
         return view('attendances.index', compact('attendances', 'churches', 'totals', 'serviceTypes', 'availableYears', 'selectedYear'));
     }
@@ -73,21 +74,39 @@ class AttendanceController extends Controller
     {
         $query = Attendance::with(['church', 'recorder', 'serviceType']);
         
-        if ($user->can('view own attendance') && !$user->can('view all attendance') && !$user->can('view assigned attendance')) {
+        // Role-based filtering: Boss and Archid see all, Pastor sees own parish
+        if ($user->hasRole('boss') || $user->hasRole('archid')) {
+            // Boss and Archid see all attendance records
+            // No restriction needed
+        } elseif ($user->hasRole('pastor')) {
+            // Pastor sees only their own parish
             $query->where('church_id', $user->church_id);
+        } elseif ($user->can('view all attendance')) {
+            // Users with 'view all attendance' permission see everything
+            // No restriction needed
         } elseif ($user->can('view assigned attendance')) {
+            // Archid-level users see churches assigned to them
             $churchIds = Church::where('archid_id', $user->id)->pluck('id');
             $query->whereIn('church_id', $churchIds);
+        } elseif ($user->can('view own attendance')) {
+            // Users with 'view own' see their parish only
+            $query->where('church_id', $user->church_id);
+        } else {
+            // Default: show records they created
+            $query->where('recorded_by', $user->id);
         }
         
+        // Service type filter
         if ($request->filled('service_type_id')) {
             $query->where('service_type_id', $request->service_type_id);
         }
 
-        if ($request->filled('church_id') && ($user->can('view all attendance') || $user->can('view assigned attendance'))) {
+        // Church filter (for those with multi-church access)
+        if ($request->filled('church_id')) {
             $query->where('church_id', $request->church_id);
         }
         
+        // Date filters
         if ($request->filled('start_date')) {
             $query->whereDate('attendance_date', '>=', $request->start_date);
         }
@@ -96,11 +115,11 @@ class AttendanceController extends Controller
             $query->whereDate('attendance_date', '<=', $request->end_date);
         }
 
-        if (!$request->filled('start_date') && !$request->filled('end_date') && $request->filled('year')) {
+        // Year filter: only apply if explicitly selected or no date range specified
+        if ($request->filled('year') && $request->year !== '') {
             $query->where('year', $request->year);
-        } elseif (!$request->filled('start_date') && !$request->filled('end_date')) {
-             $query->where('year', now()->year);
         }
+        // Remove automatic year filter - show all years by default
 
         return $query;
     }
