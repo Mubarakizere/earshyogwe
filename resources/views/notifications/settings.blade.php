@@ -133,24 +133,24 @@
     @push('scripts')
     <script>
         document.addEventListener('DOMContentLoaded', function() {
+            console.log('Push notification script loaded');
             const btn = document.getElementById('enable-push-btn');
             const statusEl = document.getElementById('push-status');
             
-            // Check current OneSignal subscription status
-            if (typeof OneSignal !== 'undefined') {
-                checkOneSignalStatus();
-            } else {
-                // Wait for OneSignal to load
-                window.OneSignalDeferred = window.OneSignalDeferred || [];
-                window.OneSignalDeferred.push(function(OneSignal) {
-                    checkOneSignalStatus();
-                });
-            }
+            // Check status on load
+            window.OneSignalDeferred = window.OneSignalDeferred || [];
+            window.OneSignalDeferred.push(function(OneSignal) {
+                console.log('OneSignal initialized', OneSignal);
+                checkOneSignalStatus(OneSignal);
+            });
             
-            function checkOneSignalStatus() {
-                window.OneSignalDeferred.push(async function(OneSignal) {
-                    const permission = await OneSignal.Notifications.permission;
-                    const subscribed = await OneSignal.User.PushSubscription.optedIn;
+            async function checkOneSignalStatus(OneSignal) {
+                try {
+                    console.log('Checking OneSignal status...');
+                    const permission = OneSignal.Notifications.permission;
+                    const subscribed = OneSignal.User.PushSubscription.optedIn;
+                    console.log('Permission:', permission);
+                    console.log('Subscribed:', subscribed);
                     
                     if (permission && subscribed) {
                         statusEl.textContent = '✓ Push notifications are enabled';
@@ -158,50 +158,55 @@
                         btn.textContent = 'Enabled';
                         btn.disabled = true;
                         btn.className = 'px-4 py-2 bg-gray-400 text-white text-sm font-medium rounded-lg cursor-not-allowed';
-                    } else if (Notification.permission === 'denied') {
+                    } else if (permission === 'denied' || Notification.permission === 'denied') {
                         statusEl.textContent = 'Push notifications are blocked. Please enable them in your browser settings.';
                         statusEl.className = 'text-sm text-red-600 mt-2';
                         btn.disabled = true;
                         btn.className = 'px-4 py-2 bg-gray-400 text-white text-sm font-medium rounded-lg cursor-not-allowed';
+                    } else {
+                        console.log('Push not fully enabled yet');
                     }
-                });
+                } catch (e) {
+                    console.error('Error checking status:', e);
+                }
             }
             
             btn.addEventListener('click', async function() {
+                console.log('Enable button clicked');
                 statusEl.textContent = 'Requesting permission...';
                 
-                try {
-                    window.OneSignalDeferred.push(async function(OneSignal) {
-                        // Request permission and subscribe
-                        await OneSignal.Notifications.requestPermission();
+                window.OneSignalDeferred.push(async function(OneSignal) {
+                    try {
+                        console.log('Requesting permission via OneSignal...');
+                        const result = await OneSignal.Notifications.requestPermission();
+                        console.log('Permission result:', result);
                         
-                        // Check if subscribed now
-                        const subscribed = await OneSignal.User.PushSubscription.optedIn;
-                        
-                        if (subscribed) {
+                        if (result) {
+                            // Wait a moment for subscription to update
+                            console.log('Permission granted, checking subscription...');
                             statusEl.textContent = '✓ Push notifications enabled successfully!';
                             statusEl.className = 'text-sm text-green-600 mt-2';
+                            
                             btn.textContent = 'Enabled';
                             btn.disabled = true;
                             btn.className = 'px-4 py-2 bg-gray-400 text-white text-sm font-medium rounded-lg cursor-not-allowed';
                             
                             // Log in with user ID for targeted notifications
                             @auth
+                            console.log('Logging in user: {{ auth()->id() }}');
                             await OneSignal.login("{{ auth()->id() }}");
                             @endauth
-                        } else if (Notification.permission === 'denied') {
-                            statusEl.textContent = 'Permission denied. Enable notifications in browser settings.';
-                            statusEl.className = 'text-sm text-red-600 mt-2';
                         } else {
+                            console.log('Permission denied/dismissed');
                             statusEl.textContent = 'Permission not granted. Please try again.';
                             statusEl.className = 'text-sm text-yellow-600 mt-2';
                         }
-                    });
-                } catch (error) {
-                    console.error('Push subscription error:', error);
-                    statusEl.textContent = 'Error enabling push notifications. Please try again.';
-                    statusEl.className = 'text-sm text-red-600 mt-2';
-                }
+                    } catch (error) {
+                        console.error('Push subscription error:', error);
+                        statusEl.textContent = 'Error: ' + error.message;
+                        statusEl.className = 'text-sm text-red-600 mt-2';
+                    }
+                });
             });
         });
     </script>
