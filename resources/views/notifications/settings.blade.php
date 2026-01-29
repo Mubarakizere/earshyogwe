@@ -137,76 +137,81 @@
             const btn = document.getElementById('enable-push-btn');
             const statusEl = document.getElementById('push-status');
             
-            // Check status on load
-            window.OneSignalDeferred = window.OneSignalDeferred || [];
-            window.OneSignalDeferred.push(function(OneSignal) {
-                console.log('OneSignal initialized', OneSignal);
-                checkOneSignalStatus(OneSignal);
-            });
-            
-            async function checkOneSignalStatus(OneSignal) {
-                try {
-                    console.log('Checking OneSignal status...');
-                    const permission = OneSignal.Notifications.permission;
-                    const subscribed = OneSignal.User.PushSubscription.optedIn;
-                    console.log('Permission:', permission);
-                    console.log('Subscribed:', subscribed);
-                    
-                    if (permission && subscribed) {
-                        statusEl.textContent = '✓ Push notifications are enabled';
-                        statusEl.className = 'text-sm text-green-600 mt-2';
-                        btn.textContent = 'Enabled';
-                        btn.disabled = true;
-                        btn.className = 'px-4 py-2 bg-gray-400 text-white text-sm font-medium rounded-lg cursor-not-allowed';
-                    } else if (permission === 'denied' || Notification.permission === 'denied') {
-                        statusEl.textContent = 'Push notifications are blocked. Please enable them in your browser settings.';
-                        statusEl.className = 'text-sm text-red-600 mt-2';
-                        btn.disabled = true;
-                        btn.className = 'px-4 py-2 bg-gray-400 text-white text-sm font-medium rounded-lg cursor-not-allowed';
-                    } else {
-                        console.log('Push not fully enabled yet');
-                    }
-                } catch (e) {
-                    console.error('Error checking status:', e);
+            // Check if OneSignal SDK is available
+            setTimeout(function() {
+                if (typeof window.OneSignal !== 'undefined') {
+                    console.log('OneSignal object found on window');
+                    statusEl.textContent = 'OneSignal ready';
+                } else {
+                    console.log('OneSignal object NOT found - SDK may not have loaded');
+                    console.log('OneSignalDeferred array length:', window.OneSignalDeferred ? window.OneSignalDeferred.length : 'undefined');
+                    statusEl.textContent = 'Checking OneSignal status...';
                 }
-            }
+            }, 2000);
             
             btn.addEventListener('click', async function() {
                 console.log('Enable button clicked');
                 statusEl.textContent = 'Requesting permission...';
                 
-                window.OneSignalDeferred.push(async function(OneSignal) {
+                // First try native browser notification API as fallback
+                if (!('Notification' in window)) {
+                    statusEl.textContent = 'Your browser does not support notifications';
+                    statusEl.className = 'text-sm text-red-600 mt-2';
+                    console.log('Notification API not supported');
+                    return;
+                }
+                
+                console.log('Current Notification.permission:', Notification.permission);
+                
+                // Check if OneSignal is available
+                if (typeof window.OneSignal !== 'undefined') {
+                    console.log('Using OneSignal for permission request');
                     try {
-                        console.log('Requesting permission via OneSignal...');
-                        const result = await OneSignal.Notifications.requestPermission();
-                        console.log('Permission result:', result);
+                        const result = await window.OneSignal.Notifications.requestPermission();
+                        console.log('OneSignal permission result:', result);
                         
                         if (result) {
-                            // Wait a moment for subscription to update
-                            console.log('Permission granted, checking subscription...');
-                            statusEl.textContent = '✓ Push notifications enabled successfully!';
+                            statusEl.textContent = '✓ Push notifications enabled!';
                             statusEl.className = 'text-sm text-green-600 mt-2';
-                            
                             btn.textContent = 'Enabled';
                             btn.disabled = true;
                             btn.className = 'px-4 py-2 bg-gray-400 text-white text-sm font-medium rounded-lg cursor-not-allowed';
                             
-                            // Log in with user ID for targeted notifications
                             @auth
                             console.log('Logging in user: {{ auth()->id() }}');
-                            await OneSignal.login("{{ auth()->id() }}");
+                            await window.OneSignal.login("{{ auth()->id() }}");
                             @endauth
                         } else {
-                            console.log('Permission denied/dismissed');
-                            statusEl.textContent = 'Permission not granted. Please try again.';
+                            statusEl.textContent = 'Permission not granted';
                             statusEl.className = 'text-sm text-yellow-600 mt-2';
                         }
                     } catch (error) {
-                        console.error('Push subscription error:', error);
+                        console.error('OneSignal error:', error);
                         statusEl.textContent = 'Error: ' + error.message;
                         statusEl.className = 'text-sm text-red-600 mt-2';
                     }
-                });
+                } else {
+                    // Fallback to native Notification API
+                    console.log('OneSignal not available, using native API');
+                    try {
+                        const permission = await Notification.requestPermission();
+                        console.log('Native permission result:', permission);
+                        
+                        if (permission === 'granted') {
+                            statusEl.textContent = '✓ Browser notifications enabled! (OneSignal not loaded)';
+                            statusEl.className = 'text-sm text-green-600 mt-2';
+                            btn.textContent = 'Enabled';
+                            btn.disabled = true;
+                        } else {
+                            statusEl.textContent = 'Permission ' + permission;
+                            statusEl.className = 'text-sm text-yellow-600 mt-2';
+                        }
+                    } catch (error) {
+                        console.error('Native notification error:', error);
+                        statusEl.textContent = 'Error: ' + error.message;
+                        statusEl.className = 'text-sm text-red-600 mt-2';
+                    }
+                }
             });
         });
     </script>
