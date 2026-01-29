@@ -192,12 +192,32 @@
                                 Church Groups
                             </a>
                         @endcan
+                        {{-- Notification Settings - available to all authenticated users --}}
+                        <a href="{{ route('notifications.settings') }}" class="group flex items-center px-2 py-1.5 text-xs font-medium rounded-md hover:text-white hover:bg-brand-800 {{ request()->routeIs('notifications.settings') ? 'text-white bg-brand-800' : 'text-brand-200' }}">
+                            <svg class="w-3.5 h-3.5 mr-1.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
+                            </svg>
+                            Notifications
+                        </a>
                     </div>
                 </div>
                 @endcanany
                 
             </div>
         </div>
+
+        <!-- Notifications (Available to all users) -->
+        <x-sidebar-link :href="route('notifications.index')" :active="request()->routeIs('notifications.*')">
+            <svg class="w-5 h-5 mr-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
+            </svg>
+            {{ __('Notifications') }}
+            @if(auth()->user()->unreadNotifications->count() > 0)
+                <span class="ml-auto inline-flex items-center justify-center px-2 py-0.5 text-xs font-bold leading-none text-white bg-red-500 rounded-full">
+                    {{ auth()->user()->unreadNotifications->count() > 99 ? '99+' : auth()->user()->unreadNotifications->count() }}
+                </span>
+            @endif
+        </x-sidebar-link>
 
     </div>
 
