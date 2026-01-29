@@ -50,6 +50,22 @@
             }
         </script>
 
+        <!-- OneSignal Push Notifications -->
+        <script src="https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js" defer></script>
+        <script>
+            window.OneSignalDeferred = window.OneSignalDeferred || [];
+            OneSignalDeferred.push(async function(OneSignal) {
+                await OneSignal.init({
+                    appId: "7dbce2db-7a28-40c4-a408-b6f8f58e1274",
+                });
+                
+                // Auto-register user ID for targeted notifications
+                @auth
+                OneSignal.login("{{ auth()->id() }}");
+                @endauth
+            });
+        </script>
+
         <!-- Google Translate Integration -->
         <script type="text/javascript">
             function googleTranslateElementInit() {

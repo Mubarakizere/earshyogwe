@@ -2,18 +2,16 @@
 
 namespace App\Notifications;
 
+use App\Notifications\Traits\MultiChannelNotification;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
 
-class ActivityStatusChanged extends Notification
+class ActivityStatusChanged extends Notification implements ShouldQueue
 {
-    use Queueable;
+    use Queueable, MultiChannelNotification;
 
-    /**
-     * Create a new notification instance.
-     */
     public $activity;
     public $message;
 
@@ -24,13 +22,24 @@ class ActivityStatusChanged extends Notification
     }
 
     /**
-     * Get the notification's delivery channels.
-     *
-     * @return array<int, string>
+     * Get the notification category for preference checking.
      */
-    public function via(object $notifiable): array
+    protected function getNotificationCategory(): string
     {
-        return ['database'];
+        return 'activities';
+    }
+
+    /**
+     * Get status emoji based on message content.
+     */
+    protected function getStatusEmoji(): string
+    {
+        $message = strtolower($this->message);
+        if (str_contains($message, 'complete')) return '✅';
+        if (str_contains($message, 'progress') || str_contains($message, 'started')) return '🚀';
+        if (str_contains($message, 'paused') || str_contains($message, 'hold')) return '⏸️';
+        if (str_contains($message, 'cancel')) return '❌';
+        return '📋';
     }
 
     /**
@@ -38,24 +47,53 @@ class ActivityStatusChanged extends Notification
      */
     public function toMail(object $notifiable): MailMessage
     {
+        $emoji = $this->getStatusEmoji();
+        
         return (new MailMessage)
-            ->line('The introduction to the notification.')
-            ->action('Notification Action', url('/'))
-            ->line('Thank you for using our application!');
+            ->subject($emoji . ' Activity Status Update - ' . $this->activity->name)
+            ->greeting('Hello ' . $notifiable->name . '!')
+            ->line('An activity status has been updated.')
+            ->line('')
+            ->line('**📋 Activity Details:**')
+            ->line('• **Name:** ' . $this->activity->name)
+            ->line('• **Update:** ' . $this->message)
+            ->action('View Activity', route('activities.show', $this->activity->id))
+            ->line('')
+            ->salutation('Best regards, ' . config('app.name'));
+    }
+
+    /**
+     * Get the OneSignal push notification representation.
+     */
+    public function toOneSignal(object $notifiable): array
+    {
+        $emoji = $this->getStatusEmoji();
+        
+        return [
+            'title' => $emoji . ' Activity Update',
+            'body' => $this->message,
+            'url' => route('activities.show', $this->activity->id),
+            'data' => [
+                'type' => 'activity_status_changed',
+                'activity_id' => $this->activity->id,
+            ],
+        ];
     }
 
     /**
      * Get the array representation of the notification.
-     *
-     * @return array<string, mixed>
      */
     public function toArray(object $notifiable): array
     {
+        $emoji = $this->getStatusEmoji();
+        
         return [
-            'message' => $this->message,
+            'message' => $emoji . ' ' . $this->message,
             'activity_id' => $this->activity->id,
             'activity_name' => $this->activity->name,
-            'link' => route('activities.show', $this->activity->id),
+            'action_url' => route('activities.show', $this->activity->id),
+            'icon' => 'activity',
+            'category' => 'activities',
         ];
     }
 }

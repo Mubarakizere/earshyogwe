@@ -28,8 +28,15 @@ Route::middleware('auth')->group(function () {
     
     // Notifications
     Route::get('/notifications', [\App\Http\Controllers\NotificationController::class, 'index'])->name('notifications.index');
+    Route::get('/notifications/settings', [\App\Http\Controllers\NotificationController::class, 'settings'])->name('notifications.settings');
+    Route::post('/notifications/settings', [\App\Http\Controllers\NotificationController::class, 'updateSettings'])->name('notifications.updateSettings');
+    Route::get('/notifications/unread-count', [\App\Http\Controllers\NotificationController::class, 'unreadCount'])->name('notifications.unreadCount');
+    Route::get('/notifications/latest', [\App\Http\Controllers\NotificationController::class, 'latest'])->name('notifications.latest');
     Route::get('/notifications/{id}/read', [\App\Http\Controllers\NotificationController::class, 'read'])->name('notifications.read');
     Route::post('/notifications/mark-read', [\App\Http\Controllers\NotificationController::class, 'markAllRead'])->name('notifications.markAsRead');
+    Route::delete('/notifications/read', [\App\Http\Controllers\NotificationController::class, 'destroyRead'])->name('notifications.destroyRead');
+    Route::delete('/notifications/{id}', [\App\Http\Controllers\NotificationController::class, 'destroy'])->name('notifications.destroy');
+
 
     // User Management
     Route::resource('users', \App\Http\Controllers\UserController::class)->middleware(['permission:manage users']);

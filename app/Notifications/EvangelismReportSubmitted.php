@@ -3,17 +3,16 @@
 namespace App\Notifications;
 
 use App\Models\EvangelismReport;
+use App\Notifications\Traits\MultiChannelNotification;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
 
-class EvangelismReportSubmitted extends Notification
+class EvangelismReportSubmitted extends Notification implements ShouldQueue
 {
-    // Removing Queueable to ensure instant delivery for now, or keep it if queue is set up.
-    // Given previous context (Expenses), user preferred instant notifications.
-    // But standard practice is queue. Let's stick to synchronous for simplicity unless specified.
-    
+    use Queueable, MultiChannelNotification;
+
     public $report;
 
     /**
@@ -25,41 +24,62 @@ class EvangelismReportSubmitted extends Notification
     }
 
     /**
-     * Get the notification's delivery channels.
-     *
-     * @return array<int, string>
+     * Get the notification category for preference checking.
      */
-    public function via(object $notifiable): array
+    protected function getNotificationCategory(): string
     {
-        return ['database']; // Start with database notifications for in-app alerts
+        return 'evangelism';
     }
 
     /**
      * Get the mail representation of the notification.
      */
-    /*
     public function toMail(object $notifiable): MailMessage
     {
         return (new MailMessage)
-                    ->line('The introduction to the notification.')
-                    ->action('Notification Action', url('/'))
-                    ->line('Thank you for using our application!');
+            ->subject('✝️ New Evangelism Report Submitted')
+            ->greeting('Hello ' . $notifiable->name . '!')
+            ->line('A new evangelism report has been submitted for your review.')
+            ->line('')
+            ->line('**📋 Report Details:**')
+            ->line('• **Church:** ' . $this->report->church->name)
+            ->line('• **Submitted by:** ' . ($this->report->submitter->name ?? 'Unknown'))
+            ->line('• **Submitted at:** ' . $this->report->created_at->format('M d, Y H:i'))
+            ->action('View Report', route('evangelism-reports.show', $this->report))
+            ->line('')
+            ->line('Please review this evangelism report.')
+            ->salutation('Best regards, ' . config('app.name'));
     }
-    */
+
+    /**
+     * Get the OneSignal push notification representation.
+     */
+    public function toOneSignal(object $notifiable): array
+    {
+        return [
+            'title' => '✝️ New Evangelism Report',
+            'body' => 'Evangelism report from ' . $this->report->church->name,
+            'url' => route('evangelism-reports.show', $this->report),
+            'data' => [
+                'type' => 'evangelism_report_submitted',
+                'report_id' => $this->report->id,
+            ],
+        ];
+    }
 
     /**
      * Get the array representation of the notification.
-     *
-     * @return array<string, mixed>
      */
     public function toArray(object $notifiable): array
     {
         return [
             'type' => 'evangelism_report_submitted',
-            'message' => 'New Evangelism Report from ' . $this->report->church->name,
-            'url' => route('evangelism-reports.show', $this->report),
+            'message' => '✝️ New Evangelism Report from ' . $this->report->church->name,
+            'action_url' => route('evangelism-reports.show', $this->report),
             'report_id' => $this->report->id,
             'entered_by' => $this->report->submitter->name ?? 'Unknown',
+            'icon' => 'users',
+            'category' => 'evangelism',
         ];
     }
 }

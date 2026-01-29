@@ -26,6 +26,7 @@ class User extends Authenticatable
         'password',
         'church_id',
         'profile_photo_path',
+        'notification_preferences',
     ];
 
     /**
@@ -48,7 +49,62 @@ class User extends Authenticatable
         return [
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
+            'notification_preferences' => 'array',
         ];
+    }
+
+    /**
+     * Get default notification preferences.
+     */
+    public static function defaultNotificationPreferences(): array
+    {
+        return [
+            'email' => true,
+            'push' => true,
+            'database' => true,
+            'channels' => [
+                'expenses' => ['email' => true, 'push' => true, 'database' => true],
+                'activities' => ['email' => true, 'push' => true, 'database' => true],
+                'diocese' => ['email' => true, 'push' => true, 'database' => true],
+                'contracts' => ['email' => true, 'push' => true, 'database' => true],
+                'evangelism' => ['email' => true, 'push' => true, 'database' => true],
+            ],
+        ];
+    }
+
+    /**
+     * Get notification preferences with defaults.
+     */
+    public function getNotificationPreferencesAttribute($value): array
+    {
+        $preferences = $value ? json_decode($value, true) : [];
+        return array_merge(self::defaultNotificationPreferences(), $preferences);
+    }
+
+    /**
+     * Check if user wants email notifications for a category.
+     */
+    public function wantsEmailNotification(string $category = null): bool
+    {
+        $prefs = $this->notification_preferences;
+        if (!$prefs['email']) return false;
+        if ($category && isset($prefs['channels'][$category])) {
+            return $prefs['channels'][$category]['email'] ?? true;
+        }
+        return true;
+    }
+
+    /**
+     * Check if user wants push notifications for a category.
+     */
+    public function wantsPushNotification(string $category = null): bool
+    {
+        $prefs = $this->notification_preferences;
+        if (!$prefs['push']) return false;
+        if ($category && isset($prefs['channels'][$category])) {
+            return $prefs['channels'][$category]['push'] ?? true;
+        }
+        return true;
     }
 
     /**

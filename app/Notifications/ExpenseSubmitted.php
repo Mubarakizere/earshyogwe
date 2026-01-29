@@ -2,14 +2,16 @@
 
 namespace App\Notifications;
 
-use App\Models\Expense; // Assuming Expense model exists
+use App\Models\Expense;
+use App\Notifications\Traits\MultiChannelNotification;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
 
-class ExpenseSubmitted extends Notification
+class ExpenseSubmitted extends Notification implements ShouldQueue
 {
+    use Queueable, MultiChannelNotification;
 
     public $expense;
 
@@ -22,13 +24,11 @@ class ExpenseSubmitted extends Notification
     }
 
     /**
-     * Get the notification's delivery channels.
-     *
-     * @return array<int, string>
+     * Get the notification category for preference checking.
      */
-    public function via(object $notifiable): array
+    protected function getNotificationCategory(): string
     {
-        return ['database']; // Keeping it to database for now to avoid mail config issues, add 'mail' later if needed
+        return 'expenses';
     }
 
     /**
@@ -37,17 +37,39 @@ class ExpenseSubmitted extends Notification
     public function toMail(object $notifiable): MailMessage
     {
         return (new MailMessage)
-                    ->line('A new expense has been submitted for approval.')
-                    ->line('Description: ' . $this->expense->description)
-                    ->line('Amount: ' . number_format($this->expense->amount))
-                    ->action('Review Expense', route('expenses.show', $this->expense->id))
-                    ->line('Thank you for using our application!');
+            ->subject('🧾 New Expense Submitted for Approval')
+            ->greeting('Hello ' . $notifiable->name . '!')
+            ->line('A new expense has been submitted and requires your attention.')
+            ->line('')
+            ->line('**📋 Expense Details:**')
+            ->line('• **Description:** ' . $this->expense->description)
+            ->line('• **Amount:** ' . number_format($this->expense->amount) . ' RWF')
+            ->line('• **Submitted by:** ' . ($this->expense->enteredBy->name ?? 'Unknown'))
+            ->line('• **Date:** ' . $this->expense->expense_date?->format('M d, Y'))
+            ->action('Review Expense', route('expenses.show', $this->expense->id))
+            ->line('')
+            ->line('Please review and approve or reject this expense request.')
+            ->salutation('Best regards, ' . config('app.name'));
+    }
+
+    /**
+     * Get the OneSignal push notification representation.
+     */
+    public function toOneSignal(object $notifiable): array
+    {
+        return [
+            'title' => '🧾 New Expense Request',
+            'body' => 'New expense (' . number_format($this->expense->amount) . ' RWF) submitted by ' . ($this->expense->enteredBy->name ?? 'Unknown'),
+            'url' => route('expenses.show', $this->expense->id),
+            'data' => [
+                'type' => 'expense_submitted',
+                'expense_id' => $this->expense->id,
+            ],
+        ];
     }
 
     /**
      * Get the array representation of the notification.
-     *
-     * @return array<string, mixed>
      */
     public function toArray(object $notifiable): array
     {
@@ -55,8 +77,10 @@ class ExpenseSubmitted extends Notification
             'expense_id' => $this->expense->id,
             'amount' => $this->expense->amount,
             'submitter_name' => $this->expense->enteredBy->name ?? 'Unknown',
-            'message' => 'New expense submitted by ' . ($this->expense->enteredBy->name ?? 'Unknown') . ': ' . $this->expense->description,
+            'message' => '🧾 New expense submitted by ' . ($this->expense->enteredBy->name ?? 'Unknown') . ': ' . $this->expense->description,
             'action_url' => route('expenses.show', $this->expense->id),
+            'icon' => 'receipt',
+            'category' => 'expenses',
         ];
     }
 }
