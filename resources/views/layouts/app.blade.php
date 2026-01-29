@@ -55,14 +55,24 @@
         <script>
             window.OneSignalDeferred = window.OneSignalDeferred || [];
             OneSignalDeferred.push(async function(OneSignal) {
-                await OneSignal.init({
-                    appId: "7dbce2db-7a28-40c4-a408-b6f8f58e1274",
-                });
-                
-                // Auto-register user ID for targeted notifications
-                @auth
-                OneSignal.login("{{ auth()->id() }}");
-                @endauth
+                try {
+                    console.log('OneSignal SDK loaded, initializing...');
+                    await OneSignal.init({
+                        appId: "7dbce2db-7a28-40c4-a408-b6f8f58e1274",
+                        serviceWorkerPath: "/OneSignalSDKWorker.js",
+                        allowLocalhostAsSecureOrigin: true
+                    });
+                    console.log('OneSignal initialized successfully');
+                    window.OneSignal = OneSignal; // Make it globally accessible
+                    
+                    // Auto-register user ID for targeted notifications
+                    @auth
+                    await OneSignal.login("{{ auth()->id() }}");
+                    console.log('User logged in to OneSignal');
+                    @endauth
+                } catch (error) {
+                    console.error('OneSignal init error:', error);
+                }
             });
         </script>
 
