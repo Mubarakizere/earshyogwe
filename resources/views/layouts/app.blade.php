@@ -51,27 +51,43 @@
         </script>
 
         <!-- OneSignal Push Notifications -->
-        <script src="https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js" defer></script>
         <script>
             window.OneSignalDeferred = window.OneSignalDeferred || [];
+            
+            // Load OneSignal SDK dynamically to detect load failures
+            (function() {
+                var script = document.createElement('script');
+                script.src = 'https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js';
+                script.async = true;
+                
+                script.onload = function() {
+                    console.log('✓ OneSignal SDK script loaded successfully');
+                };
+                
+                script.onerror = function() {
+                    console.error('✗ OneSignal SDK failed to load - may be blocked by browser');
+                    window.OneSignalBlocked = true;
+                };
+                
+                document.head.appendChild(script);
+            })();
+            
             OneSignalDeferred.push(async function(OneSignal) {
                 try {
-                    console.log('OneSignal SDK loaded, initializing...');
+                    console.log('OneSignal SDK callback triggered, initializing...');
                     await OneSignal.init({
                         appId: "7dbce2db-7a28-40c4-a408-b6f8f58e1274",
-                        serviceWorkerPath: "/OneSignalSDKWorker.js",
-                        allowLocalhostAsSecureOrigin: true
+                        serviceWorkerPath: "/OneSignalSDKWorker.js"
                     });
-                    console.log('OneSignal initialized successfully');
-                    window.OneSignal = OneSignal; // Make it globally accessible
+                    console.log('✓ OneSignal initialized successfully');
+                    window.OneSignal = OneSignal;
                     
-                    // Auto-register user ID for targeted notifications
                     @auth
                     await OneSignal.login("{{ auth()->id() }}");
-                    console.log('User logged in to OneSignal');
+                    console.log('✓ User logged in to OneSignal');
                     @endauth
                 } catch (error) {
-                    console.error('OneSignal init error:', error);
+                    console.error('✗ OneSignal init error:', error);
                 }
             });
         </script>
