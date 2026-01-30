@@ -110,7 +110,7 @@ class ParishTransferController extends Controller
             abort(403, 'You cannot create transfers for this parish.');
         }
 
-        ParishTransfer::create([
+        $transfer = ParishTransfer::create([
             'church_id' => $validated['church_id'],
             'amount' => $validated['amount'],
             'transfer_date' => $validated['transfer_date'],
@@ -120,11 +120,11 @@ class ParishTransferController extends Controller
             'entered_by' => auth()->id(),
         ]);
 
-        // Notify verifiers
+        // Notify users who can verify transfers
         $verifiers = \App\Models\User::permission('verify parish transfers')->get();
         if ($verifiers->count() > 0) {
-            // You can create a notification here if needed
-            // \Illuminate\Support\Facades\Notification::send($verifiers, new \App\Notifications\ParishTransferCreated(...));
+            $transfer->load(['church', 'enteredBy']);
+            \Illuminate\Support\Facades\Notification::send($verifiers, new \App\Notifications\ParishTransferCreated($transfer));
         }
 
         return redirect()->route('parish-transfers.index')
@@ -150,7 +150,8 @@ class ParishTransferController extends Controller
 
         // Notify the person who entered it
         if ($transfer->enteredBy) {
-            // $transfer->enteredBy->notify(new \App\Notifications\TransferVerified($transfer));
+            $transfer->load(['church', 'enteredBy', 'verifiedBy']);
+            $transfer->enteredBy->notify(new \App\Notifications\ParishTransferVerified($transfer));
         }
 
         return back()->with('success', 'Transfer verified successfully.');
@@ -172,6 +173,12 @@ class ParishTransferController extends Controller
             'verified_by' => auth()->id(),
             'verified_at' => now(),
         ]);
+
+        // Notify the person who entered it
+        if ($transfer->enteredBy) {
+            $transfer->load(['church', 'enteredBy', 'verifiedBy']);
+            $transfer->enteredBy->notify(new \App\Notifications\ParishTransferRejected($transfer));
+        }
 
         return back()->with('success', 'Transfer rejected.');
     }
