@@ -16,7 +16,12 @@
         </div>
     </x-slot>
 
-    <div class="py-8">
+    <div class="py-8" x-data="{ 
+        modalAction: '', 
+        modalType: '', 
+        modalAmount: '',
+        modalChurch: ''
+    }">
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
             
             <!-- Summary Cards - Premium Design -->
@@ -203,30 +208,26 @@
                                             @if($transfer->status === 'pending')
                                                 @can('verify parish transfers')
                                                     <!-- Verify Button -->
-                                                    <form action="{{ route('parish-transfers.verify', $transfer) }}" method="POST" class="inline">
-                                                        @csrf
-                                                        <button type="submit" onclick="return confirm('Confirm verification?')" class="p-2 text-gray-500 hover:text-emerald-600 hover:bg-emerald-50 rounded-lg transition" title="Verify">
-                                                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
-                                                        </button>
-                                                    </form>
+                                                    <button type="button" 
+                                                        x-on:click="modalAction = '{{ route('parish-transfers.verify', $transfer) }}'; modalType = 'verify'; modalAmount = '{{ number_format($transfer->amount, 0) }}'; modalChurch = '{{ $transfer->church->name ?? 'Unknown' }}'; $dispatch('open-modal', 'confirm-action')"
+                                                        class="p-2 text-gray-500 hover:text-emerald-600 hover:bg-emerald-50 rounded-lg transition" title="Verify">
+                                                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+                                                    </button>
                                                     <!-- Reject Button -->
-                                                    <form action="{{ route('parish-transfers.reject', $transfer) }}" method="POST" class="inline">
-                                                        @csrf
-                                                        <button type="submit" onclick="return confirm('Confirm rejection?')" class="p-2 text-gray-500 hover:text-red-600 hover:bg-red-50 rounded-lg transition" title="Reject">
-                                                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
-                                                        </button>
-                                                    </form>
+                                                    <button type="button"
+                                                        x-on:click="modalAction = '{{ route('parish-transfers.reject', $transfer) }}'; modalType = 'reject'; modalAmount = '{{ number_format($transfer->amount, 0) }}'; modalChurch = '{{ $transfer->church->name ?? 'Unknown' }}'; $dispatch('open-modal', 'confirm-action')"
+                                                        class="p-2 text-gray-500 hover:text-red-600 hover:bg-red-50 rounded-lg transition" title="Reject">
+                                                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                                                    </button>
                                                 @endcan
 
                                                 @if(auth()->id() == $transfer->entered_by || auth()->user()->can('view all transfers'))
                                                     <!-- Delete Button -->
-                                                    <form action="{{ route('parish-transfers.destroy', $transfer) }}" method="POST" class="inline">
-                                                        @csrf
-                                                        @method('DELETE')
-                                                        <button type="submit" onclick="return confirm('Delete this transfer?')" class="p-2 text-gray-500 hover:text-red-600 hover:bg-red-50 rounded-lg transition" title="Delete">
-                                                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
-                                                        </button>
-                                                    </form>
+                                                    <button type="button"
+                                                        x-on:click="modalAction = '{{ route('parish-transfers.destroy', $transfer) }}'; modalType = 'delete'; modalAmount = '{{ number_format($transfer->amount, 0) }}'; modalChurch = '{{ $transfer->church->name ?? 'Unknown' }}'; $dispatch('open-modal', 'confirm-action')"
+                                                        class="p-2 text-gray-500 hover:text-red-600 hover:bg-red-50 rounded-lg transition" title="Delete">
+                                                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+                                                    </button>
                                                 @endif
                                             @else
                                                 <span class="text-xs text-gray-400 px-2">
@@ -263,6 +264,90 @@
                 </div>
                 @endif
             </div>
+
+            <!-- Confirmation Modal -->
+            <x-modal name="confirm-action" focusable>
+                <div class="p-6">
+                    <!-- Modal Header with Icon -->
+                    <div class="flex items-center justify-center mb-4">
+                        <template x-if="modalType === 'verify'">
+                            <div class="w-14 h-14 rounded-full bg-emerald-100 flex items-center justify-center">
+                                <svg class="w-7 h-7 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+                            </div>
+                        </template>
+                        <template x-if="modalType === 'reject'">
+                            <div class="w-14 h-14 rounded-full bg-amber-100 flex items-center justify-center">
+                                <svg class="w-7 h-7 text-amber-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                            </div>
+                        </template>
+                        <template x-if="modalType === 'delete'">
+                            <div class="w-14 h-14 rounded-full bg-red-100 flex items-center justify-center">
+                                <svg class="w-7 h-7 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+                            </div>
+                        </template>
+                    </div>
+
+                    <!-- Modal Title -->
+                    <h2 class="text-xl font-bold text-gray-900 text-center mb-2">
+                        <template x-if="modalType === 'verify'">
+                            <span>Verify Transfer</span>
+                        </template>
+                        <template x-if="modalType === 'reject'">
+                            <span>Reject Transfer</span>
+                        </template>
+                        <template x-if="modalType === 'delete'">
+                            <span>Delete Transfer</span>
+                        </template>
+                    </h2>
+
+                    <!-- Modal Description -->
+                    <p class="text-sm text-gray-600 text-center mb-6">
+                        <template x-if="modalType === 'verify'">
+                            <span>Are you sure you want to verify this transfer of <strong x-text="modalAmount + ' RWF'"></strong> from <strong x-text="modalChurch"></strong>?</span>
+                        </template>
+                        <template x-if="modalType === 'reject'">
+                            <span>Are you sure you want to reject this transfer of <strong x-text="modalAmount + ' RWF'"></strong> from <strong x-text="modalChurch"></strong>?</span>
+                        </template>
+                        <template x-if="modalType === 'delete'">
+                            <span>Are you sure you want to delete this transfer of <strong x-text="modalAmount + ' RWF'"></strong> from <strong x-text="modalChurch"></strong>? This action cannot be undone.</span>
+                        </template>
+                    </p>
+
+                    <!-- Modal Actions -->
+                    <div class="flex justify-center gap-3">
+                        <button type="button" x-on:click="$dispatch('close')" 
+                            class="inline-flex items-center px-5 py-2.5 bg-gray-100 hover:bg-gray-200 text-gray-700 text-sm font-semibold rounded-xl transition">
+                            Cancel
+                        </button>
+
+                        <form :action="modalAction" method="POST">
+                            @csrf
+                            <template x-if="modalType === 'delete'">
+                                <input type="hidden" name="_method" value="DELETE">
+                            </template>
+                            
+                            <template x-if="modalType === 'verify'">
+                                <button type="submit" class="inline-flex items-center px-5 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-semibold rounded-xl shadow-sm transition">
+                                    <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+                                    Verify Transfer
+                                </button>
+                            </template>
+                            <template x-if="modalType === 'reject'">
+                                <button type="submit" class="inline-flex items-center px-5 py-2.5 bg-amber-600 hover:bg-amber-700 text-white text-sm font-semibold rounded-xl shadow-sm transition">
+                                    <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                                    Reject Transfer
+                                </button>
+                            </template>
+                            <template x-if="modalType === 'delete'">
+                                <button type="submit" class="inline-flex items-center px-5 py-2.5 bg-red-600 hover:bg-red-700 text-white text-sm font-semibold rounded-xl shadow-sm transition">
+                                    <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+                                    Delete Transfer
+                                </button>
+                            </template>
+                        </form>
+                    </div>
+                </div>
+            </x-modal>
 
         </div>
     </div>
