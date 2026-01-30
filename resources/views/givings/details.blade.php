@@ -94,10 +94,10 @@
                         
                         @if(!$isSent && $records->isNotEmpty())
                             @can('mark diocese transfer')
-                                <form action="{{ route('givings.markAsSent', $records->first()) }}" method="POST">
+                                <form action="{{ route('givings.markAllAsSent', ['date' => $date, 'church_id' => $church->id]) }}" method="POST">
                                     @csrf
-                                    <button type="submit" onclick="return confirm('Confirm sending to diocese?')" class="bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold py-2 px-4 rounded-lg shadow-sm transition">
-                                        Mark Sent to Diocese
+                                    <button type="submit" onclick="return confirm('Confirm sending all {{ $records->count() }} offering(s) to diocese?')" class="bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold py-2 px-4 rounded-lg shadow-sm transition">
+                                        Mark All Sent to Diocese
                                     </button>
                                 </form>
                             @endcan

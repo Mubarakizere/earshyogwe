@@ -53,6 +53,7 @@ Route::middleware('auth')->group(function () {
     // Giving Entry
     Route::get('givings/export', [\App\Http\Controllers\GivingController::class, 'export'])->name('givings.export');
     Route::post('givings/{giving}/mark-sent', [\App\Http\Controllers\GivingController::class, 'markAsSent'])->name('givings.markAsSent');
+    Route::post('givings/mark-all-sent/{date}/{church_id}', [\App\Http\Controllers\GivingController::class, 'markAllAsSent'])->name('givings.markAllAsSent');
     Route::post('givings/{giving}/verify-receipt', [\App\Http\Controllers\GivingController::class, 'verifyReceipt'])->name('givings.verifyReceipt');
     Route::get('givings/details/{date}/{church_id}', [\App\Http\Controllers\GivingController::class, 'details'])->name('givings.details');
     Route::delete('givings/bulk/{date}/{church_id}', [\App\Http\Controllers\GivingController::class, 'destroyBulk'])->name('givings.destroyBulk');
@@ -62,6 +63,13 @@ Route::middleware('auth')->group(function () {
     Route::get('/diocese/transfers', [\App\Http\Controllers\DioceseTransferController::class, 'index'])->name('diocese.transfers.index');
     Route::post('/diocese/transfers/{giving}/verify', [\App\Http\Controllers\DioceseTransferController::class, 'verify'])->name('diocese.transfers.verify');
     Route::post('/diocese/transfers/{giving}/reject', [\App\Http\Controllers\DioceseTransferController::class, 'reject'])->name('diocese.transfers.reject');
+    
+    // Parish Transfers (Custom Amount Transfers)
+    Route::get('parish-transfers', [\App\Http\Controllers\ParishTransferController::class, 'index'])->name('parish-transfers.index');
+    Route::get('parish-transfers/create', [\App\Http\Controllers\ParishTransferController::class, 'create'])->name('parish-transfers.create');
+    Route::post('parish-transfers', [\App\Http\Controllers\ParishTransferController::class, 'store'])->name('parish-transfers.store');
+    Route::post('parish-transfers/{transfer}/verify', [\App\Http\Controllers\ParishTransferController::class, 'verify'])->name('parish-transfers.verify');
+    Route::post('parish-transfers/{transfer}/reject', [\App\Http\Controllers\ParishTransferController::class, 'reject'])->name('parish-transfers.reject');
     
     // Expense Category Management
     Route::resource('expense-categories', \App\Http\Controllers\ExpenseCategoryController::class)->middleware(['permission:manage expense categories']);

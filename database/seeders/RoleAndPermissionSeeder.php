@@ -59,6 +59,10 @@ class RoleAndPermissionSeeder extends Seeder
                 'create members', 'edit members', 'delete members',
                 'view all members', 'view assigned members', 'view own members',
             ],
+            'Transfer' => [
+                'create parish transfers', 'view own transfers', 'view assigned transfers',
+                'view all transfers', 'verify parish transfers',
+            ],
             'System' => [
                 'manage users', 'manage roles', 'assign roles',
                 'grant permissions', 'revoke permissions',
@@ -88,6 +92,7 @@ class RoleAndPermissionSeeder extends Seeder
                 'edit departments', 'assign users to departments', 'create members', 'edit members',
                 'view assigned members', 'create attendance', 'edit attendance', 'delete attendance',
                 'view assigned attendance', 'create census', 'edit census', 'delete census', 'view assigned census',
+                'create parish transfers', 'view assigned transfers',
             ],
             'pastor' => [
                 'view own church', 'edit church', 'enter givings', 'view own givings', 'enter expenses',
@@ -97,11 +102,13 @@ class RoleAndPermissionSeeder extends Seeder
                 'view retirement plans', 'create departments', 'edit departments', 'assign users to departments',
                 'create members', 'edit members', 'view own members', 'create attendance', 'edit attendance',
                 'view own attendance', 'create census', 'edit census', 'view own census',
+                'create parish transfers', 'view own transfers',
             ],
             'finance' => [
                 'view all givings', 'view all expenses', 'approve expenses', 'verify diocese receipt',
                 'manage expense categories', 'create expense categories', 'manage giving types',
                 'create giving types', 'manage service types',
+                'view all transfers', 'verify parish transfers',
             ],
             'hr' => [
                 'manage all workers', 'manage institutions', 'create worker', 'edit worker', 'delete worker',

@@ -79,9 +79,14 @@
                 @endcan
                 @can('verify diocese receipt')
                     <a href="{{ route('diocese.transfers.index') }}" class="group flex items-center px-2 py-2 text-sm font-medium rounded-md hover:text-white hover:bg-brand-800 {{ request()->routeIs('diocese.transfers.*') ? 'text-white bg-brand-800' : 'text-brand-200' }}">
-                        Transfers
+                        Diocese Receipts
                     </a>
                 @endcan
+                @canany(['create parish transfers', 'view own transfers', 'view assigned transfers', 'view all transfers'])
+                    <a href="{{ route('parish-transfers.index') }}" class="group flex items-center px-2 py-2 text-sm font-medium rounded-md hover:text-white hover:bg-brand-800 {{ request()->routeIs('parish-transfers.*') ? 'text-white bg-brand-800' : 'text-brand-200' }}">
+                        Parish Transfers
+                    </a>
+                @endcanany
                 @canany(['view all expenses', 'view assigned expenses', 'view own expenses'])
                     <a href="{{ route('expenses.index') }}" class="group flex items-center px-2 py-2 text-sm font-medium rounded-md hover:text-white hover:bg-brand-800 {{ request()->routeIs('expenses.*') ? 'text-white bg-brand-800' : 'text-brand-200' }}">
                         Expenses

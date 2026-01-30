@@ -386,6 +386,49 @@ class GivingController extends Controller
         return back()->with('success', 'Marked as sent to diocese.');
     }
 
+    /**
+     * Mark ALL givings for a specific date and church as sent to diocese (bulk operation)
+     */
+    public function markAllAsSent(Request $request, $date, $churchId)
+    {
+        $this->authorize('mark diocese transfer');
+
+        // Verify user has access to this church
+        if (!$this->canAccessChurch(auth()->user(), $churchId)) {
+            abort(403);
+        }
+
+        // Get all unsent givings for this date and church
+        $givings = Giving::where('date', $date)
+            ->where('church_id', $churchId)
+            ->where('sent_to_diocese', false)
+            ->get();
+
+        if ($givings->isEmpty()) {
+            return back()->with('error', 'No offerings to send or all already sent.');
+        }
+
+        // Update all givings
+        $count = 0;
+        foreach ($givings as $giving) {
+            $giving->update([
+                'sent_to_diocese' => true,
+                'diocese_sent_date' => now(),
+                'receipt_status' => 'pending',
+            ]);
+            $count++;
+        }
+
+        // Notify users who can verify receipt (Boss, Finance) - send only one notification
+        $verifiers = \App\Models\User::permission('verify diocese receipt')->get();
+        if ($verifiers->count() > 0) {
+            // Use the first giving for the notification context
+            \Illuminate\Support\Facades\Notification::send($verifiers, new \App\Notifications\DioceseTransferSent($givings->first()));
+        }
+
+        return back()->with('success', "Successfully marked $count offering(s) as sent to diocese.");
+    }
+
     public function verifyReceipt(Giving $giving)
     {
         $this->authorize('verify diocese receipt');
