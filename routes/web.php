@@ -68,6 +68,8 @@ Route::middleware('auth')->group(function () {
     Route::get('parish-transfers', [\App\Http\Controllers\ParishTransferController::class, 'index'])->name('parish-transfers.index');
     Route::get('parish-transfers/create', [\App\Http\Controllers\ParishTransferController::class, 'create'])->name('parish-transfers.create');
     Route::post('parish-transfers', [\App\Http\Controllers\ParishTransferController::class, 'store'])->name('parish-transfers.store');
+    Route::get('parish-transfers/{transfer}', [\App\Http\Controllers\ParishTransferController::class, 'show'])->name('parish-transfers.show');
+    Route::delete('parish-transfers/{transfer}', [\App\Http\Controllers\ParishTransferController::class, 'destroy'])->name('parish-transfers.destroy');
     Route::post('parish-transfers/{transfer}/verify', [\App\Http\Controllers\ParishTransferController::class, 'verify'])->name('parish-transfers.verify');
     Route::post('parish-transfers/{transfer}/reject', [\App\Http\Controllers\ParishTransferController::class, 'reject'])->name('parish-transfers.reject');
     

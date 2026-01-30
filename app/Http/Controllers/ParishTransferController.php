@@ -177,6 +177,62 @@ class ParishTransferController extends Controller
     }
 
     /**
+     * Display a single transfer.
+     */
+    public function show(ParishTransfer $transfer)
+    {
+        $user = auth()->user();
+        
+        // Check permission to view this transfer
+        if (!$this->canAccessTransfer($user, $transfer)) {
+            abort(403);
+        }
+
+        $transfer->load(['church', 'enteredBy', 'verifiedBy']);
+        
+        return view('parish-transfers.show', compact('transfer'));
+    }
+
+    /**
+     * Delete a transfer (only pending transfers and by creator or admin).
+     */
+    public function destroy(ParishTransfer $transfer)
+    {
+        $user = auth()->user();
+        
+        // Only allow deletion of pending transfers
+        if ($transfer->status !== 'pending') {
+            return back()->with('error', 'Only pending transfers can be deleted.');
+        }
+        
+        // Allow if user created it, or has admin rights
+        $canDelete = ($transfer->entered_by == $user->id) || $user->can('view all transfers');
+        
+        if (!$canDelete) {
+            abort(403, 'You cannot delete this transfer.');
+        }
+
+        $transfer->delete();
+
+        return redirect()->route('parish-transfers.index')
+            ->with('success', 'Transfer deleted successfully.');
+    }
+
+    /**
+     * Helper to check if user can view a specific transfer.
+     */
+    private function canAccessTransfer($user, $transfer)
+    {
+        if ($user->can('view all transfers')) return true;
+        if ($user->can('view assigned transfers')) {
+            $churchIds = Church::where('archid_id', $user->id)->pluck('id')->toArray();
+            return in_array($transfer->church_id, $churchIds);
+        }
+        if ($user->church_id == $transfer->church_id) return true;
+        return false;
+    }
+
+    /**
      * Helper to check if user can access a specific church.
      */
     private function canAccessChurch($user, $churchId)
