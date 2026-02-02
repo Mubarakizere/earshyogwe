@@ -108,7 +108,7 @@
                 
                 <!-- System & Security Sub-group -->
                 @canany(['manage users', 'manage roles', 'view activity logs'])
-                <div x-data="{ systemOpen: {{ request()->routeIs('users.*') || request()->routeIs('roles.*') || request()->routeIs('activity-logs.*') ? 'true' : 'false' }} }" class="space-y-1">
+                <div x-data="{ systemOpen: {{ request()->routeIs('users.*') || request()->routeIs('roles.*') || request()->routeIs('activity-logs.*') || request()->routeIs('archdeacons.*') ? 'true' : 'false' }} }" class="space-y-1">
                     <button @click="systemOpen = !systemOpen" class="flex items-center w-full px-2 py-2 text-xs font-medium rounded-md hover:bg-brand-800 hover:text-white transition-colors" :class="{ 'text-white': systemOpen, 'text-brand-300': !systemOpen }">
                         <svg class="w-4 h-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" /></svg>
                         <span class="flex-1 text-left">System & Security</span>
@@ -125,6 +125,11 @@
                         @can('manage roles')
                             <a href="{{ route('roles.index') }}" class="group flex items-center px-2 py-1.5 text-xs font-medium rounded-md hover:text-white hover:bg-brand-800 {{ request()->routeIs('roles.*') ? 'text-white bg-brand-800' : 'text-brand-200' }}">
                                 Roles
+                            </a>
+                        @endcan
+                        @can('manage users')
+                            <a href="{{ route('archdeacons.index') }}" class="group flex items-center px-2 py-1.5 text-xs font-medium rounded-md hover:text-white hover:bg-brand-800 {{ request()->routeIs('archdeacons.*') ? 'text-white bg-brand-800' : 'text-brand-200' }}">
+                                Archdeacon Assignments
                             </a>
                         @endcan
                         @can('view activity logs')

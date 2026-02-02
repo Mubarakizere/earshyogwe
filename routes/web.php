@@ -42,6 +42,11 @@ Route::middleware('auth')->group(function () {
     Route::resource('users', \App\Http\Controllers\UserController::class)->middleware(['permission:manage users']);
     Route::resource('roles', \App\Http\Controllers\RoleController::class)->middleware(['permission:manage roles']);
     
+    // Archdeacon Management
+    Route::get('archdeacons', [\App\Http\Controllers\ArchdeaconController::class, 'index'])->name('archdeacons.index')->middleware(['permission:manage users|permission:view all churches']);
+    Route::get('archdeacons/{user}/edit', [\App\Http\Controllers\ArchdeaconController::class, 'edit'])->name('archdeacons.edit')->middleware(['permission:manage users|permission:view all churches']);
+    Route::put('archdeacons/{user}', [\App\Http\Controllers\ArchdeaconController::class, 'update'])->name('archdeacons.update')->middleware(['permission:manage users|permission:view all churches']);
+    
     // Audit Logs
     Route::resource('activity-logs', \App\Http\Controllers\ActivityLogController::class)->only(['index'])->middleware(['permission:view activity logs']);
     
