@@ -41,6 +41,7 @@ class ParishTransfer extends Model
         'transfer_date',
         'reference',
         'notes',
+        'supporting_document',
         'status',
         'entered_by',
         'verified_by',

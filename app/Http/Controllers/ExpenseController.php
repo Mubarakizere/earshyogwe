@@ -6,6 +6,8 @@ use App\Models\Expense;
 use App\Models\ExpenseCategory;
 use App\Models\Church;
 use Illuminate\Http\Request;
+use Barryvdh\DomPDF\Facade\Pdf;
+use Illuminate\Support\Facades\Storage;
 use App\Traits\LogsActivity;
 use App\Models\User;
 use Illuminate\Support\Facades\Notification;
@@ -70,9 +72,32 @@ class ExpenseController extends Controller
         }, $filename);
     }
 
+    public function exportPdf(Request $request)
+    {
+        $user = auth()->user();
+        $query = $this->getFilteredQuery($request, $user);
+        $expenses = $query->latest('date')->get();
+
+        $stats = [
+            'total_amount' => $expenses->sum('amount'),
+            'total_count' => $expenses->count(),
+            'approved_count' => $expenses->where('status', 'approved')->count(),
+            'pending_count' => $expenses->where('status', 'pending')->count(),
+        ];
+
+        $pdf = Pdf::loadView('exports.expenses-pdf', [
+            'expenses' => $expenses,
+            'stats' => $stats,
+            'title' => 'Expenses Export',
+            'subtitle' => 'Total Amount: ' . number_format($stats['total_amount']) . ' RWF'
+        ])->setPaper('a4', 'landscape');
+
+        return $pdf->download('expenses_export_' . date('Y-m-d_H-i') . '.pdf');
+    }
+
     private function getFilteredQuery(Request $request, $user)
     {
-        $query = Expense::with(['church', 'expenseCategory', 'enteredBy', 'approver']);
+        $query = \App\Models\Expense::with(['church', 'expenseCategory', 'enteredBy', 'approver']);
         
         // Permission-based filtering
         if ($user->can('view all expenses')) {

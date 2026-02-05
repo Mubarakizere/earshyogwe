@@ -2,7 +2,7 @@
     <x-slot name="header">
         <div class="flex justify-between items-center">
             <h2 class="font-semibold text-2xl text-gray-800 leading-tight">
-                {{ __('Offering Details') }}
+                {{ __('Revenue Details') }}
             </h2>
             <div class="flex space-x-2">
                 <a href="{{ route('givings.index') }}" class="bg-gray-200 hover:bg-gray-300 text-gray-700 font-semibold py-2 px-4 rounded-lg shadow-sm transition duration-200">
@@ -87,7 +87,7 @@
                             @can('enter givings')
                                 <button @click="deleteAllOpen = true" class="bg-red-600 hover:bg-red-700 text-white text-sm font-semibold py-2 px-4 rounded-lg shadow-sm transition flex items-center">
                                     <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
-                                    Delete All Offerings
+                                    Delete All Revenues
                                 </button>
                             @endcan
                         @endif
@@ -96,7 +96,7 @@
                             @can('mark diocese transfer')
                                 <form action="{{ route('givings.markAllAsSent', ['date' => $date, 'church_id' => $church->id]) }}" method="POST">
                                     @csrf
-                                    <button type="submit" onclick="return confirm('Confirm sending all {{ $records->count() }} offering(s) to diocese?')" class="bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold py-2 px-4 rounded-lg shadow-sm transition">
+                                    <button type="submit" onclick="return confirm('Confirm sending all {{ $records->count() }} revenue(s) to diocese?')" class="bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold py-2 px-4 rounded-lg shadow-sm transition">
                                         Mark All Sent to Diocese
                                     </button>
                                 </form>
@@ -120,7 +120,7 @@
                 <table class="min-w-full divide-y divide-gray-200">
                     <thead class="bg-gray-50">
                         <tr>
-                            <th class="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Offering Type</th>
+                            <th class="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Revenue Type</th>
                             <th class="px-6 py-4 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Amount Recorded</th>
                             <th class="px-6 py-4 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
                         </tr>
@@ -212,7 +212,7 @@
                         <svg class="h-6 w-6 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
                      </div>
                      <h3 class="text-lg font-bold text-gray-900 text-center mb-2">Delete Record</h3>
-                     <p class="text-sm text-gray-500 text-center mb-6">Are you sure you want to delete this offering record? This cannot be undone.</p>
+                     <p class="text-sm text-gray-500 text-center mb-6">Are you sure you want to delete this revenue record? This cannot be undone.</p>
                      <form :action="deleteAction" method="POST" class="flex justify-center space-x-3">
                          @csrf @method('DELETE')
                          <button type="button" @click="deleteOpen = false" class="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50 font-medium">Cancel</button>
@@ -230,8 +230,8 @@
                     <div class="flex items-center justify-center w-12 h-12 mx-auto bg-red-100 rounded-full mb-4">
                         <svg class="h-6 w-6 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
                     </div>
-                    <h3 class="text-lg font-bold text-gray-900 text-center mb-2">Delete All Offerings</h3>
-                    <p class="text-sm text-gray-500 text-center mb-2">Are you sure you want to delete <strong>ALL {{ $records->count() }} offering records</strong> for this date and parish?</p>
+                    <h3 class="text-lg font-bold text-gray-900 text-center mb-2">Delete All Revenues</h3>
+                    <p class="text-sm text-gray-500 text-center mb-2">Are you sure you want to delete <strong>ALL {{ $records->count() }} revenue records</strong> for this date and parish?</p>
                     <p class="text-xs text-red-600 text-center mb-6 font-medium">This action cannot be undone!</p>
                     <form action="{{ route('givings.destroyBulk', ['date' => $date, 'church_id' => $church->id]) }}" method="POST" class="flex justify-center space-x-3">
                         @csrf @method('DELETE')

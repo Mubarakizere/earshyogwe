@@ -3,15 +3,15 @@
         <h2 class="font-semibold text-2xl text-gray-800 leading-tight">Edit Member</h2>
     </x-slot>
 
-    <div class="py-12" x-data="{ status: '{{ $member->status ?? 'active' }}' }">
+    <div class="py-12" x-data="memberEditForm()">
         <div class="max-w-4xl mx-auto sm:px-6 lg:px-8">
             <div class="bg-white overflow-hidden shadow-xl rounded-lg">
-                <form action="{{ route('members.update', $member) }}" method="POST" class="p-8" x-data="document.memberForm()">
+                <form action="{{ route('members.update', $member) }}" method="POST" class="p-8">
                     @csrf
                     @method('PUT')
 
                     <div class="space-y-6">
-                        <!-- Parish & Basic Info -->
+                        <!-- Parish & Chapel -->
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                             @if($churches->count() > 1)
                                 <div>
@@ -25,6 +25,11 @@
                             @else
                                 <input type="hidden" name="church_id" value="{{ $member->church_id }}">
                             @endif
+
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Chapel (Optional)</label>
+                                <input type="text" name="chapel" value="{{ old('chapel', $member->chapel) }}" placeholder="e.g. St. Mary's Chapel" class="w-full px-4 py-3 border border-gray-300 rounded-lg">
+                            </div>
 
                             <div>
                                 <label class="block text-sm font-medium text-gray-700 mb-2">Full Name <span class="text-red-500">*</span></label>
@@ -43,7 +48,7 @@
                             </div>
                             <div>
                                 <label class="block text-sm font-medium text-gray-700 mb-2">Date of Birth</label>
-                                <input type="date" name="dob" value="{{ $member->dob ? $member->dob->format('Y-m-d') : '' }}" class="w-full px-4 py-3 border border-gray-300 rounded-lg">
+                                <input type="date" name="dob" x-model="dob" @change="checkIfChild()" value="{{ $member->dob ? $member->dob->format('Y-m-d') : '' }}" class="w-full px-4 py-3 border border-gray-300 rounded-lg">
                             </div>
                              <div>
                                 <label class="block text-sm font-medium text-gray-700 mb-2">Marital Status <span class="text-red-500">*</span></label>
@@ -67,14 +72,23 @@
                                 </select>
                             </div>
                              <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-2">Parental Status <span class="text-red-500">*</span></label>
-                                <select name="parental_status" required class="w-full px-4 py-3 border border-gray-300 rounded-lg">
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Parental Status (Optional)</label>
+                                <select name="parental_status" x-model="parentalStatus" @change="checkIfChild()" class="w-full px-4 py-3 border border-gray-300 rounded-lg">
+                                    <option value="">Select Status</option>
+                                    <option value="Not Applicable" {{ $member->parental_status == 'Not Applicable' ? 'selected' : '' }}>Not Applicable</option>
                                     <option value="Living with both parents" {{ $member->parental_status == 'Living with both parents' ? 'selected' : '' }}>Living with both parents</option>
                                     <option value="Living with one parent" {{ $member->parental_status == 'Living with one parent' ? 'selected' : '' }}>Living with one parent</option>
                                     <option value="Orphan" {{ $member->parental_status == 'Orphan' ? 'selected' : '' }}>Orphan</option>
                                     <option value="Under guardian/Caregiver" {{ $member->parental_status == 'Under guardian/Caregiver' ? 'selected' : '' }}>Under guardian/Caregiver</option>
                                 </select>
                             </div>
+                        </div>
+
+                        <!-- Parent Names (conditional) -->
+                        <div x-show="showParentNames" x-cloak class="bg-blue-50 p-4 rounded-lg border border-blue-200">
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Parent/Guardian Names</label>
+                            <input type="text" name="parent_names" value="{{ old('parent_names', $member->parent_names) }}" placeholder="e.g. John Doe & Jane Doe" class="w-full px-4 py-3 border border-gray-300 rounded-lg bg-white">
+                            <p class="text-xs text-gray-500 mt-1">Names of the member's parents or guardians</p>
                         </div>
                         
                          <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -89,7 +103,18 @@
                                     <option value="Other" {{ $member->education_level == 'Other' ? 'selected' : '' }}>Other</option>
                                 </select>
                             </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Disability (Optional)</label>
+                                <input type="text" name="disability" value="{{ old('disability', $member->disability) }}" placeholder="Leave empty if none" class="w-full px-4 py-3 border border-gray-300 rounded-lg">
+                            </div>
                         </div>
+
+                        <!-- Recorded By (Read-only) -->
+                        @if($member->recordedBy)
+                        <div class="text-sm text-gray-500">
+                            <span class="font-medium">Recorded by:</span> {{ $member->recordedBy->name }} on {{ $member->created_at->format('M d, Y') }}
+                        </div>
+                        @endif
 
                         <!-- Church Groups (Multiple Selection) -->
                         <div class="pt-4 border-t">
@@ -211,20 +236,46 @@
     </div>
 
     <script>
-        document.memberForm = () => ({
-            fields: [
-                @if($member->extra_attributes)
-                    @foreach($member->extra_attributes as $key => $value)
-                        { key: '{{ $key }}', value: '{{ $value }}' },
-                    @endforeach
-                @endif
-            ],
-            addField() {
-                this.fields.push({ key: '', value: '' });
-            },
-            removeField(index) {
-                this.fields.splice(index, 1);
-            }
-        });
+        function memberEditForm() {
+            return {
+                status: '{{ $member->status ?? 'active' }}',
+                dob: '{{ $member->dob ? $member->dob->format('Y-m-d') : '' }}',
+                parentalStatus: '{{ $member->parental_status ?? '' }}',
+                showParentNames: {{ ($member->is_child || in_array($member->parental_status, ['Living with both parents', 'Living with one parent', 'Orphan', 'Under guardian/Caregiver'])) ? 'true' : 'false' }},
+                fields: [
+                    @if($member->extra_attributes)
+                        @foreach($member->extra_attributes as $key => $value)
+                            { key: '{{ $key }}', value: '{{ $value }}' },
+                        @endforeach
+                    @endif
+                ],
+                addField() {
+                    this.fields.push({ key: '', value: '' });
+                },
+                removeField(index) {
+                    this.fields.splice(index, 1);
+                },
+                checkIfChild() {
+                    let isChild = false;
+                    if (this.dob) {
+                        const birthDate = new Date(this.dob);
+                        const today = new Date();
+                        const age = today.getFullYear() - birthDate.getFullYear();
+                        const monthDiff = today.getMonth() - birthDate.getMonth();
+                        if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
+                            isChild = (age - 1) < 18;
+                        } else {
+                            isChild = age < 18;
+                        }
+                    }
+                    
+                    const childStatuses = ['Living with both parents', 'Living with one parent', 'Orphan', 'Under guardian/Caregiver'];
+                    const hasChildStatus = childStatuses.includes(this.parentalStatus);
+                    
+                    this.showParentNames = isChild || hasChildStatus;
+                }
+            };
+        }
     </script>
 </x-app-layout>
+

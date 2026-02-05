@@ -1,7 +1,7 @@
 <x-app-layout>
     <x-slot name="header">
         <h2 class="font-semibold text-2xl text-gray-800 leading-tight">
-            {{ __('Create Offering Type') }}
+            {{ __('Create Revenue Type') }}
         </h2>
     </x-slot>
 
@@ -15,7 +15,7 @@
                         <!-- Name -->
                         <div>
                             <label for="name" class="block text-sm font-medium text-gray-700 mb-2">
-                                Offering Type Name <span class="text-red-500">*</span>
+                                Revenue Name <span class="text-red-500">*</span>
                             </label>
                             <input type="text" name="name" id="name" value="{{ old('name') }}" required
                                 class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition duration-200 @error('name') border-red-500 @enderror">
@@ -48,7 +48,7 @@
                                         Enable Sub-Types
                                     </label>
                                     <p class="text-sm text-gray-600">
-                                        Check this if you want to add sub-categories under this offering type (e.g., "Offerings" can have "Sunday Offering", "Thanksgiving Offering", etc.)
+                                        Check this if you want to add sub-categories under this revenue type (e.g., "Revenues" can have "Sunday Offering", "Thanksgiving Offering", etc.)
                                     </p>
                                 </div>
                             </div>
@@ -60,7 +60,7 @@
                                 Cancel
                             </a>
                             <button type="submit" class="px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-lg shadow-md transition duration-200">
-                                Create Offering Type
+                                Create Revenue Type
                             </button>
                         </div>
                     </div>

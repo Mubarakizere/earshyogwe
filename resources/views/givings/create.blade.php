@@ -2,7 +2,7 @@
     <x-slot name="header">
         <div class="flex justify-between items-center">
             <h2 class="font-semibold text-2xl text-gray-800 leading-tight">
-                {{ __('Record Offering') }}
+                {{ __('Record Revenue') }}
             </h2>
         </div>
     </x-slot>
@@ -152,7 +152,7 @@
                             Cancel
                         </a>
                         <button type="submit" class="px-8 py-3 bg-green-600 hover:bg-green-700 text-white font-semibold rounded-lg shadow-md hover:shadow-lg transform transition hover:-translate-y-0.5 duration-150 ease-in-out">
-                            Save Offerings
+                            Save Revenues
                         </button>
                     </div>
                 </form>
@@ -193,7 +193,7 @@
                             </svg>
                             <div class="flex-1">
                                 <h3 class="text-sm font-semibold text-red-800 mb-1">Validation Error</h3>
-                                <p class="text-sm text-red-700">Please enter at least one offering amount before submitting.</p>
+                                <p class="text-sm text-red-700">Please enter at least one revenue amount before submitting.</p>
                             </div>
                             <button type="button" onclick="this.parentElement.parentElement.remove()" class="text-red-500 hover:text-red-700">
                                 <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd"/></svg>

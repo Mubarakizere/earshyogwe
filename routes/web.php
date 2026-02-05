@@ -57,6 +57,7 @@ Route::middleware('auth')->group(function () {
     
     // Giving Entry
     Route::get('givings/export', [\App\Http\Controllers\GivingController::class, 'export'])->name('givings.export');
+    Route::get('givings/export-pdf', [\App\Http\Controllers\GivingController::class, 'exportPdf'])->name('givings.exportPdf');
     Route::post('givings/{giving}/mark-sent', [\App\Http\Controllers\GivingController::class, 'markAsSent'])->name('givings.markAsSent');
     Route::post('givings/mark-all-sent/{date}/{church_id}', [\App\Http\Controllers\GivingController::class, 'markAllAsSent'])->name('givings.markAllAsSent');
     Route::post('givings/{giving}/verify-receipt', [\App\Http\Controllers\GivingController::class, 'verifyReceipt'])->name('givings.verifyReceipt');
@@ -83,6 +84,7 @@ Route::middleware('auth')->group(function () {
     
     // Expense Entry
     Route::get('expenses/export', [\App\Http\Controllers\ExpenseController::class, 'export'])->name('expenses.export');
+    Route::get('expenses/export-pdf', [\App\Http\Controllers\ExpenseController::class, 'exportPdf'])->name('expenses.exportPdf');
     Route::resource('expenses', \App\Http\Controllers\ExpenseController::class);
     Route::resource('members', \App\Http\Controllers\MemberController::class);
     Route::post('expenses/{expense}/approve', [\App\Http\Controllers\ExpenseController::class, 'approve'])->name('expenses.approve');
@@ -96,6 +98,26 @@ Route::middleware('auth')->group(function () {
     
     // Objectives (Goals assigned by Heads)
     Route::get('objectives/export', [\App\Http\Controllers\ObjectiveController::class, 'export'])->name('objectives.export');
+    Route::get('objectives/export-pdf', [\App\Http\Controllers\ObjectiveController::class, 'exportPdf'])->name('objectives.exportPdf');
+
+    // Server Helper for Shared Hosting (Run Artisan Commands)
+    Route::get('/server/run/{command}', function ($command) {
+        // Only allow specific commands for safety
+        $allowed = ['optimize:clear', 'config:cache', 'view:clear', 'migrate', 'storage:link', 'about'];
+        
+        if (!in_array($command, $allowed)) {
+            return "Command '$command' is not in the allowed list.";
+        }
+        
+        try {
+            \Illuminate\Support\Facades\Artisan::call($command);
+            return "<h3>Command: $command</h3><pre>" . \Illuminate\Support\Facades\Artisan::output() . "</pre>";
+        } catch (\Exception $e) {
+            return "<h3>Error executing $command</h3><pre>" . $e->getMessage() . "</pre>";
+        }
+    })->middleware(['auth', 'permission:manage users']); // Restricted to admins
+
+    Route::get('objectives/export-pdf', [\App\Http\Controllers\ObjectiveController::class, 'exportPdf'])->name('objectives.exportPdf');
     Route::post('objectives/{objective}/approve', [\App\Http\Controllers\ObjectiveController::class, 'approve'])->name('objectives.approve');
     Route::post('objectives/{objective}/reject', [\App\Http\Controllers\ObjectiveController::class, 'reject'])->name('objectives.reject');
     Route::resource('objectives', \App\Http\Controllers\ObjectiveController::class);
@@ -106,6 +128,7 @@ Route::middleware('auth')->group(function () {
     
     // Workers & HR
     Route::get('workers/export', [\App\Http\Controllers\WorkerController::class, 'export'])->name('workers.export');
+    Route::get('workers/export-pdf', [\App\Http\Controllers\WorkerController::class, 'exportPdf'])->name('workers.exportPdf');
     Route::get('workers/trashed', [\App\Http\Controllers\WorkerController::class, 'trashed'])->name('workers.trashed');
     Route::post('workers/{id}/restore', [\App\Http\Controllers\WorkerController::class, 'restore'])->name('workers.restore');
     Route::delete('workers/{id}/force-delete', [\App\Http\Controllers\WorkerController::class, 'forceDelete'])->name('workers.force-delete');
@@ -124,14 +147,17 @@ Route::middleware('auth')->group(function () {
     
     // Churches Management (Permission-based - checked in controller)
     Route::get('churches/export', [\App\Http\Controllers\ChurchController::class, 'export'])->name('churches.export');
+    Route::get('churches/export-pdf', [\App\Http\Controllers\ChurchController::class, 'exportPdf'])->name('churches.exportPdf');
     Route::resource('churches', \App\Http\Controllers\ChurchController::class);
     
     // Departments / Activity Types (Permission-based - checked in controller)
     Route::get('departments/export', [\App\Http\Controllers\DepartmentController::class, 'export'])->name('departments.export');
+    Route::get('departments/export-pdf', [\App\Http\Controllers\DepartmentController::class, 'exportPdf'])->name('departments.exportPdf');
     Route::resource('departments', \App\Http\Controllers\DepartmentController::class);
     
     // Attendance Management (Permission-based - checked in controller)
     Route::get('attendances/export', [\App\Http\Controllers\AttendanceController::class, 'export'])->name('attendances.export');
+    Route::get('attendances/export-pdf', [\App\Http\Controllers\AttendanceController::class, 'exportPdf'])->name('attendances.exportPdf');
     Route::delete('attendance-documents/{document}', [\App\Http\Controllers\AttendanceController::class, 'deleteDocument'])->name('attendance-documents.destroy');
     Route::resource('attendances', \App\Http\Controllers\AttendanceController::class);
     // Service Types Management  
@@ -139,7 +165,17 @@ Route::middleware('auth')->group(function () {
     
     // Members Management (Permission-based - checked in controller)
     Route::get('members/export', [\App\Http\Controllers\MemberController::class, 'export'])->name('members.export');
+    Route::get('members/export-pdf', [\App\Http\Controllers\MemberController::class, 'exportPdf'])->name('members.exportPdf');
     Route::resource('members', \App\Http\Controllers\MemberController::class);
+    
+    // Member Transfers (Permission-based - checked in controller)
+    Route::get('member-transfers', [\App\Http\Controllers\MemberTransferController::class, 'index'])->name('member-transfers.index');
+    Route::get('member-transfers/create', [\App\Http\Controllers\MemberTransferController::class, 'create'])->name('member-transfers.create');
+    Route::post('member-transfers', [\App\Http\Controllers\MemberTransferController::class, 'store'])->name('member-transfers.store');
+    Route::get('member-transfers/{memberTransfer}', [\App\Http\Controllers\MemberTransferController::class, 'show'])->name('member-transfers.show');
+    Route::delete('member-transfers/{memberTransfer}', [\App\Http\Controllers\MemberTransferController::class, 'destroy'])->name('member-transfers.destroy');
+    Route::post('member-transfers/{memberTransfer}/approve', [\App\Http\Controllers\MemberTransferController::class, 'approve'])->name('member-transfers.approve');
+    Route::post('member-transfers/{memberTransfer}/reject', [\App\Http\Controllers\MemberTransferController::class, 'reject'])->name('member-transfers.reject');
     
     // Population Census (Pastor, Archid, Boss)
     Route::resource('population-censuses', \App\Http\Controllers\PopulationCensusController::class)->middleware(['role:boss|archid|pastor']);

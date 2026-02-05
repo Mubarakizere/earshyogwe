@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Department;
 use App\Models\Church;
 use Illuminate\Http\Request;
+use Barryvdh\DomPDF\Facade\Pdf;
 
 class DepartmentController extends Controller
 {
@@ -41,6 +42,36 @@ class DepartmentController extends Controller
         }
         fclose($handle);
         exit;
+    }
+
+    public function exportPdf()
+    {
+        $user = auth()->user();
+        if ($user->can('view all departments')) {
+             $departments = Department::with('church')->get();
+        } elseif ($user->hasRole('archid')) {
+             $churchIds = Church::where('archid_id', $user->id)->pluck('id');
+             $departments = Department::whereIn('church_id', $churchIds)->with('church')->get();
+        } elseif ($user->church_id) {
+             $departments = Department::where('church_id', $user->church_id)->with('church')->get();
+        } else {
+             $departments = collect();
+        }
+
+        $stats = [
+            'total' => $departments->count(),
+            'active' => $departments->where('is_active', true)->count(),
+            'inactive' => $departments->where('is_active', false)->count(),
+        ];
+
+        $pdf = Pdf::loadView('exports.departments-pdf', [
+            'departments' => $departments,
+            'stats' => $stats,
+            'title' => 'Directorates Export',
+            'subtitle' => 'Total: ' . number_format($stats['total']) . ' directorates'
+        ]);
+
+        return $pdf->download('departments_export_' . date('Y-m-d_H-i') . '.pdf');
     }
 
     public function index(Request $request)

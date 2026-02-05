@@ -6,6 +6,7 @@ use App\Models\Worker;
 use App\Models\Church;
 use App\Models\Department;
 use Illuminate\Http\Request;
+use Barryvdh\DomPDF\Facade\Pdf;
 
 class WorkerController extends Controller
 {
@@ -71,6 +72,61 @@ class WorkerController extends Controller
         }
         fclose($handle);
         exit;
+    }
+
+    public function exportPdf(Request $request)
+    {
+        $user = auth()->user();
+        $query = Worker::with(['institution']);
+        
+        // Apply same role-based scope as index
+        if ($user->hasRole('pastor')) {
+            $query->where('church_id', $user->church_id);
+        } elseif ($user->hasRole('archid')) {
+            $churchIds = Church::where('archid_id', $user->id)->pluck('id');
+            $query->whereIn('church_id', $churchIds);
+        }
+
+        // Apply same filters as index
+        if ($request->filled('search')) {
+            $search = $request->search;
+            $query->where(function($q) use ($search) {
+                $q->where('first_name', 'like', "%{$search}%")
+                  ->orWhere('last_name', 'like', "%{$search}%")
+                  ->orWhere('job_title', 'like', "%{$search}%")
+                  ->orWhere('email', 'like', "%{$search}%")
+                  ->orWhere('phone', 'like', "%{$search}%");
+            });
+        }
+
+        if ($request->filled('church_id') && ($user->hasRole('boss') || $user->hasRole('archid'))) {
+            $query->where('church_id', $request->church_id);
+        }
+
+        if ($request->filled('institution_id')) {
+            $query->where('institution_id', $request->institution_id);
+        }
+
+        if ($request->filled('status')) {
+            $query->where('status', $request->status);
+        }
+
+        $workers = $query->get();
+
+        $stats = [
+            'total' => $workers->count(),
+            'active' => $workers->where('status', 'active')->count(),
+            'retired' => $workers->where('status', 'retired')->count(),
+        ];
+
+        $pdf = Pdf::loadView('exports.workers-pdf', [
+            'workers' => $workers,
+            'stats' => $stats,
+            'title' => 'Workers Export',
+            'subtitle' => 'Total: ' . number_format($stats['total']) . ' workers'
+        ])->setPaper('a4', 'landscape');
+
+        return $pdf->download('workers_export_' . date('Y-m-d_H-i') . '.pdf');
     }
 
     public function index(Request $request)

@@ -45,7 +45,7 @@ class ExpenseSubmitted extends Notification implements ShouldQueue
             ->line('• **Description:** ' . $this->expense->description)
             ->line('• **Amount:** ' . number_format($this->expense->amount) . ' RWF')
             ->line('• **Submitted by:** ' . ($this->expense->enteredBy->name ?? 'Unknown'))
-            ->line('• **Date:** ' . $this->expense->expense_date?->format('M d, Y'))
+            ->line('• **Date:** ' . $this->expense->date?->format('M d, Y'))
             ->action('Review Expense', route('expenses.show', $this->expense->id))
             ->line('')
             ->line('Please review and approve or reject this expense request.')

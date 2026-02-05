@@ -9,21 +9,28 @@
         <div class="max-w-4xl mx-auto sm:px-6 lg:px-8">
             <div class="bg-white overflow-hidden shadow-sm sm:rounded-xl border border-gray-100 p-8">
                 
-                <form method="POST" action="{{ route('members.store') }}" x-data="document.memberForm()">
+                <form method="POST" action="{{ route('members.store') }}" x-data="memberFormData()">
                     @csrf
 
                     <!-- Standard Fields Grid -->
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
                         
                         <!-- Church -->
-                        <div class="col-span-1 md:col-span-2">
-                            <x-input-label for="church_id" :value="__('Church')" />
+                        <div>
+                            <x-input-label for="church_id" :value="__('Parish')" />
                             <select id="church_id" name="church_id" class="block mt-1 w-full border-gray-300 focus:border-brand-500 focus:ring-brand-500 rounded-lg shadow-sm">
                                 @foreach($churches as $church)
                                     <option value="{{ $church->id }}">{{ $church->name }}</option>
                                 @endforeach
                             </select>
                             <x-input-error :messages="$errors->get('church_id')" class="mt-2" />
+                        </div>
+
+                        <!-- Chapel -->
+                        <div>
+                            <x-input-label for="chapel" :value="__('Chapel (Optional)')" />
+                            <x-text-input id="chapel" class="block mt-1 w-full" type="text" name="chapel" :value="old('chapel')" placeholder="e.g. St. Mary's Chapel" />
+                            <x-input-error :messages="$errors->get('chapel')" class="mt-2" />
                         </div>
 
                         <!-- Name -->
@@ -46,7 +53,7 @@
                         <!-- DOB -->
                         <div>
                             <x-input-label for="dob" :value="__('Date of Birth')" />
-                            <x-text-input id="dob" class="block mt-1 w-full" type="date" name="dob" :value="old('dob')" />
+                            <x-text-input id="dob" class="block mt-1 w-full" type="date" name="dob" :value="old('dob')" x-model="dob" @change="checkIfChild()" />
                             <x-input-error :messages="$errors->get('dob')" class="mt-2" />
                         </div>
 
@@ -62,10 +69,12 @@
                             <x-input-error :messages="$errors->get('marital_status')" class="mt-2" />
                         </div>
 
-                        <!-- Parental Status -->
+                        <!-- Parental Status (Optional) -->
                         <div>
-                            <x-input-label for="parental_status" :value="__('Parental Status')" />
-                            <select id="parental_status" name="parental_status" class="block mt-1 w-full border-gray-300 focus:border-brand-500 focus:ring-brand-500 rounded-lg shadow-sm">
+                            <x-input-label for="parental_status" :value="__('Parental Status (Optional)')" />
+                            <select id="parental_status" name="parental_status" x-model="parentalStatus" @change="checkIfChild()" class="block mt-1 w-full border-gray-300 focus:border-brand-500 focus:ring-brand-500 rounded-lg shadow-sm">
+                                <option value="">Select Status</option>
+                                <option value="Not Applicable">Not Applicable</option>
                                 <option value="Living with both parents">Living with both parents</option>
                                 <option value="Living with one parent">Living with one parent</option>
                                 <option value="Orphan">Orphan</option>
@@ -85,10 +94,19 @@
                             <x-input-error :messages="$errors->get('baptism_status')" class="mt-2" />
                         </div>
 
+                        <!-- Parent Names (shown for children) -->
+                        <div x-show="showParentNames" x-cloak class="col-span-1 md:col-span-2">
+                            <x-input-label for="parent_names" :value="__('Parent/Guardian Names')" />
+                            <x-text-input id="parent_names" class="block mt-1 w-full" type="text" name="parent_names" :value="old('parent_names')" placeholder="e.g. John Doe & Jane Doe" />
+                            <p class="text-xs text-gray-500 mt-1">Please enter the names of the member's parents or guardians</p>
+                            <x-input-error :messages="$errors->get('parent_names')" class="mt-2" />
+                        </div>
+
                          <!-- Education Level -->
                          <div>
                             <x-input-label for="education_level" :value="__('Education Level')" />
                             <select id="education_level" name="education_level" class="block mt-1 w-full border-gray-300 focus:border-brand-500 focus:ring-brand-500 rounded-lg shadow-sm">
+                                <option value="">Select Level</option>
                                 <option value="Primary">Primary</option>
                                 <option value="Secondary">Secondary</option>
                                 <option value="University">University</option>
@@ -96,6 +114,13 @@
                                 <option value="Other">Other</option>
                             </select>
                             <x-input-error :messages="$errors->get('education_level')" class="mt-2" />
+                        </div>
+
+                        <!-- Disability -->
+                        <div>
+                            <x-input-label for="disability" :value="__('Disability (Optional)')" />
+                            <x-text-input id="disability" class="block mt-1 w-full" type="text" name="disability" :value="old('disability')" placeholder="Leave empty if none, or describe disability" />
+                            <x-input-error :messages="$errors->get('disability')" class="mt-2" />
                         </div>
 
                         <!-- Church Groups (Multiple Selection) -->
@@ -130,8 +155,6 @@
                                 <div class="flex items-start gap-4 p-4 bg-gray-50 rounded-lg border border-gray-200">
                                     <div class="flex-1">
                                         <label class="block text-xs font-semibold text-gray-500 uppercase">Field Name</label>
-                                        <!-- Store key in a variable, but for array submission we need a trick. 
-                                             We will post as extra_attributes[key] = value. -->
                                         <input type="text" x-model="field.key" placeholder="e.g. Occupation" class="block w-full mt-1 text-sm border-gray-300 rounded-md focus:border-brand-500 focus:ring-brand-500">
                                     </div>
                                     <div class="flex-1">
@@ -164,14 +187,42 @@
     </div>
 
     <script>
-        document.memberForm = () => ({
-            fields: [],
-            addField() {
-                this.fields.push({ key: '', value: '' });
-            },
-            removeField(index) {
-                this.fields.splice(index, 1);
-            }
-        });
+        function memberFormData() {
+            return {
+                fields: [],
+                dob: '',
+                parentalStatus: '',
+                showParentNames: false,
+                
+                addField() {
+                    this.fields.push({ key: '', value: '' });
+                },
+                removeField(index) {
+                    this.fields.splice(index, 1);
+                },
+                checkIfChild() {
+                    // Check if DOB indicates a child (under 18)
+                    let isChild = false;
+                    if (this.dob) {
+                        const birthDate = new Date(this.dob);
+                        const today = new Date();
+                        const age = today.getFullYear() - birthDate.getFullYear();
+                        const monthDiff = today.getMonth() - birthDate.getMonth();
+                        if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
+                            isChild = (age - 1) < 18;
+                        } else {
+                            isChild = age < 18;
+                        }
+                    }
+                    
+                    // Also show if parental status indicates a child/dependent
+                    const childStatuses = ['Living with both parents', 'Living with one parent', 'Orphan', 'Under guardian/Caregiver'];
+                    const hasChildStatus = childStatuses.includes(this.parentalStatus);
+                    
+                    this.showParentNames = isChild || hasChildStatus;
+                }
+            };
+        }
     </script>
 </x-app-layout>
+

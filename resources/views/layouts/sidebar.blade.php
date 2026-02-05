@@ -59,6 +59,11 @@
                         Members
                     </a>
                 @endcanany
+                @canany(['view all members', 'view assigned members', 'view own members'])
+                    <a href="{{ route('member-transfers.index') }}" class="group flex items-center px-2 py-2 text-sm font-medium rounded-md hover:text-white hover:bg-brand-800 {{ request()->routeIs('member-transfers.*') ? 'text-white bg-brand-800' : 'text-brand-200' }}">
+                        Member Transfers
+                    </a>
+                @endcanany
             </div>
         </div>
 
@@ -74,7 +79,7 @@
             <div x-show="open" x-collapse class="space-y-1 pl-9">
                 @can('enter givings')
                     <a href="{{ route('givings.index') }}" class="group flex items-center px-2 py-2 text-sm font-medium rounded-md hover:text-white hover:bg-brand-800 {{ request()->routeIs('givings.*') ? 'text-white bg-brand-800' : 'text-brand-200' }}">
-                        Offerings
+                        Revenues
                     </a>
                 @endcan
                 @can('verify diocese receipt')
@@ -179,7 +184,7 @@
                     <div x-show="settingsOpen" x-collapse class="space-y-1 pl-6">
                         @can('manage giving types')
                             <a href="{{ route('giving-types.index') }}" class="group flex items-center px-2 py-1.5 text-xs font-medium rounded-md hover:text-white hover:bg-brand-800 {{ request()->routeIs('giving-types.*') ? 'text-white bg-brand-800' : 'text-brand-200' }}">
-                                Offerings Types
+                                Revenue Types
                             </a>
                         @endcan
                         @can('manage expense categories')

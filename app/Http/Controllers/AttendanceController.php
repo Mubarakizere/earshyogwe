@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Attendance;
 use App\Models\Church;
 use Illuminate\Http\Request;
+use Barryvdh\DomPDF\Facade\Pdf;
 
 class AttendanceController extends Controller
 {
@@ -68,6 +69,24 @@ class AttendanceController extends Controller
             }
             fclose($file);
         }, $filename);
+    }
+
+    public function exportPdf(Request $request)
+    {
+        $user = auth()->user();
+        $query = $this->getFilteredQuery($request, $user);
+        $attendances = $query->latest('attendance_date')->get();
+
+        $totals = $this->calculateTotals($attendances);
+        
+        $pdf = Pdf::loadView('exports.attendances-pdf', [
+            'attendances' => $attendances,
+            'totals' => $totals,
+            'title' => 'Attendance Export',
+            'subtitle' => 'Period: ' . ($request->start_date ?? 'Start') . ' to ' . ($request->end_date ?? 'End')
+        ])->setPaper('a4', 'landscape');
+
+        return $pdf->download('attendance_export_' . date('Y-m-d_H-i') . '.pdf');
     }
 
     private function getFilteredQuery(Request $request, $user)

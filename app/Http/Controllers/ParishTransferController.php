@@ -101,6 +101,7 @@ class ParishTransferController extends Controller
             'transfer_date' => 'required|date',
             'reference' => 'nullable|string|max:255',
             'notes' => 'nullable|string',
+            'supporting_document' => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:10240',
         ]);
 
         $user = auth()->user();
@@ -110,12 +111,19 @@ class ParishTransferController extends Controller
             abort(403, 'You cannot create transfers for this parish.');
         }
 
+        // Handle file upload
+        $documentPath = null;
+        if ($request->hasFile('supporting_document')) {
+            $documentPath = $request->file('supporting_document')->store('parish-transfers', 'public');
+        }
+
         $transfer = ParishTransfer::create([
             'church_id' => $validated['church_id'],
             'amount' => $validated['amount'],
             'transfer_date' => $validated['transfer_date'],
             'reference' => $validated['reference'],
             'notes' => $validated['notes'],
+            'supporting_document' => $documentPath,
             'status' => 'pending',
             'entered_by' => auth()->id(),
         ]);

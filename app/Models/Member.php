@@ -41,20 +41,24 @@ class Member extends Model
 
     protected $fillable = [
         'church_id',
+        'chapel',
         'name',
         'sex',
         'dob',
         'marital_status',
         'parental_status',
+        'parent_names',
         'baptism_status',
         'church_group',
         'education_level',
+        'disability',
         'extra_attributes',
         'status',
         'inactive_reason',
         'inactive_date',
         'deceased_date',
         'deceased_cause',
+        'recorded_by',
     ];
 
     protected $casts = [
@@ -69,10 +73,34 @@ class Member extends Model
         return $this->belongsTo(Church::class);
     }
 
+    /**
+     * Get the user who recorded this member.
+     */
+    public function recordedBy()
+    {
+        return $this->belongsTo(User::class, 'recorded_by');
+    }
+
+    /**
+     * Get transfer history for this member.
+     */
+    public function transfers()
+    {
+        return $this->hasMany(MemberTransfer::class);
+    }
+
     // Accessor for Age
     public function getAgeAttribute()
     {
         return $this->dob ? Carbon::parse($this->dob)->age : null;
+    }
+
+    /**
+     * Check if member is a child (under 18).
+     */
+    public function getIsChildAttribute()
+    {
+        return $this->age !== null && $this->age < 18;
     }
 
     /**

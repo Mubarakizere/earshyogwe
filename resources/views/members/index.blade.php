@@ -5,10 +5,26 @@
                 {{ __('Member Registry') }}
             </h2>
             <div class="flex space-x-2">
-                <a href="{{ route('members.export', request()->query()) }}" class="inline-flex items-center px-4 py-2 bg-green-600 border border-transparent rounded-lg font-bold text-xs text-white uppercase tracking-widest hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 transition ease-in-out duration-150">
-                     <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
-                    Export CSV
-                </a>
+                <!-- Export Dropdown -->
+                <div x-data="{ open: false }" class="relative">
+                    <button @click="open = !open" type="button" class="inline-flex items-center px-4 py-2 bg-green-600 border border-transparent rounded-lg font-bold text-xs text-white uppercase tracking-widest hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 transition ease-in-out duration-150">
+                        <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
+                        Export
+                        <svg class="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                    </button>
+                    <div x-show="open" @click.away="open = false" x-transition class="absolute right-0 mt-2 w-48 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 z-50">
+                        <div class="py-1">
+                            <a href="{{ route('members.export', request()->query()) }}" class="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+                                <svg class="w-4 h-4 mr-2 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
+                                Export as CSV (Excel)
+                            </a>
+                            <a href="{{ route('members.exportPdf', request()->query()) }}" class="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+                                <svg class="w-4 h-4 mr-2 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z"></path></svg>
+                                Export as PDF
+                            </a>
+                        </div>
+                    </div>
+                </div>
                 <a href="{{ route('members.create') }}" class="inline-flex items-center px-4 py-2 bg-indigo-600 border border-transparent rounded-lg font-bold text-xs text-white uppercase tracking-widest hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 transition ease-in-out duration-150">
                     <svg class="w-4 h-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" /></svg>
                     Add Member
@@ -127,12 +143,28 @@
                     </div>
 
                      <!-- Gender Filter -->
-                     <div class="md:col-span-2">
+                     <div class="md:col-span-1">
                         <label class="block text-xs font-semibold text-gray-500 uppercase mb-1">Gender</label>
                         <select name="sex" class="w-full py-2 rounded-lg border-gray-300 focus:ring-indigo-500 focus:border-indigo-500 text-sm">
                             <option value="">All</option>
                             <option value="Male" {{ request('sex') == 'Male' ? 'selected' : '' }}>Male</option>
                             <option value="Female" {{ request('sex') == 'Female' ? 'selected' : '' }}>Female</option>
+                        </select>
+                    </div>
+
+                    <!-- Chapel Filter -->
+                    <div class="md:col-span-2">
+                        <label class="block text-xs font-semibold text-gray-500 uppercase mb-1">Chapel</label>
+                        <input type="text" name="chapel" value="{{ request('chapel') }}" placeholder="Search chapel..." class="w-full py-2 rounded-lg border-gray-300 focus:ring-indigo-500 focus:border-indigo-500 text-sm">
+                    </div>
+
+                    <!-- Disability Filter -->
+                    <div class="md:col-span-1">
+                        <label class="block text-xs font-semibold text-gray-500 uppercase mb-1">Has Disability</label>
+                        <select name="has_disability" class="w-full py-2 rounded-lg border-gray-300 focus:ring-indigo-500 focus:border-indigo-500 text-sm">
+                            <option value="">All</option>
+                            <option value="yes" {{ request('has_disability') == 'yes' ? 'selected' : '' }}>Yes</option>
+                            <option value="no" {{ request('has_disability') == 'no' ? 'selected' : '' }}>No</option>
                         </select>
                     </div>
 

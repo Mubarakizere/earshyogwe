@@ -1,7 +1,7 @@
 <x-app-layout>
     <x-slot name="header">
         <h2 class="font-semibold text-2xl text-gray-800 leading-tight">
-            {{ __('Edit Offering Type') }}
+            {{ __('Edit Revenue Type') }}
         </h2>
     </x-slot>
 
@@ -13,13 +13,13 @@
                     @csrf
                     @method('PUT')
 
-                    <h3 class="text-lg font-semibold text-gray-900 mb-6">Edit Offering Type Details</h3>
+                    <h3 class="text-lg font-semibold text-gray-900 mb-6">Edit Revenue Type Details</h3>
 
                     <div class="space-y-6">
                         <!-- Name -->
                         <div>
                             <label for="name" class="block text-sm font-medium text-gray-700 mb-2">
-                                Offering Type Name <span class="text-red-500">*</span>
+                                Revenue Name <span class="text-red-500">*</span>
                             </label>
                             <input type="text" name="name" id="name" value="{{ old('name', $givingType->name) }}" required
                                 class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 @error('name') border-red-500 @enderror">
@@ -74,7 +74,7 @@
                                 Cancel
                             </a>
                             <button type="submit" class="px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-lg shadow-md">
-                                Update Offering Type
+                                Update Revenue Type
                             </button>
                         </div>
                     </div>

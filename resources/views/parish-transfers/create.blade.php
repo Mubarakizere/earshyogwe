@@ -20,7 +20,7 @@
                         <p class="text-sm text-gray-500">Record a new money transfer to the diocese.</p>
                     </div>
 
-                    <form action="{{ route('parish-transfers.store') }}" method="POST">
+                    <form action="{{ route('parish-transfers.store') }}" method="POST" enctype="multipart/form-data">
                         @csrf
                         
                         <!-- Church Selection -->
@@ -88,6 +88,17 @@
                                 class="w-full border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 @error('notes') border-red-500 @enderror"
                                 placeholder="Any additional details about this transfer...">{{ old('notes') }}</textarea>
                             @error('notes')
+                                <p class="mt-1 text-sm text-red-500">{{ $message }}</p>
+                            @enderror
+                        </div>
+
+                        <!-- Supporting Document -->
+                        <div class="mb-6">
+                            <label for="supporting_document" class="block text-sm font-medium text-gray-700 mb-1">Supporting Document (Optional)</label>
+                            <input type="file" name="supporting_document" id="supporting_document" accept=".pdf,.jpg,.jpeg,.png"
+                                class="w-full border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 p-2 @error('supporting_document') border-red-500 @enderror">
+                            <p class="mt-1 text-xs text-gray-500">Upload bank slip, receipt, or other proof. Accepted: PDF, JPG, PNG (max 10MB)</p>
+                            @error('supporting_document')
                                 <p class="mt-1 text-sm text-red-500">{{ $message }}</p>
                             @enderror
                         </div>

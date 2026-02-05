@@ -6,6 +6,7 @@ use App\Models\Activity;
 use App\Models\Department;
 use App\Models\Church;
 use Illuminate\Http\Request;
+use Barryvdh\DomPDF\Facade\Pdf;
 
 class ObjectiveController extends Controller
 {
@@ -71,6 +72,43 @@ class ObjectiveController extends Controller
 
         fclose($handle);
         exit;
+    }
+
+    public function exportPdf(Request $request)
+    {
+        $user = auth()->user();
+        $query = $this->getBaseQueryForUser($user)->with(['department', 'church', 'creator']);
+
+        // Apply same filters as index
+        if ($request->filled('search')) {
+            $query->where('name', 'like', "%{$request->search}%");
+        }
+        if ($request->filled('church_id')) {
+            $query->where('church_id', $request->church_id);
+        }
+        if ($request->filled('status')) {
+            $query->where('status', $request->status);
+        }
+        if ($request->filled('department_id')) {
+            $query->where('department_id', $request->department_id);
+        }
+
+        $objectives = $query->get();
+
+        $stats = [
+            'total' => $objectives->count(),
+            'completed' => $objectives->where('status', 'completed')->count(),
+            'in_progress' => $objectives->where('status', 'in_progress')->count(),
+        ];
+
+        $pdf = Pdf::loadView('exports.objectives-pdf', [
+            'objectives' => $objectives,
+            'stats' => $stats,
+            'title' => 'Objectives Export',
+            'subtitle' => 'Total: ' . number_format($stats['total']) . ' objectives'
+        ])->setPaper('a4', 'landscape');
+
+        return $pdf->download('objectives_export_' . date('Y-m-d_H-i') . '.pdf');
     }
 
     public function index(Request $request)

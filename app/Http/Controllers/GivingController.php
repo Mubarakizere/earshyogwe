@@ -7,6 +7,7 @@ use App\Models\GivingType;
 use App\Models\Church;
 use Illuminate\Http\Request;
 use Carbon\Carbon;
+use Barryvdh\DomPDF\Facade\Pdf;
 
 class GivingController extends Controller
 {
@@ -99,6 +100,8 @@ class GivingController extends Controller
         // Fetch all active GivingTypes to build the "Matrix" (show 0s)
         $allTypes = GivingType::where('is_active', true)->orderBy('name')->get();
 
+
+
         // Calculate session totals
         $sessionTotal = $records->sum('amount');
         $sessionDioceseTotal = $records->sum('diocese_amount');
@@ -112,6 +115,58 @@ class GivingController extends Controller
         }
 
         return view('givings.details', compact('church', 'date', 'records', 'allTypes', 'typeMap', 'sessionTotal', 'sessionDioceseTotal', 'isSent'));
+    }
+
+    public function export(Request $request)
+    {
+        $user = auth()->user();
+        $query = $this->getFilteredQuery($request, $user);
+        $givings = $query->with(['church', 'givingType', 'enteredBy'])->orderBy('date', 'desc')->get();
+
+        $filename = "revenues_export_" . date('Y-m-d') . ".csv";
+        
+        return response()->streamDownload(function () use ($givings) {
+            $handle = fopen('php://output', 'w');
+            
+            // Add BOM for Excel compatibility
+            fprintf($handle, chr(0xEF).chr(0xBB).chr(0xBF));
+
+            fputcsv($handle, ['Date', 'Church', 'Revenue Type', 'Amount (RWF)', 'Status', 'Entered By']);
+
+            foreach ($givings as $giving) {
+                fputcsv($handle, [
+                    $giving->date->format('Y-m-d'),
+                    $giving->church->name ?? 'N/A',
+                    $giving->givingType->name ?? 'N/A',
+                    $giving->amount,
+                    $giving->is_sent ? 'Sent' : 'Pending',
+                    $giving->enteredBy->name ?? 'N/A',
+                ]);
+            }
+            fclose($handle);
+        }, $filename);
+    }
+
+    public function exportPdf(Request $request)
+    {
+        $user = auth()->user();
+        $query = $this->getFilteredQuery($request, $user);
+        $givings = $query->with(['church', 'givingType'])->orderBy('date', 'desc')->get();
+
+        $stats = [
+            'total_amount' => $givings->sum('amount'),
+            'total_count' => $givings->count(),
+            'sent_count' => $givings->where('is_sent', true)->count(),
+        ];
+
+        $pdf = Pdf::loadView('exports.givings-pdf', [
+            'givings' => $givings,
+            'stats' => $stats,
+            'title' => 'Revenues Export',
+            'subtitle' => 'Total Amount: ' . number_format($stats['total_amount']) . ' RWF'
+        ]);
+
+        return $pdf->download('revenues_export_' . date('Y-m-d_H-i') . '.pdf');
     }
 
     // Helper to check access for a specific church

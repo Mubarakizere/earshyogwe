@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Church;
 use Illuminate\Http\Request;
+use Barryvdh\DomPDF\Facade\Pdf;
 
 class ChurchController extends Controller
 {
@@ -46,6 +47,36 @@ class ChurchController extends Controller
         }
         fclose($handle);
         exit;
+    }
+
+    public function exportPdf()
+    {
+        $user = auth()->user();
+
+        if ($user->can('view all churches')) {
+            $churches = Church::with(['pastor', 'archid'])->get();
+        } elseif ($user->can('view assigned churches')) {
+            $churches = Church::where('archid_id', $user->id)->with('pastor')->get();
+        } elseif ($user->can('view own church') && $user->church_id) {
+            $churches = Church::where('id', $user->church_id)->with('pastor', 'archid')->get();
+        } else {
+            abort(403, 'Unauthorized access to export churches.');
+        }
+
+        $stats = [
+            'total' => $churches->count(),
+            'active' => $churches->where('is_active', true)->count(),
+            'inactive' => $churches->where('is_active', false)->count(),
+        ];
+
+        $pdf = Pdf::loadView('exports.churches-pdf', [
+            'churches' => $churches,
+            'stats' => $stats,
+            'title' => 'Parishes Export',
+            'subtitle' => 'Total: ' . number_format($stats['total']) . ' parishes'
+        ]);
+
+        return $pdf->download('churches_export_' . date('Y-m-d_H-i') . '.pdf');
     }
 
     public function index(Request $request)

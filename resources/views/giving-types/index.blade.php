@@ -2,13 +2,13 @@
     <x-slot name="header">
         <div class="flex justify-between items-center">
             <h2 class="font-semibold text-2xl text-gray-800 leading-tight">
-                {{ __('Offering Types Management') }}
+                {{ __('Revenue Types Management') }}
             </h2>
             <a href="{{ route('giving-types.create') }}" class="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded-lg shadow-md transition duration-200">
                 <svg class="inline-block w-5 h-5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
                 </svg>
-                Add Offering Type
+                Add Revenue Type
             </a>
         </div>
     </x-slot>
@@ -69,8 +69,8 @@
                                             <button type="button" 
                                                 @click="$dispatch('open-delete-modal', { 
                                                     action: '{{ route('giving-types.destroy', $type) }}',
-                                                    title: 'Delete Offering Type',
-                                                    message: 'Are you sure you want to delete this offering type? This will also delete all associated sub-types. This action cannot be undone.'
+                                                    title: 'Delete Revenue Type',
+                                                    message: 'Are you sure you want to delete this revenue type? This will also delete all associated sub-types. This action cannot be undone.'
                                                 })"
                                                 class="bg-red-500 hover:bg-red-600 text-white font-semibold py-2 px-4 rounded-lg transition duration-200">
                                                 Delete
@@ -116,11 +116,11 @@
                                 <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4"></path>
                                 </svg>
-                                <h3 class="mt-2 text-sm font-medium text-gray-900">No offering types</h3>
-                                <p class="mt-1 text-sm text-gray-500">Get started by creating a new offering type.</p>
+                                <h3 class="mt-2 text-sm font-medium text-gray-900">No revenue types</h3>
+                                <p class="mt-1 text-sm text-gray-500">Get started by creating a new revenue type.</p>
                                 <div class="mt-6">
                                     <a href="{{ route('giving-types.create') }}" class="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700">
-                                        Add Offering Type
+                                        Add Revenue Type
                                     </a>
                                 </div>
                             </div>
@@ -152,7 +152,7 @@
             <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
             <div x-show="open" class="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
                 <div class="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
-                    <h3 class="text-lg font-bold text-gray-900 mb-4">Edit Offering Type</h3>
+                    <h3 class="text-lg font-bold text-gray-900 mb-4">Edit Revenue Type</h3>
                     <form :action="action" method="POST">
                         @csrf
                         @method('PUT')
@@ -263,11 +263,11 @@
                         </div>
                         <div class="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left">
                             <h3 class="text-lg leading-6 font-medium text-gray-900" id="modal-title" x-text="title">
-                                Delete Offering Type
+                                Delete Revenue Type
                             </h3>
                             <div class="mt-2">
                                 <p class="text-sm text-gray-500" x-text="message">
-                                    Are you sure you want to delete this offering type? This action cannot be undone.
+                                    Are you sure you want to delete this revenue type? This action cannot be undone.
                                 </p>
                             </div>
                         </div>
