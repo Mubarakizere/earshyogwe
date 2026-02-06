@@ -260,3 +260,28 @@ if (config('app.debug')) {
 
 require __DIR__.'/auth.php';
 
+// Temporary Debug Route for PDF Issue
+Route::get('/debug-pdf', function () {
+    // 1. Clear Cache
+    try {
+        \Illuminate\Support\Facades\Artisan::call('optimize:clear');
+        $cacheStatus = "Cache cleared successfully!";
+    } catch (\Exception $e) {
+        $cacheStatus = "Cache clear failed: " . $e->getMessage();
+    }
+    
+    // 2. Check Paths
+    $path = base_path('vendor/barryvdh/laravel-dompdf/src/Facade/Pdf.php');
+    $exists = file_exists($path);
+    $classExists = class_exists('Barryvdh\DomPDF\Facade\Pdf');
+    
+    return [
+        'message' => $cacheStatus,
+        'file_path' => $path,
+        'file_exists_on_disk' => $exists ? 'YES' : 'NO (Action: Re-upload vendor/barryvdh folder)',
+        'class_autoloadable' => $classExists ? 'YES' : 'NO (Action: Re-upload vendor/composer folder)',
+        'vendor_folder_exists' => is_dir(base_path('vendor')) ? 'YES' : 'NO',
+        'php_version' => phpversion(),
+    ];
+});
+
