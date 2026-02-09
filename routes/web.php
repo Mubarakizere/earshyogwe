@@ -86,7 +86,6 @@ Route::middleware('auth')->group(function () {
     Route::get('expenses/export', [\App\Http\Controllers\ExpenseController::class, 'export'])->name('expenses.export');
     Route::get('expenses/export-pdf', [\App\Http\Controllers\ExpenseController::class, 'exportPdf'])->name('expenses.exportPdf');
     Route::resource('expenses', \App\Http\Controllers\ExpenseController::class);
-    Route::resource('members', \App\Http\Controllers\MemberController::class);
     Route::post('expenses/{expense}/approve', [\App\Http\Controllers\ExpenseController::class, 'approve'])->name('expenses.approve');
     Route::post('expenses/{expense}/reject', [\App\Http\Controllers\ExpenseController::class, 'reject'])->name('expenses.reject');
     
