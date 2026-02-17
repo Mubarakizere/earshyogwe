@@ -54,6 +54,7 @@
         <thead>
             <tr>
                 <th style="background-color: #57534e; border-color: #57534e; color: white;">#</th>
+                <th style="background-color: #57534e; border-color: #57534e; color: white;">Member ID</th>
                 <th style="background-color: #57534e; border-color: #57534e; color: white;">Name</th>
                 <th style="background-color: #57534e; border-color: #57534e; color: white;">Gender/Age</th>
                 <th style="background-color: #57534e; border-color: #57534e; color: white;">Location</th>
@@ -65,6 +66,9 @@
             @foreach($members as $index => $member)
             <tr>
                 <td style="color: #78716c;">{{ $index + 1 }}</td>
+                <td style="font-weight: bold; color: #4338ca; font-family: monospace; font-size: 9px;">
+                    {{ $member->member_id ?? 'N/A' }}
+                </td>
                 <td style="font-weight: bold; color: #1c1917;">
                     {{ $member->name }}
                     <div style="font-size: 8px; color: #78716c; font-weight: normal; margin-top: 2px;">

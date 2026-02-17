@@ -42,7 +42,10 @@ class MemberController extends Controller
         // 2. Search & Filters
         if ($request->filled('search')) {
             $search = $request->search;
-            $query->where('name', 'like', "%{$search}%");
+            $query->where(function ($q) use ($search) {
+                $q->where('name', 'like', "%{$search}%")
+                  ->orWhere('member_id', 'like', "%{$search}%");
+            });
         }
 
         if ($request->filled('sex')) {
@@ -154,10 +157,11 @@ class MemberController extends Controller
         return response()->streamDownload(function () use ($members) {
             $file = fopen('php://output', 'w');
             fprintf($file, chr(0xEF).chr(0xBB).chr(0xBF)); // BOM
-            fputcsv($file, ['Name', 'Sex', 'DOB', 'Age', 'Marital Status', 'Church', 'Chapel', 'Group', 'Education', 'Baptism', 'Disability', 'Parent Names']);
+            fputcsv($file, ['Member ID', 'Name', 'Sex', 'DOB', 'Age', 'Marital Status', 'Church', 'Chapel', 'Group', 'Education', 'Baptism', 'Disability', 'Parent Names']);
 
             foreach ($members as $member) {
                 fputcsv($file, [
+                    $member->member_id ?? '',
                     $member->name,
                     $member->sex,
                     $member->dob ? $member->dob->format('Y-m-d') : '',

@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\DB;
 use Carbon\Carbon;
 
 class Member extends Model
@@ -41,6 +42,7 @@ class Member extends Model
 
     protected $fillable = [
         'church_id',
+        'member_id',
         'chapel',
         'name',
         'sex',
@@ -60,6 +62,49 @@ class Member extends Model
         'deceased_cause',
         'recorded_by',
     ];
+
+    /**
+     * Boot the model and register the creating event for auto-generating member_id.
+     */
+    protected static function boot()
+    {
+        parent::boot();
+
+        static::creating(function ($member) {
+            if (empty($member->member_id)) {
+                $member->member_id = static::generateMemberId($member->church_id);
+            }
+        });
+    }
+
+    /**
+     * Generate a unique member ID in the format: PREFIX-YEAR-SEQUENCE
+     * e.g., EAR-2026-0001
+     *
+     * @param int $churchId
+     * @param string|null $year Override year (used for backfilling existing members)
+     * @return string
+     */
+    public static function generateMemberId($churchId, $year = null)
+    {
+        $church = Church::find($churchId);
+        $prefix = strtoupper(substr(preg_replace('/[^A-Za-z]/', '', $church->name ?? 'MBR'), 0, 3));
+        $year = $year ?? date('Y');
+
+        // Find the highest sequence number for this prefix-year combo
+        $lastMember = static::where('member_id', 'like', "{$prefix}-{$year}-%")
+            ->orderByRaw('CAST(SUBSTRING_INDEX(member_id, \'-\', -1) AS UNSIGNED) DESC')
+            ->first();
+
+        if ($lastMember) {
+            $lastSequence = (int) substr($lastMember->member_id, strrpos($lastMember->member_id, '-') + 1);
+            $nextSequence = $lastSequence + 1;
+        } else {
+            $nextSequence = 1;
+        }
+
+        return "{$prefix}-{$year}-" . str_pad($nextSequence, 4, '0', STR_PAD_LEFT);
+    }
 
     protected $casts = [
         'dob' => 'date',

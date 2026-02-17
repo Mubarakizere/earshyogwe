@@ -19,6 +19,11 @@
                             <div>
                                 <h3 class="text-3xl font-bold text-gray-900">{{ $member->name }}</h3>
                                 <p class="text-lg text-gray-600">{{ $member->church->name }}</p>
+                                @if($member->member_id)
+                                    <span class="inline-flex items-center px-3 py-1 rounded-md text-sm font-bold bg-indigo-50 text-indigo-700 border border-indigo-200 font-mono tracking-wide mt-1">
+                                        ID: {{ $member->member_id }}
+                                    </span>
+                                @endif
                                 @php
                                     $statusColors = [
                                         'active' => 'bg-green-100 text-green-800 border-green-200',
