@@ -35,9 +35,15 @@
                                     <span class="text-sm font-medium text-gray-600">
                                         {{ $log->log_date->format('M d, Y') }}
                                     </span>
-                                    <span class="px-3 py-1 bg-purple-100 text-purple-700 text-sm font-bold rounded-full">
-                                        {{ $log->progress_percentage }}%
-                                    </span>
+                                    @if($log->progress_percentage > 100)
+                                        <span class="px-3 py-1 bg-green-100 text-green-700 text-sm font-bold rounded-full">
+                                            100% 🌟
+                                        </span>
+                                    @else
+                                        <span class="px-3 py-1 bg-purple-100 text-purple-700 text-sm font-bold rounded-full">
+                                            {{ $log->progress_percentage }}%
+                                        </span>
+                                    @endif
                                 </div>
                                 <div class="text-right">
                                     <div class="text-xs text-gray-500 uppercase tracking-wide mb-1">Cumulative Total</div>
@@ -74,7 +80,11 @@
 
                             {{-- Progress bar --}}
                             <div class="w-full bg-gray-200 rounded-full h-2 mb-3">
-                                <div class="bg-purple-600 h-2 rounded-full transition-all" style="width: {{ $log->progress_percentage }}%"></div>
+                                @if($log->progress_percentage > 100)
+                                    <div class="bg-gradient-to-r from-emerald-400 via-green-500 to-yellow-400 h-2 rounded-full transition-all animate-pulse" style="width: 100%"></div>
+                                @else
+                                    <div class="bg-purple-600 h-2 rounded-full transition-all" style="width: {{ $log->progress_percentage }}%"></div>
+                                @endif
                             </div>
 
                             {{-- Activities Performed --}}
@@ -169,7 +179,6 @@
                     scales: {
                         y: {
                             beginAtZero: true,
-                            max: 100,
                             ticks: {
                                 callback: function(value) {
                                     return value + '%';

@@ -281,13 +281,35 @@
                             <h3 class="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-4">Progress</h3>
                             
                             <div class="mb-2 flex justify-between items-end">
-                                <span class="text-3xl font-bold text-gray-900">{{ number_format($objective->progress_percentage) }}%</span>
+                                @if($objective->progress_percentage > 100)
+                                    <span class="text-3xl font-bold text-green-600">100%</span>
+                                @else
+                                    <span class="text-3xl font-bold text-gray-900">{{ number_format($objective->progress_percentage) }}%</span>
+                                @endif
                                 <span class="text-sm text-gray-500 mb-1">Target: {{ number_format($objective->target) }} {{ $objective->target_unit }}</span>
                             </div>
                             
-                            <div class="w-full bg-gray-200 rounded-full h-2.5 mb-4">
-                                <div class="bg-indigo-600 h-2.5 rounded-full" style="width: {{ min(100, $objective->progress_percentage) }}%"></div>
+                            <div class="w-full bg-gray-200 rounded-full h-2.5 mb-2">
+                                @if($objective->progress_percentage > 100)
+                                    <div class="bg-gradient-to-r from-emerald-400 via-green-500 to-yellow-400 h-2.5 rounded-full animate-pulse" style="width: 100%"></div>
+                                @else
+                                    <div class="bg-indigo-600 h-2.5 rounded-full" style="width: {{ $objective->progress_percentage }}%"></div>
+                                @endif
                             </div>
+
+                            @if($objective->progress_percentage > 100)
+                                <div class="mb-3 p-3 bg-gradient-to-r from-yellow-50 to-green-50 border border-yellow-200 rounded-lg">
+                                    <div class="flex items-center gap-2">
+                                        <span class="text-lg">🌟</span>
+                                        <div>
+                                            <span class="text-sm font-bold text-green-700">Huge Impact! +{{ $objective->progress_percentage - 100 }}% exceeded target</span>
+                                            <p class="text-xs text-gray-500 mt-0.5">
+                                                Achieved {{ number_format($objective->current_progress) }} / {{ number_format($objective->target) }} {{ $objective->target_unit }}
+                                            </p>
+                                        </div>
+                                    </div>
+                                </div>
+                            @endif
                             
                             <div class="text-right text-sm text-gray-500">
                                 Based on {{ $objective->reports->count() }} reports

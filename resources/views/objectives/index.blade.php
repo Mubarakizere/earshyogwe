@@ -373,11 +373,26 @@
                                     <div class="w-full md:w-1/4 mt-4 md:mt-0">
                                         <div class="flex justify-between text-xs font-semibold text-gray-500 mb-1">
                                             <span>Progress</span>
-                                            <span>{{ $objective->progress_percentage }}%</span>
+                                            @if($objective->progress_percentage > 100)
+                                                <span class="text-green-600 font-bold">100%</span>
+                                            @else
+                                                <span>{{ $objective->progress_percentage }}%</span>
+                                            @endif
                                         </div>
                                         <div class="w-full bg-gray-100 rounded-full h-2">
-                                            <div class="bg-gradient-to-r from-purple-500 to-indigo-500 h-2 rounded-full transition-all duration-500" style="width: {{ min(100, $objective->progress_percentage) }}%"></div>
+                                            @if($objective->progress_percentage > 100)
+                                                <div class="bg-gradient-to-r from-emerald-400 via-green-500 to-yellow-400 h-2 rounded-full transition-all duration-500 animate-pulse" style="width: 100%"></div>
+                                            @else
+                                                <div class="bg-gradient-to-r from-purple-500 to-indigo-500 h-2 rounded-full transition-all duration-500" style="width: {{ $objective->progress_percentage }}%"></div>
+                                            @endif
                                         </div>
+                                        @if($objective->progress_percentage > 100)
+                                            <div class="mt-1.5 flex items-center gap-1">
+                                                <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold bg-yellow-100 text-yellow-800 border border-yellow-300">
+                                                    🌟 +{{ $objective->progress_percentage - 100 }}% exceeded — Huge Impact!
+                                                </span>
+                                            </div>
+                                        @endif
                                         <div class="mt-2 text-xs text-gray-400 text-right">
                                             Target: {{ number_format($objective->target) }} {{ $objective->target_unit ?? 'units' }}
                                         </div>
