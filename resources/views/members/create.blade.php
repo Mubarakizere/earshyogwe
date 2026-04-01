@@ -9,7 +9,7 @@
         <div class="max-w-4xl mx-auto sm:px-6 lg:px-8">
             <div class="bg-white overflow-hidden shadow-sm sm:rounded-xl border border-gray-100 p-8">
                 
-                <form method="POST" action="{{ route('members.store') }}" x-data="memberFormData()">
+                <form method="POST" action="{{ route('members.store') }}" x-data="memberFormData()" @submit="syncDob()">
                     @csrf
 
                     <!-- Standard Fields Grid -->
@@ -52,8 +52,32 @@
 
                         <!-- DOB -->
                         <div>
-                            <x-input-label for="dob" :value="__('Date of Birth')" />
-                            <x-text-input id="dob" class="block mt-1 w-full" type="date" name="dob" :value="old('dob')" x-model="dob" @change="checkIfChild()" />
+                            <x-input-label for="dob_day" :value="__('Date of Birth')" />
+                            <!-- Hidden field submitted to server -->
+                            <input type="hidden" name="dob" x-bind:value="dobCombined">
+                            <div class="flex gap-2 mt-1">
+                                <!-- Day -->
+                                <select id="dob_day" x-model="dobDay" @change="checkIfChild()" class="flex-1 min-w-0 border-gray-300 focus:border-brand-500 focus:ring-brand-500 rounded-lg shadow-sm text-sm py-2 px-2">
+                                    <option value="">Day</option>
+                                    <template x-for="d in 31" :key="d">
+                                        <option :value="String(d).padStart(2,'0')" x-text="String(d).padStart(2,'0')"></option>
+                                    </template>
+                                </select>
+                                <!-- Month -->
+                                <select x-model="dobMonth" @change="checkIfChild()" class="flex-1 min-w-0 border-gray-300 focus:border-brand-500 focus:ring-brand-500 rounded-lg shadow-sm text-sm py-2 px-2">
+                                    <option value="">Month</option>
+                                    <template x-for="(m, i) in ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec']" :key="i">
+                                        <option :value="String(i+1).padStart(2,'0')" x-text="m"></option>
+                                    </template>
+                                </select>
+                                <!-- Year -->
+                                <select x-model="dobYear" @change="checkIfChild()" class="flex-1 min-w-0 border-gray-300 focus:border-brand-500 focus:ring-brand-500 rounded-lg shadow-sm text-sm py-2 px-2">
+                                    <option value="">Year</option>
+                                    <template x-for="y in dobYears" :key="y">
+                                        <option :value="y" x-text="y"></option>
+                                    </template>
+                                </select>
+                            </div>
                             <x-input-error :messages="$errors->get('dob')" class="mt-2" />
                         </div>
 
@@ -188,12 +212,33 @@
 
     <script>
         function memberFormData() {
+            const currentYear = new Date().getFullYear();
+            const oldDob = '{{ old('dob') }}';
+            let initDay = '', initMonth = '', initYear = '';
+            if (oldDob) {
+                const parts = oldDob.split('-');
+                if (parts.length === 3) { initYear = parts[0]; initMonth = parts[1]; initDay = parts[2]; }
+            }
             return {
                 fields: [],
-                dob: '',
+                dobDay: initDay,
+                dobMonth: initMonth,
+                dobYear: initYear,
+                dobYears: Array.from({ length: currentYear - 1900 + 1 }, (_, i) => currentYear - i),
                 parentalStatus: '',
                 showParentNames: false,
-                
+
+                get dobCombined() {
+                    if (this.dobYear && this.dobMonth && this.dobDay) {
+                        return `${this.dobYear}-${this.dobMonth}-${this.dobDay}`;
+                    }
+                    return '';
+                },
+
+                syncDob() {
+                    // dobCombined getter handles it automatically
+                },
+
                 addField() {
                     this.fields.push({ key: '', value: '' });
                 },
@@ -201,10 +246,10 @@
                     this.fields.splice(index, 1);
                 },
                 checkIfChild() {
-                    // Check if DOB indicates a child (under 18)
                     let isChild = false;
-                    if (this.dob) {
-                        const birthDate = new Date(this.dob);
+                    const combined = this.dobCombined;
+                    if (combined) {
+                        const birthDate = new Date(combined);
                         const today = new Date();
                         const age = today.getFullYear() - birthDate.getFullYear();
                         const monthDiff = today.getMonth() - birthDate.getMonth();
@@ -214,11 +259,8 @@
                             isChild = age < 18;
                         }
                     }
-                    
-                    // Also show if parental status indicates a child/dependent
                     const childStatuses = ['Living with both parents', 'Living with one parent', 'Orphan', 'Under guardian/Caregiver'];
                     const hasChildStatus = childStatuses.includes(this.parentalStatus);
-                    
                     this.showParentNames = isChild || hasChildStatus;
                 }
             };

@@ -6,7 +6,7 @@
     <div class="py-12" x-data="memberEditForm()">
         <div class="max-w-4xl mx-auto sm:px-6 lg:px-8">
             <div class="bg-white overflow-hidden shadow-xl rounded-lg">
-                <form action="{{ route('members.update', $member) }}" method="POST" class="p-8">
+                <form action="{{ route('members.update', $member) }}" method="POST" class="p-8" @submit="syncDob()">
                     @csrf
                     @method('PUT')
 
@@ -48,7 +48,31 @@
                             </div>
                             <div>
                                 <label class="block text-sm font-medium text-gray-700 mb-2">Date of Birth</label>
-                                <input type="date" name="dob" x-model="dob" @change="checkIfChild()" value="{{ $member->dob ? $member->dob->format('Y-m-d') : '' }}" class="w-full px-4 py-3 border border-gray-300 rounded-lg">
+                                <!-- Hidden field submitted to server -->
+                                <input type="hidden" name="dob" x-bind:value="dobCombined">
+                                <div class="flex gap-2">
+                                    <!-- Day -->
+                                    <select x-model="dobDay" @change="checkIfChild()" class="flex-1 min-w-0 border border-gray-300 rounded-lg text-sm py-2 px-2 focus:border-blue-500 focus:ring-blue-500">
+                                        <option value="">Day</option>
+                                        <template x-for="d in 31" :key="d">
+                                            <option :value="String(d).padStart(2,'0')" x-text="String(d).padStart(2,'0')"></option>
+                                        </template>
+                                    </select>
+                                    <!-- Month -->
+                                    <select x-model="dobMonth" @change="checkIfChild()" class="flex-1 min-w-0 border border-gray-300 rounded-lg text-sm py-2 px-2 focus:border-blue-500 focus:ring-blue-500">
+                                        <option value="">Month</option>
+                                        <template x-for="(m, i) in ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec']" :key="i">
+                                            <option :value="String(i+1).padStart(2,'0')" x-text="m"></option>
+                                        </template>
+                                    </select>
+                                    <!-- Year -->
+                                    <select x-model="dobYear" @change="checkIfChild()" class="flex-1 min-w-0 border border-gray-300 rounded-lg text-sm py-2 px-2 focus:border-blue-500 focus:ring-blue-500">
+                                        <option value="">Year</option>
+                                        <template x-for="y in dobYears" :key="y">
+                                            <option :value="y" x-text="y"></option>
+                                        </template>
+                                    </select>
+                                </div>
                             </div>
                              <div>
                                 <label class="block text-sm font-medium text-gray-700 mb-2">Marital Status <span class="text-red-500">*</span></label>
@@ -237,9 +261,21 @@
 
     <script>
         function memberEditForm() {
+            const currentYear = new Date().getFullYear();
+            const rawDob = '{{ $member->dob ? $member->dob->format('Y-m-d') : '' }}';
+            const oldDob  = '{{ old('dob', $member->dob ? $member->dob->format('Y-m-d') : '') }}';
+            const dobStr  = oldDob || rawDob;
+            let initDay = '', initMonth = '', initYear = '';
+            if (dobStr) {
+                const parts = dobStr.split('-');
+                if (parts.length === 3) { initYear = parts[0]; initMonth = parts[1]; initDay = parts[2]; }
+            }
             return {
                 status: '{{ $member->status ?? 'active' }}',
-                dob: '{{ $member->dob ? $member->dob->format('Y-m-d') : '' }}',
+                dobDay: initDay,
+                dobMonth: initMonth,
+                dobYear: initYear,
+                dobYears: Array.from({ length: currentYear - 1900 + 1 }, (_, i) => currentYear - i),
                 parentalStatus: '{{ $member->parental_status ?? '' }}',
                 showParentNames: {{ ($member->is_child || in_array($member->parental_status, ['Living with both parents', 'Living with one parent', 'Orphan', 'Under guardian/Caregiver'])) ? 'true' : 'false' }},
                 fields: [
@@ -249,6 +285,18 @@
                         @endforeach
                     @endif
                 ],
+
+                get dobCombined() {
+                    if (this.dobYear && this.dobMonth && this.dobDay) {
+                        return `${this.dobYear}-${this.dobMonth}-${this.dobDay}`;
+                    }
+                    return '';
+                },
+
+                syncDob() {
+                    // dobCombined getter handles it automatically
+                },
+
                 addField() {
                     this.fields.push({ key: '', value: '' });
                 },
@@ -257,8 +305,9 @@
                 },
                 checkIfChild() {
                     let isChild = false;
-                    if (this.dob) {
-                        const birthDate = new Date(this.dob);
+                    const combined = this.dobCombined;
+                    if (combined) {
+                        const birthDate = new Date(combined);
                         const today = new Date();
                         const age = today.getFullYear() - birthDate.getFullYear();
                         const monthDiff = today.getMonth() - birthDate.getMonth();
@@ -268,10 +317,8 @@
                             isChild = age < 18;
                         }
                     }
-                    
                     const childStatuses = ['Living with both parents', 'Living with one parent', 'Orphan', 'Under guardian/Caregiver'];
                     const hasChildStatus = childStatuses.includes(this.parentalStatus);
-                    
                     this.showParentNames = isChild || hasChildStatus;
                 }
             };
