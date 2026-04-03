@@ -1,3 +1,6 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+/* Hide Alpine elements before Alpine initializes (prevents flash) */
+[x-cloak] { display: none !important; }

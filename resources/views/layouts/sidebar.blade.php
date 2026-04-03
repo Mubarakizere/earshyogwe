@@ -20,7 +20,7 @@
         </x-sidebar-link>
 
         <!-- Ministry Management Dropdown -->
-        <div x-data="{ open: {{ request()->routeIs('churches.*') || request()->routeIs('departments.*') || request()->routeIs('objectives.*') || request()->routeIs('evangelism-reports.*') || request()->routeIs('attendances.*') || request()->routeIs('members.*') ? 'true' : 'false' }} }" class="space-y-1">
+        <div x-data="{ open: {{ request()->routeIs('churches.*') || request()->routeIs('departments.*') || request()->routeIs('objectives.*') || request()->routeIs('evangelism-reports.*') || request()->routeIs('attendances.*') || request()->routeIs('members.*') || request()->routeIs('member-transfers.*') || request()->routeIs('population-censuses.*') ? 'true' : 'false' }} }" class="space-y-1">
             <button @click="open = !open" class="flex items-center w-full px-2 py-2 text-sm font-medium rounded-md hover:bg-brand-800 hover:text-white group transition-colors focus:outline-none" :class="{ 'bg-brand-800 text-white': open, 'text-brand-200': !open }">
                 <svg class="w-5 h-5 mr-3 text-brand-400 group-hover:text-white transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" /></svg>
                 <span class="flex-1 text-left">Ministry</span>
@@ -28,7 +28,7 @@
                     <path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd" />
                 </svg>
             </button>
-            <div x-show="open" x-collapse class="space-y-1 pl-9">
+            <div x-show="open" x-collapse x-cloak class="space-y-1 pl-9">
                 @canany(['view all churches', 'view assigned churches'])
                     <a href="{{ route('churches.index') }}" class="group flex items-center px-2 py-2 text-sm font-medium rounded-md hover:text-white hover:bg-brand-800 {{ request()->routeIs('churches.*') ? 'text-white bg-brand-800' : 'text-brand-200' }}">
                         Parishes
@@ -76,7 +76,7 @@
                     <path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd" />
                 </svg>
             </button>
-            <div x-show="open" x-collapse class="space-y-1 pl-9">
+            <div x-show="open" x-collapse x-cloak class="space-y-1 pl-9">
                 @can('enter givings')
                     <a href="{{ route('givings.index') }}" class="group flex items-center px-2 py-2 text-sm font-medium rounded-md hover:text-white hover:bg-brand-800 {{ request()->routeIs('givings.*') ? 'text-white bg-brand-800' : 'text-brand-200' }}">
                         Revenues
@@ -109,7 +109,7 @@
                     <path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd" />
                 </svg>
             </button>
-            <div x-show="open" x-collapse class="space-y-1 pl-6">
+            <div x-show="open" x-collapse x-cloak class="space-y-1 pl-6">
                 
                 <!-- System & Security Sub-group -->
                 @canany(['manage users', 'manage roles', 'view activity logs'])
@@ -121,7 +121,7 @@
                             <path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd" />
                         </svg>
                     </button>
-                    <div x-show="systemOpen" x-collapse class="space-y-1 pl-6">
+                    <div x-show="systemOpen" x-collapse x-cloak class="space-y-1 pl-6">
                         @can('manage users')
                             <a href="{{ route('users.index') }}" class="group flex items-center px-2 py-1.5 text-xs font-medium rounded-md hover:text-white hover:bg-brand-800 {{ request()->routeIs('users.*') ? 'text-white bg-brand-800' : 'text-brand-200' }}">
                                 Users
@@ -156,7 +156,7 @@
                             <path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd" />
                         </svg>
                     </button>
-                    <div x-show="hrOpen" x-collapse class="space-y-1 pl-6">
+                    <div x-show="hrOpen" x-collapse x-cloak class="space-y-1 pl-6">
                         @canany(['manage all workers', 'manage assigned workers', 'manage own workers'])
                             <a href="{{ route('workers.index') }}" class="group flex items-center px-2 py-1.5 text-xs font-medium rounded-md hover:text-white hover:bg-brand-800 {{ request()->routeIs('workers.*') ? 'text-white bg-brand-800' : 'text-brand-200' }}">
                                 Workers
@@ -181,7 +181,7 @@
                             <path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd" />
                         </svg>
                     </button>
-                    <div x-show="settingsOpen" x-collapse class="space-y-1 pl-6">
+                    <div x-show="settingsOpen" x-collapse x-cloak class="space-y-1 pl-6">
                         @can('manage giving types')
                             <a href="{{ route('giving-types.index') }}" class="group flex items-center px-2 py-1.5 text-xs font-medium rounded-md hover:text-white hover:bg-brand-800 {{ request()->routeIs('giving-types.*') ? 'text-white bg-brand-800' : 'text-brand-200' }}">
                                 Revenue Types
