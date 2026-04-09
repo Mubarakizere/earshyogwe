@@ -35,8 +35,19 @@ class MemberController extends Controller
              // Pastor: Sees only members they recorded AND their church
              $query->where('church_id', $user->church_id)
                    ->where('recorded_by', $user->id);
+        } elseif ($user->church_id) {
+             // Fallback: old accounts missing 'view own members'
+             $query->where('church_id', $user->church_id)
+                   ->where('recorded_by', $user->id);
         } else {
-            abort(403, 'Unauthorized access to members.');
+             // Legacy Data Fallback: Check if user is linked via churches.pastor_id instead of users.church_id
+             $managedIds = Church::where('pastor_id', $user->id)->pluck('id');
+             if ($managedIds->isNotEmpty()) {
+                 $query->whereIn('church_id', $managedIds)
+                       ->where('recorded_by', $user->id);
+             } else {
+                 abort(403, 'Unauthorized access to members.');
+             }
         }
 
         // 2. Search & Filters
@@ -123,8 +134,19 @@ class MemberController extends Controller
             if ($member->church_id != $user->church_id || $member->recorded_by != $user->id) {
                 abort(403);
             }
+        } elseif ($user->church_id) {
+            // Fallback for old accounts missing 'view own members' permission
+            if ($member->church_id != $user->church_id || $member->recorded_by != $user->id) {
+                abort(403);
+            }
         } else {
-            abort(403);
+            // Legacy Data Fallback: Check if user is linked via churches.pastor_id
+            $managedIds = Church::where('pastor_id', $user->id)->pluck('id')->toArray();
+            if (!empty($managedIds) && in_array($member->church_id, $managedIds) && $member->recorded_by == $user->id) {
+                // Access granted via fallback
+            } else {
+                abort(403);
+            }
         }
         
         // Load relationships
@@ -147,8 +169,20 @@ class MemberController extends Controller
              $query = Member::with('church')
                            ->where('church_id', $user->church_id)
                            ->where('recorded_by', $user->id);
+        } elseif ($user->church_id) {
+             // Fallback: old accounts missing 'view own members'
+             $query = Member::with('church')
+                           ->where('church_id', $user->church_id)
+                           ->where('recorded_by', $user->id);
         } else {
-            abort(403);
+             $managedIds = Church::where('pastor_id', $user->id)->pluck('id');
+             if ($managedIds->isNotEmpty()) {
+                 $query = Member::with('church')
+                               ->whereIn('church_id', $managedIds)
+                               ->where('recorded_by', $user->id);
+             } else {
+                 abort(403);
+             }
         }
         
         $members = $query->latest()->get();
@@ -194,8 +228,20 @@ class MemberController extends Controller
              $query = Member::with('church')
                            ->where('church_id', $user->church_id)
                            ->where('recorded_by', $user->id);
+        } elseif ($user->church_id) {
+             // Fallback: old accounts missing 'view own members'
+             $query = Member::with('church')
+                           ->where('church_id', $user->church_id)
+                           ->where('recorded_by', $user->id);
         } else {
-            abort(403);
+             $managedIds = Church::where('pastor_id', $user->id)->pluck('id');
+             if ($managedIds->isNotEmpty()) {
+                 $query = Member::with('church')
+                               ->whereIn('church_id', $managedIds)
+                               ->where('recorded_by', $user->id);
+             } else {
+                 abort(403);
+             }
         }
         
         $members = $query->latest()->get();
@@ -226,11 +272,20 @@ class MemberController extends Controller
         $churches = collect();
 
         if ($user->can('view all churches')) {
-            $churches = Church::all();
+            $churches = Church::orderBy('name')->get();
         } elseif ($user->can('view assigned churches')) {
-            $churches = Church::where('archid_id', $user->id)->get();
+            $churches = Church::where('archid_id', $user->id)->orderBy('name')->get();
+        } elseif ($user->can('view own church') && $user->church_id) {
+            // Pastor: can only record members into their own church
+            $churches = Church::where('id', $user->church_id)->get();
         } elseif ($user->church_id) {
-             $churches = Church::where('id', $user->church_id)->get();
+            // Fallback: user has a church assigned but may be missing the 'view own church'
+            // permission (e.g. old accounts whose role permissions were re-synced via the UI).
+            // As long as they have 'create members' (already checked above), show their church.
+            $churches = Church::where('id', $user->church_id)->get();
+        } else {
+            // Legacy Data Fallback: old accounts where church is linked via pastor_id and NOT users.church_id
+            $churches = Church::where('pastor_id', $user->id)->get();
         }
 
         $churchGroups = \App\Models\ChurchGroup::orderBy('name')->get();
@@ -283,21 +338,46 @@ class MemberController extends Controller
         // Check scope for edit
         $user = auth()->user();
         if ($user->can('view all members')) {
-            // Admin can edit all
+            // Boss: can edit any member
         } elseif ($user->can('view assigned members')) {
             $assignedChurchIds = Church::where('archid_id', $user->id)->pluck('id')->toArray();
             if (!in_array($member->church_id, $assignedChurchIds)) {
                 abort(403);
             }
-        } elseif ($user->can('edit members') && $user->church_id) {
+        } elseif ($user->can('view own members') && $user->church_id) {
+            // Pastor: can only edit members they recorded in their own church
+            if ($member->church_id != $user->church_id || $member->recorded_by != $user->id) {
+                abort(403);
+            }
+        } elseif ($user->church_id) {
+            // Fallback for old accounts missing 'view own members' permission
             if ($member->church_id != $user->church_id || $member->recorded_by != $user->id) {
                 abort(403);
             }
         } else {
-            abort(403);
+            $managedIds = Church::where('pastor_id', $user->id)->pluck('id')->toArray();
+            if (!empty($managedIds) && in_array($member->church_id, $managedIds) && $member->recorded_by == $user->id) {
+                // Access granted via fallback
+            } else {
+                abort(403);
+            }
         }
 
-        $churches = Church::all();
+        // Scope churches dropdown to match role (same logic as create)
+        if ($user->can('view all churches')) {
+            $churches = Church::orderBy('name')->get();
+        } elseif ($user->can('view assigned churches')) {
+            $churches = Church::where('archid_id', $user->id)->orderBy('name')->get();
+        } elseif ($user->can('view own church') && $user->church_id) {
+            $churches = Church::where('id', $user->church_id)->get();
+        } elseif ($user->church_id) {
+            // Fallback for old accounts missing 'view own church' permission
+            $churches = Church::where('id', $user->church_id)->get();
+        } else {
+            $managedChurches = Church::where('pastor_id', $user->id)->get();
+            $churches = $managedChurches->isNotEmpty() ? $managedChurches : collect();
+        }
+
         $churchGroups = \App\Models\ChurchGroup::orderBy('name')->get();
         $member->load(['churchGroups', 'recordedBy']);
         

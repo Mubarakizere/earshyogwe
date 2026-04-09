@@ -19,8 +19,11 @@
                         <div>
                             <x-input-label for="church_id" :value="__('Parish')" />
                             <select id="church_id" name="church_id" class="block mt-1 w-full border-gray-300 focus:border-brand-500 focus:ring-brand-500 rounded-lg shadow-sm">
+                                @if($churches->count() !== 1)
+                                    <option value="">— Select Parish —</option>
+                                @endif
                                 @foreach($churches as $church)
-                                    <option value="{{ $church->id }}">{{ $church->name }}</option>
+                                    <option value="{{ $church->id }}" {{ (old('church_id', $churches->count() === 1 ? $churches->first()->id : null) == $church->id) ? 'selected' : '' }}>{{ $church->name }}</option>
                                 @endforeach
                             </select>
                             <x-input-error :messages="$errors->get('church_id')" class="mt-2" />
