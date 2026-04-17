@@ -43,6 +43,7 @@ class MemberTransfer extends Model
         'to_church_id',
         'transfer_date',
         'reason',
+        'supporting_document',
         'status',
         'initiated_by',
         'approved_by',

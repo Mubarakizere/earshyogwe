@@ -22,31 +22,33 @@ class MemberController extends Controller
              if ($request->has('church_id') && $request->church_id) {
                  $query->where('church_id', $request->church_id);
              }
-        } elseif ($user->can('view assigned members')) {
-             // Archid: Sees their region, can filter by assigned churches
-             $assignedChurchIds = Church::where('archid_id', $user->id)->pluck('id')->toArray();
+        } else {
+             $accessibleChurchIds = [];
+
+             if ($user->can('view assigned members')) {
+                 $archidChurches = Church::where('archid_id', $user->id)->pluck('id')->toArray();
+                 $accessibleChurchIds = array_merge($accessibleChurchIds, $archidChurches);
+             }
              
-             if ($request->has('church_id') && $request->church_id && in_array($request->church_id, $assignedChurchIds)) {
+             if ($user->can('view own members') && $user->church_id) {
+                 $accessibleChurchIds[] = $user->church_id;
+             } elseif ($user->church_id) {
+                 $accessibleChurchIds[] = $user->church_id;
+             }
+             
+             $managedIds = Church::where('pastor_id', $user->id)->pluck('id')->toArray();
+             $accessibleChurchIds = array_merge($accessibleChurchIds, $managedIds);
+             
+             $accessibleChurchIds = array_unique($accessibleChurchIds);
+
+             if (empty($accessibleChurchIds)) {
+                 abort(403, 'Unauthorized access to members.');
+             }
+             
+             if ($request->has('church_id') && $request->church_id && in_array($request->church_id, $accessibleChurchIds)) {
                  $query->where('church_id', $request->church_id);
              } else {
-                 $query->whereIn('church_id', $assignedChurchIds);
-             }
-        } elseif ($user->can('view own members') && $user->church_id) {
-             // Pastor: Sees only members they recorded AND their church
-             $query->where('church_id', $user->church_id)
-                   ->where('recorded_by', $user->id);
-        } elseif ($user->church_id) {
-             // Fallback: old accounts missing 'view own members'
-             $query->where('church_id', $user->church_id)
-                   ->where('recorded_by', $user->id);
-        } else {
-             // Legacy Data Fallback: Check if user is linked via churches.pastor_id instead of users.church_id
-             $managedIds = Church::where('pastor_id', $user->id)->pluck('id');
-             if ($managedIds->isNotEmpty()) {
-                 $query->whereIn('church_id', $managedIds)
-                       ->where('recorded_by', $user->id);
-             } else {
-                 abort(403, 'Unauthorized access to members.');
+                 $query->whereIn('church_id', $accessibleChurchIds);
              }
         }
 
@@ -107,6 +109,14 @@ class MemberController extends Controller
 
         $members = $query->latest()->paginate(15)->withQueryString();
 
+        \Log::info('DEBUG MEMBER QUERY', [
+            'user_id' => $user->id,
+            'role_pastor' => $user->hasRole('pastor'),
+            'church_id' => $user->church_id,
+            'sql' => $query->toSql(),
+            'bindings' => $query->getBindings()
+        ]);
+
         // Data for Filters (Role Dependent)
         $churches = collect();
         if ($user->can('view all churches')) {
@@ -123,28 +133,24 @@ class MemberController extends Controller
         $user = auth()->user();
         
         // Check access permissions
-        if ($user->can('view all members')) {
-            // Admin can view all
-        } elseif ($user->can('view assigned members')) {
-            $assignedChurchIds = Church::where('archid_id', $user->id)->pluck('id')->toArray();
-            if (!in_array($member->church_id, $assignedChurchIds)) {
-                abort(403);
+        if (!$user->can('view all members')) {
+            $accessibleChurchIds = [];
+            
+            if ($user->can('view assigned members')) {
+                $archidChurches = Church::where('archid_id', $user->id)->pluck('id')->toArray();
+                $accessibleChurchIds = array_merge($accessibleChurchIds, $archidChurches);
             }
-        } elseif ($user->can('view own members') && $user->church_id) {
-            if ($member->church_id != $user->church_id || $member->recorded_by != $user->id) {
-                abort(403);
+            
+            if ($user->can('view own members') && $user->church_id) {
+                $accessibleChurchIds[] = $user->church_id;
+            } elseif ($user->church_id) {
+                $accessibleChurchIds[] = $user->church_id;
             }
-        } elseif ($user->church_id) {
-            // Fallback for old accounts missing 'view own members' permission
-            if ($member->church_id != $user->church_id || $member->recorded_by != $user->id) {
-                abort(403);
-            }
-        } else {
-            // Legacy Data Fallback: Check if user is linked via churches.pastor_id
+            
             $managedIds = Church::where('pastor_id', $user->id)->pluck('id')->toArray();
-            if (!empty($managedIds) && in_array($member->church_id, $managedIds) && $member->recorded_by == $user->id) {
-                // Access granted via fallback
-            } else {
+            $accessibleChurchIds = array_merge($accessibleChurchIds, $managedIds);
+            
+            if (!in_array($member->church_id, $accessibleChurchIds)) {
                 abort(403);
             }
         }
@@ -159,30 +165,30 @@ class MemberController extends Controller
     {
         $user = auth()->user();
         
-        // Scope Logic (Same as Index)
-        if ($user->can('view all members')) {
-             $query = Member::with('church');
-        } elseif ($user->can('view assigned members')) {
-             $churchIds = Church::where('archid_id', $user->id)->pluck('id');
-             $query = Member::with('church')->whereIn('church_id', $churchIds);
-        } elseif ($user->can('view own members') && $user->church_id) {
-             $query = Member::with('church')
-                           ->where('church_id', $user->church_id)
-                           ->where('recorded_by', $user->id);
-        } elseif ($user->church_id) {
-             // Fallback: old accounts missing 'view own members'
-             $query = Member::with('church')
-                           ->where('church_id', $user->church_id)
-                           ->where('recorded_by', $user->id);
-        } else {
-             $managedIds = Church::where('pastor_id', $user->id)->pluck('id');
-             if ($managedIds->isNotEmpty()) {
-                 $query = Member::with('church')
-                               ->whereIn('church_id', $managedIds)
-                               ->where('recorded_by', $user->id);
-             } else {
+        // Scope Logic
+        $query = Member::with('church');
+        if (!$user->can('view all members')) {
+             $accessibleChurchIds = [];
+             
+             if ($user->can('view assigned members')) {
+                 $archidChurches = Church::where('archid_id', $user->id)->pluck('id')->toArray();
+                 $accessibleChurchIds = array_merge($accessibleChurchIds, $archidChurches);
+             }
+             
+             if ($user->can('view own members') && $user->church_id) {
+                 $accessibleChurchIds[] = $user->church_id;
+             } elseif ($user->church_id) {
+                 $accessibleChurchIds[] = $user->church_id;
+             }
+             
+             $managedIds = Church::where('pastor_id', $user->id)->pluck('id')->toArray();
+             $accessibleChurchIds = array_merge($accessibleChurchIds, $managedIds);
+             
+             if (empty($accessibleChurchIds)) {
                  abort(403);
              }
+             
+             $query->whereIn('church_id', array_unique($accessibleChurchIds));
         }
         
         $members = $query->latest()->get();
@@ -218,30 +224,30 @@ class MemberController extends Controller
     {
         $user = auth()->user();
         
-        // Scope Logic (Same as Index)
-        if ($user->can('view all members')) {
-             $query = Member::with('church');
-        } elseif ($user->can('view assigned members')) {
-             $churchIds = Church::where('archid_id', $user->id)->pluck('id');
-             $query = Member::with('church')->whereIn('church_id', $churchIds);
-        } elseif ($user->can('view own members') && $user->church_id) {
-             $query = Member::with('church')
-                           ->where('church_id', $user->church_id)
-                           ->where('recorded_by', $user->id);
-        } elseif ($user->church_id) {
-             // Fallback: old accounts missing 'view own members'
-             $query = Member::with('church')
-                           ->where('church_id', $user->church_id)
-                           ->where('recorded_by', $user->id);
-        } else {
-             $managedIds = Church::where('pastor_id', $user->id)->pluck('id');
-             if ($managedIds->isNotEmpty()) {
-                 $query = Member::with('church')
-                               ->whereIn('church_id', $managedIds)
-                               ->where('recorded_by', $user->id);
-             } else {
+        // Scope Logic
+        $query = Member::with('church');
+        if (!$user->can('view all members')) {
+             $accessibleChurchIds = [];
+             
+             if ($user->can('view assigned members')) {
+                 $archidChurches = Church::where('archid_id', $user->id)->pluck('id')->toArray();
+                 $accessibleChurchIds = array_merge($accessibleChurchIds, $archidChurches);
+             }
+             
+             if ($user->can('view own members') && $user->church_id) {
+                 $accessibleChurchIds[] = $user->church_id;
+             } elseif ($user->church_id) {
+                 $accessibleChurchIds[] = $user->church_id;
+             }
+             
+             $managedIds = Church::where('pastor_id', $user->id)->pluck('id')->toArray();
+             $accessibleChurchIds = array_merge($accessibleChurchIds, $managedIds);
+             
+             if (empty($accessibleChurchIds)) {
                  abort(403);
              }
+             
+             $query->whereIn('church_id', array_unique($accessibleChurchIds));
         }
         
         $members = $query->latest()->get();
@@ -337,28 +343,24 @@ class MemberController extends Controller
         
         // Check scope for edit
         $user = auth()->user();
-        if ($user->can('view all members')) {
-            // Boss: can edit any member
-        } elseif ($user->can('view assigned members')) {
-            $assignedChurchIds = Church::where('archid_id', $user->id)->pluck('id')->toArray();
-            if (!in_array($member->church_id, $assignedChurchIds)) {
-                abort(403);
+        if (!$user->can('view all members')) {
+            $accessibleChurchIds = [];
+            
+            if ($user->can('view assigned members')) {
+                $archidChurches = Church::where('archid_id', $user->id)->pluck('id')->toArray();
+                $accessibleChurchIds = array_merge($accessibleChurchIds, $archidChurches);
             }
-        } elseif ($user->can('view own members') && $user->church_id) {
-            // Pastor: can only edit members they recorded in their own church
-            if ($member->church_id != $user->church_id || $member->recorded_by != $user->id) {
-                abort(403);
+            
+            if ($user->can('view own members') && $user->church_id) {
+                $accessibleChurchIds[] = $user->church_id;
+            } elseif ($user->church_id) {
+                $accessibleChurchIds[] = $user->church_id;
             }
-        } elseif ($user->church_id) {
-            // Fallback for old accounts missing 'view own members' permission
-            if ($member->church_id != $user->church_id || $member->recorded_by != $user->id) {
-                abort(403);
-            }
-        } else {
+            
             $managedIds = Church::where('pastor_id', $user->id)->pluck('id')->toArray();
-            if (!empty($managedIds) && in_array($member->church_id, $managedIds) && $member->recorded_by == $user->id) {
-                // Access granted via fallback
-            } else {
+            $accessibleChurchIds = array_merge($accessibleChurchIds, $managedIds);
+            
+            if (!in_array($member->church_id, $accessibleChurchIds)) {
                 abort(403);
             }
         }

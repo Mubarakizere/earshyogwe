@@ -408,7 +408,7 @@ class ObjectiveController extends Controller
         foreach ($permissions as $perm) {
             if (str_starts_with($perm, 'view ') && (str_ends_with($perm, ' objectives') || str_ends_with($perm, ' activities'))) {
                 $slug = str_replace(['view ', ' objectives', ' activities'], '', $perm);
-                if (!in_array($slug, ['all', 'assigned', 'own'])) {
+                if (!in_array($slug, ['all', 'assigned', 'own', 'department'])) {
                     $deptSlugs[] = $slug;
                 }
             }
@@ -459,7 +459,7 @@ class ObjectiveController extends Controller
         if (str_starts_with($perm, 'view ') && (str_ends_with($perm, ' objectives') || str_ends_with($perm, ' activities'))) {
             // Extract slug from "view {slug} objectives" or "view {slug} activities"
             $slug = str_replace(['view ', ' objectives', ' activities'], '', $perm);
-            if ($slug !== 'all' && $slug !== 'assigned' && $slug !== 'own') {
+            if (!in_array($slug, ['all', 'assigned', 'own', 'department'])) {
                 $deptSlugs[] = $slug;
             }
         }
@@ -526,13 +526,13 @@ class ObjectiveController extends Controller
         }
 
         if ($user->can('view assigned objectives')) {
-            if ($objective->church && $objective->church->archid_id === $user->id) {
+            if ($objective->church && $objective->church->archid_id == $user->id) {
                 return;
             }
         }
 
         if ($user->can('view own objectives')) {
-            if ($objective->church_id === $user->church_id) {
+            if ($objective->church_id == $user->church_id) {
                 return;
             }
         }

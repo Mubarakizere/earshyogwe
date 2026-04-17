@@ -197,7 +197,7 @@ class EvangelismReportController extends Controller
 
     private function getChurchesForUser($user)
     {
-        if ($user->can('view all churches')) {
+        if ($user->can('view all churches') || $user->can('view all evangelism')) {
             return Church::where('is_active', true)->get();
         } elseif ($user->hasRole('archid')) {
             return Church::where('archid_id', $user->id)->where('is_active', true)->get();

@@ -9,7 +9,7 @@
         <div class="max-w-3xl mx-auto sm:px-6 lg:px-8">
             <div class="bg-white overflow-hidden shadow-sm sm:rounded-xl border border-gray-100 p-8">
                 
-                <form method="POST" action="{{ route('member-transfers.store') }}">
+                <form method="POST" action="{{ route('member-transfers.store') }}" enctype="multipart/form-data">
                     @csrf
 
                     <div class="space-y-6">
@@ -51,6 +51,14 @@
                             <x-input-label for="reason" :value="__('Reason for Transfer (Optional)')" />
                             <textarea id="reason" name="reason" rows="4" class="block mt-1 w-full border-gray-300 focus:border-brand-500 focus:ring-brand-500 rounded-lg shadow-sm" placeholder="e.g., Member relocated to a new area, closer to destination parish...">{{ old('reason') }}</textarea>
                             <x-input-error :messages="$errors->get('reason')" class="mt-2" />
+                        </div>
+
+                        <!-- Supporting Document -->
+                        <div>
+                            <x-input-label for="supporting_document" :value="__('Supporting Document (Optional)')" />
+                            <input id="supporting_document" type="file" name="supporting_document" accept=".pdf,.doc,.docx,.jpg,.jpeg,.png" class="block mt-1 w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 border border-gray-300 rounded-lg shadow-sm" />
+                            <p class="text-xs text-gray-500 mt-1">Accepted formats: PDF, Word, Images (Max: 5MB)</p>
+                            <x-input-error :messages="$errors->get('supporting_document')" class="mt-2" />
                         </div>
 
                         <!-- Info Box -->

@@ -23,8 +23,12 @@
                                     <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
                                 @enderror
                             </div>
-                        @else
+                        @elseif($churches->count() === 1)
                             <input type="hidden" name="church_id" value="{{ $churches->first()->id }}">
+                        @else
+                            <div class="p-4 mb-4 text-sm text-red-800 rounded-lg bg-red-50">
+                                You do not have any assigned churches to submit a report for.
+                            </div>
                         @endif
 
                         <div>

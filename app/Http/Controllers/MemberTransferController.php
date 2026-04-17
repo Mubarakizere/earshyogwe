@@ -107,6 +107,7 @@ class MemberTransferController extends Controller
             'to_church_id' => 'required|exists:churches,id',
             'transfer_date' => 'required|date',
             'reason' => 'nullable|string|max:1000',
+            'supporting_document' => 'nullable|file|mimes:pdf,doc,docx,jpg,jpeg,png|max:5120',
         ]);
 
         $member = Member::findOrFail($validated['member_id']);
@@ -121,12 +122,18 @@ class MemberTransferController extends Controller
             return back()->withErrors(['to_church_id' => 'Cannot transfer member to the same parish.'])->withInput();
         }
 
+        $documentPath = null;
+        if ($request->hasFile('supporting_document')) {
+            $documentPath = $request->file('supporting_document')->store('member-transfer-documents', 'public');
+        }
+
         $transfer = MemberTransfer::create([
             'member_id' => $member->id,
             'from_church_id' => $member->church_id,
             'to_church_id' => $validated['to_church_id'],
             'transfer_date' => $validated['transfer_date'],
             'reason' => $validated['reason'],
+            'supporting_document' => $documentPath,
             'initiated_by' => $user->id,
             'status' => 'pending',
         ]);
