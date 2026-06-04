@@ -14,16 +14,22 @@ class EvangelismReportController extends Controller
         
         $query = EvangelismReport::with(['church', 'submitter']);
         
-        // Permission-based filtering
         if ($user->can('view all evangelism')) {
              // See all
-        } elseif ($user->can('view assigned evangelism') && $user->hasRole('archid')) {
-             $churchIds = Church::where('archid_id', $user->id)->pluck('id');
-             $query->whereIn('church_id', $churchIds);
-        } elseif ($user->can('view own evangelism') && $user->church_id) {
-             $query->where('church_id', $user->church_id);
         } else {
-             $query->where('id', 0);
+            $query->where(function($q) use ($user) {
+                if ($user->can('view assigned evangelism') && $user->hasRole('archid')) {
+                    $churchIds = Church::where('archid_id', $user->id)->pluck('id');
+                    $q->orWhereIn('church_id', $churchIds);
+                }
+                if ($user->can('view own evangelism') && $user->church_id) {
+                    $q->orWhere('church_id', $user->church_id);
+                }
+            });
+
+            if (!$user->can('view assigned evangelism') && !$user->can('view own evangelism')) {
+                $query->where('id', 0); // Failsafe
+            }
         }
         
         // Date Range Filtering
@@ -53,13 +59,20 @@ class EvangelismReportController extends Controller
         // Apply same filters as main query
         if ($user->can('view all evangelism')) {
              // See all
-        } elseif ($user->can('view assigned evangelism') && $user->hasRole('archid')) {
-            $churchIds = Church::where('archid_id', $user->id)->pluck('id');
-            $totalsQuery->whereIn('church_id', $churchIds);
-        } elseif ($user->can('view own evangelism') && $user->church_id) {
-            $totalsQuery->where('church_id', $user->church_id);
         } else {
-            $totalsQuery->where('id', 0);
+            $totalsQuery->where(function($q) use ($user) {
+                if ($user->can('view assigned evangelism') && $user->hasRole('archid')) {
+                    $churchIds = Church::where('archid_id', $user->id)->pluck('id');
+                    $q->orWhereIn('church_id', $churchIds);
+                }
+                if ($user->can('view own evangelism') && $user->church_id) {
+                    $q->orWhere('church_id', $user->church_id);
+                }
+            });
+
+            if (!$user->can('view assigned evangelism') && !$user->can('view own evangelism')) {
+                $totalsQuery->where('id', 0);
+            }
         }
         
         // Date Range Filtering for Totals
@@ -198,12 +211,26 @@ class EvangelismReportController extends Controller
     private function getChurchesForUser($user)
     {
         if ($user->can('view all churches') || $user->can('view all evangelism')) {
-            return Church::where('is_active', true)->get();
-        } elseif ($user->hasRole('archid')) {
-            return Church::where('archid_id', $user->id)->where('is_active', true)->get();
-        } elseif ($user->church_id) {
-            return Church::where('id', $user->church_id)->get();
+            return Church::where('is_active', true)->orderBy('name')->get();
         }
-        return collect();
+
+        $query = Church::where('is_active', true);
+        
+        $query->where(function($q) use ($user) {
+            if ($user->hasRole('archid') || $user->can('view assigned evangelism')) {
+                $q->orWhere('archid_id', $user->id);
+            }
+            if ($user->church_id) {
+                // Return their own church
+                $q->orWhere('id', $user->church_id);
+            }
+        });
+
+        // If the user has neither role/church, return empty collection to avoid returning all churches
+        if (!$user->hasRole('archid') && !$user->can('view assigned evangelism') && !$user->church_id) {
+            return collect();
+        }
+
+        return $query->orderBy('name')->get();
     }
 }

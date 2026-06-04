@@ -10,26 +10,28 @@
                     @csrf
 
                     <div class="space-y-6">
-                        @if($churches->count() > 1)
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-2">Church <span class="text-red-500">*</span></label>
-                                <select name="church_id" required class="w-full px-4 py-3 border border-gray-300 rounded-lg">
-                                    <option value="">Select Church</option>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Parish <span class="text-red-500">*</span></label>
+                            @if($churches->count() > 0)
+                                <select name="church_id" required class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:border-brand-500 focus:ring-brand-500">
+                                    @if($churches->count() !== 1)
+                                        <option value="">— Select Parish —</option>
+                                    @endif
                                     @foreach($churches as $church)
-                                        <option value="{{ $church->id }}">{{ $church->name }}</option>
+                                        <option value="{{ $church->id }}" {{ (old('church_id', $churches->count() === 1 ? $churches->first()->id : null) == $church->id) ? 'selected' : '' }}>
+                                            {{ $church->name }}
+                                        </option>
                                     @endforeach
                                 </select>
-                                @error('church_id')
-                                    <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
-                                @enderror
-                            </div>
-                        @elseif($churches->count() === 1)
-                            <input type="hidden" name="church_id" value="{{ $churches->first()->id }}">
-                        @else
-                            <div class="p-4 mb-4 text-sm text-red-800 rounded-lg bg-red-50">
-                                You do not have any assigned churches to submit a report for.
-                            </div>
-                        @endif
+                            @else
+                                <div class="p-4 mb-4 text-sm text-red-800 rounded-lg bg-red-50">
+                                    You do not have any assigned churches to submit a report for.
+                                </div>
+                            @endif
+                            @error('church_id')
+                                <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
+                            @enderror
+                        </div>
 
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-2">Report Date <span class="text-red-500">*</span></label>
