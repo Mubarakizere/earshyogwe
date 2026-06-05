@@ -33,7 +33,7 @@
         </div>
     </x-slot>
 
-    <div class="py-12" x-data="{ deleteRoute: '' }">
+    <div class="py-12" x-data="{ deleteRoute: '', showDetails: false }">
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
             
             <!-- Pro Stats Cards -->
@@ -93,7 +93,7 @@
                 <form action="{{ route('members.index') }}" method="GET" class="grid grid-cols-1 md:grid-cols-12 gap-4 items-end">
                     
                     <!-- Search Input -->
-                    <div class="md:col-span-4">
+                    <div class="md:col-span-3">
                         <label class="block text-xs font-semibold text-gray-500 uppercase mb-1">Search</label>
                         <div class="relative">
                             <input type="text" name="search" value="{{ request('search') }}" placeholder="Search by name or ID..." class="w-full pl-10 pr-4 py-2 rounded-lg border-gray-300 focus:ring-indigo-500 focus:border-indigo-500 text-sm">
@@ -127,6 +127,18 @@
                             <option value="inactive" {{ request('member_status') == 'inactive' ? 'selected' : '' }}>Inactive</option>
                             <option value="deceased" {{ request('member_status') == 'deceased' ? 'selected' : '' }}>Deceased</option>
                         </select>
+                    </div>
+
+                    <!-- Marital Status Filter -->
+                    <div class="md:col-span-2">
+                        <label class="block text-xs font-semibold text-gray-500 uppercase mb-1">Marital Status</label>
+                        <select name="marital_status" class="w-full py-2 rounded-lg border-gray-300 focus:ring-indigo-500 focus:border-indigo-500 text-sm">
+                            <option value="">All</option>
+                            <option value="Single" {{ request('marital_status') == 'Single' ? 'selected' : '' }}>Single</option>
+                            <option value="Married" {{ request('marital_status') == 'Married' ? 'selected' : '' }}>Married</option>
+                            <option value="Living Together" {{ request('marital_status') == 'Living Together' ? 'selected' : '' }}>Living Together</option>
+                            <option value="Divorced" {{ request('marital_status') == 'Divorced' ? 'selected' : '' }}>Divorced</option>
+                            <option value="Widowed" {{ request('marital_status') == 'Widowed' ? 'selected' : '' }}>Widowed</option>
                         </select>
                     </div>
 
@@ -168,13 +180,48 @@
                         </select>
                     </div>
 
+                    <!-- Education Filter -->
+                    <div class="md:col-span-2">
+                        <label class="block text-xs font-semibold text-gray-500 uppercase mb-1">Education</label>
+                        <select name="education_level" class="w-full py-2 rounded-lg border-gray-300 focus:ring-indigo-500 focus:border-indigo-500 text-sm">
+                            <option value="">All</option>
+                            <option value="Primary" {{ request('education_level') == 'Primary' ? 'selected' : '' }}>Primary</option>
+                            <option value="Secondary" {{ request('education_level') == 'Secondary' ? 'selected' : '' }}>Secondary</option>
+                            <option value="University" {{ request('education_level') == 'University' ? 'selected' : '' }}>University</option>
+                            <option value="Master" {{ request('education_level') == 'Master' ? 'selected' : '' }}>Master</option>
+                            <option value="PhD" {{ request('education_level') == 'PhD' ? 'selected' : '' }}>PhD</option>
+                            <option value="None" {{ request('education_level') == 'None' ? 'selected' : '' }}>None</option>
+                        </select>
+                    </div>
+
+                    <!-- Baptism Filter -->
+                    <div class="md:col-span-2">
+                        <label class="block text-xs font-semibold text-gray-500 uppercase mb-1">Baptism</label>
+                        <select name="baptism_filter" class="w-full py-2 rounded-lg border-gray-300 focus:ring-indigo-500 focus:border-indigo-500 text-sm">
+                            <option value="">All</option>
+                            <option value="baptized" {{ request('baptism_filter') == 'baptized' ? 'selected' : '' }}>Baptized</option>
+                            <option value="confirmed" {{ request('baptism_filter') == 'confirmed' ? 'selected' : '' }}>Confirmed Only</option>
+                            <option value="not_baptized" {{ request('baptism_filter') == 'not_baptized' ? 'selected' : '' }}>Not Baptized</option>
+                        </select>
+                    </div>
+
                     <!-- Filter Button -->
-                    <div class="md:col-span-1">
-                        <button type="submit" class="w-full bg-gray-800 hover:bg-gray-900 text-white font-medium py-2 px-4 rounded-lg text-sm transition">
-                            Filter
+                    <div class="md:col-span-12 flex justify-end mt-2">
+                        <a href="{{ route('members.index') }}" class="mr-2 px-4 py-2 text-sm text-gray-600 hover:text-gray-900 transition">Clear Filters</a>
+                        <button type="submit" class="bg-gray-800 hover:bg-gray-900 text-white font-medium py-2 px-6 rounded-lg text-sm transition">
+                            Apply Filters
                         </button>
                     </div>
                 </form>
+            </div>
+
+            <!-- View Toggle -->
+            <div class="flex justify-end mb-4">
+                <button @click="showDetails = !showDetails" class="inline-flex items-center px-4 py-2 bg-white border border-gray-300 rounded-md font-semibold text-xs text-gray-700 uppercase tracking-widest shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 transition ease-in-out duration-150">
+                    <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" x-show="!showDetails"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 10h16M4 14h16M4 18h16"></path></svg>
+                    <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" x-show="showDetails" x-cloak><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"></path></svg>
+                    <span x-text="showDetails ? 'Show Simple View' : 'Show Detailed View'"></span>
+                </button>
             </div>
 
             <div class="bg-white overflow-hidden shadow-sm sm:rounded-xl border border-gray-100">
@@ -187,8 +234,23 @@
                                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Name</th>
                                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Parish</th>
                                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Demographics</th>
+                                
+                                <!-- Detailed View Headers -->
+                                <template x-if="showDetails">
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Parents/Status</th>
+                                </template>
+                                <template x-if="showDetails">
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Baptism</th>
+                                </template>
+
                                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Member Status</th>
                                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Church Groups</th>
+                                
+                                <!-- Detailed View Headers -->
+                                <template x-if="showDetails">
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Registered</th>
+                                </template>
+
                                 <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
                             </tr>
                         </thead>
@@ -217,10 +279,25 @@
                                         <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
                                             {{ $member->church?->name ?? 'N/A' }}
                                         </span>
+                                        <div x-show="showDetails" x-cloak class="text-xs text-gray-500 mt-1">{{ $member->chapel }}</div>
                                     </td>
                                     <td class="px-6 py-4 whitespace-nowrap">
                                         <div class="text-sm text-gray-900">{{ $member->age ? $member->age . ' yrs' : 'N/A' }}</div>
-                                        <div class="text-xs text-gray-500">{{ $member->education_level ?? '-' }}</div>
+                                        <div class="text-xs text-gray-500">
+                                            <span x-show="!showDetails">{{ $member->education_level ?? '-' }}</span>
+                                            <span x-show="showDetails" x-cloak>{{ $member->marital_status }} &middot; {{ $member->education_level ?? '-' }}</span>
+                                        </div>
+                                    </td>
+                                    
+                                    <!-- Detailed View Columns -->
+                                    <td class="px-6 py-4 whitespace-nowrap" x-show="showDetails" x-cloak>
+                                        <div class="text-sm text-gray-900">{{ $member->parental_status ?? 'N/A' }}</div>
+                                        <div class="text-xs text-gray-500 truncate max-w-[150px]">{{ $member->parent_names ?? '-' }}</div>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap" x-show="showDetails" x-cloak>
+                                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium {{ $member->is_baptized ? 'bg-blue-100 text-blue-800' : 'bg-gray-100 text-gray-800' }}">
+                                            {{ $member->baptism_display }}
+                                        </span>
                                     </td>
                                     <td class="px-6 py-4 whitespace-nowrap">
                                         @php
@@ -253,6 +330,13 @@
                                             <span class="text-xs text-gray-400">None</span>
                                         @endif
                                     </td>
+                                    
+                                    <!-- Detailed View Columns -->
+                                    <td class="px-6 py-4 whitespace-nowrap" x-show="showDetails" x-cloak>
+                                        <div class="text-sm text-gray-900">{{ $member->created_at ? $member->created_at->format('M d, Y') : 'N/A' }}</div>
+                                        <div class="text-xs text-gray-500">by {{ $member->recordedBy->name ?? 'System' }}</div>
+                                    </td>
+
                                     <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium space-x-2">
                                         <!-- Actions -->
                                         <a href="{{ route('members.show', $member) }}" class="text-gray-400 hover:text-blue-600">

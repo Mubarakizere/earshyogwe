@@ -65,8 +65,8 @@ class MemberController extends Controller
             $query->where('sex', $request->sex);
         }
 
-        if ($request->filled('status')) {
-            $query->where('marital_status', $request->status);
+        if ($request->filled('marital_status')) {
+            $query->where('marital_status', $request->marital_status);
         }
 
         // Filter by member status (active/inactive/deceased)
@@ -90,12 +90,29 @@ class MemberController extends Controller
             }
         }
 
+        // Filter by baptism status
+        if ($request->filled('baptism_filter')) {
+            if ($request->baptism_filter === 'baptized') {
+                $query->where('is_baptized', true);
+            } elseif ($request->baptism_filter === 'confirmed') {
+                $query->where('is_confirmed', true);
+            } elseif ($request->baptism_filter === 'not_baptized') {
+                $query->where('is_baptized', false);
+            }
+        }
+
+        // Filter by education level
+        if ($request->filled('education_level')) {
+            $query->where('education_level', $request->education_level);
+        }
+
         // Clone query for REAL-TIME stats (based on current filters)
         $stats = [
             'total' => (clone $query)->count(),
             'male' => (clone $query)->where('sex', 'Male')->count(),
             'female' => (clone $query)->where('sex', 'Female')->count(),
-            'baptized' => (clone $query)->where('baptism_status', 'Baptized')->count(),
+            'baptized' => (clone $query)->where('is_baptized', true)->count(),
+            'confirmed' => (clone $query)->where('is_confirmed', true)->count(),
         ];
         
         // Date of Birth Filter
@@ -166,7 +183,7 @@ class MemberController extends Controller
         $user = auth()->user();
         
         // Scope Logic
-        $query = Member::with('church');
+        $query = Member::with(['church', 'churchGroups', 'recordedBy']);
         if (!$user->can('view all members')) {
              $accessibleChurchIds = [];
              
@@ -197,9 +214,16 @@ class MemberController extends Controller
         return response()->streamDownload(function () use ($members) {
             $file = fopen('php://output', 'w');
             fprintf($file, chr(0xEF).chr(0xBB).chr(0xBF)); // BOM
-            fputcsv($file, ['Member ID', 'Name', 'Sex', 'DOB', 'Age', 'Marital Status', 'Church', 'Chapel', 'Group', 'Education', 'Baptism', 'Disability', 'Parent Names']);
+            fputcsv($file, [
+                'Member ID', 'Name', 'Sex', 'DOB', 'Age', 'Marital Status',
+                'Church', 'Chapel', 'Church Groups', 'Education', 'Baptized',
+                'Confirmed', 'Disability', 'Parental Status', 'Parent Names',
+                'Status', 'Inactive Reason', 'Inactive Date', 'Deceased Date',
+                'Deceased Cause', 'Recorded By', 'Date Registered'
+            ]);
 
             foreach ($members as $member) {
+                $groups = $member->churchGroups ? $member->churchGroups->pluck('name')->implode(', ') : '';
                 fputcsv($file, [
                     $member->member_id ?? '',
                     $member->name,
@@ -207,13 +231,22 @@ class MemberController extends Controller
                     $member->dob ? $member->dob->format('Y-m-d') : '',
                     $member->age,
                     $member->marital_status,
-                    $member->church->name,
+                    $member->church->name ?? '',
                     $member->chapel,
-                    $member->church_group,
+                    $groups,
                     $member->education_level,
-                    $member->baptism_status,
+                    $member->is_baptized ? 'Yes' : 'No',
+                    $member->is_confirmed ? 'Yes' : 'No',
                     $member->disability,
+                    $member->parental_status,
                     $member->parent_names,
+                    $member->status ?? 'active',
+                    $member->inactive_reason,
+                    $member->inactive_date ? $member->inactive_date->format('Y-m-d') : '',
+                    $member->deceased_date ? $member->deceased_date->format('Y-m-d') : '',
+                    $member->deceased_cause,
+                    $member->recordedBy->name ?? '',
+                    $member->created_at ? $member->created_at->format('Y-m-d') : '',
                 ]);
             }
             fclose($file);
@@ -257,7 +290,8 @@ class MemberController extends Controller
             'total' => $members->count(),
             'male' => $members->where('sex', 'Male')->count(),
             'female' => $members->where('sex', 'Female')->count(),
-            'baptized' => $members->where('baptism_status', 'Baptized')->count(),
+            'baptized' => $members->where('is_baptized', true)->count(),
+            'confirmed' => $members->where('is_confirmed', true)->count(),
         ];
         
         $pdf = Pdf::loadView('exports.members-pdf', [
@@ -309,10 +343,11 @@ class MemberController extends Controller
             'name' => 'required|string|max:255',
             'sex' => 'required|in:Male,Female',
             'dob' => 'nullable|date',
-            'marital_status' => 'required|in:Single,Married,Divorced,Widowed',
+            'marital_status' => 'required|in:Single,Married,Divorced,Widowed,Living Together',
             'parental_status' => 'nullable|in:Orphan,Living with both parents,Living with one parent,Under guardian/Caregiver,Not Applicable',
             'parent_names' => 'nullable|string|max:255',
-            'baptism_status' => 'required|in:Baptized,Confirmed,None',
+            'is_baptized' => 'nullable|boolean',
+            'is_confirmed' => 'nullable|boolean',
             'church_group' => 'nullable|string',
             'education_level' => 'nullable|string',
             'disability' => 'nullable|string|max:255',
@@ -320,6 +355,14 @@ class MemberController extends Controller
             'church_groups' => 'nullable|array',
             'church_groups.*' => 'exists:church_groups,id',
         ]);
+
+        // Ensure is_baptized/is_confirmed are set as booleans (unchecked checkboxes are not sent)
+        $validated['is_baptized'] = $request->has('is_baptized') ? true : false;
+        $validated['is_confirmed'] = $request->has('is_confirmed') ? true : false;
+        // Confirmed implies baptized
+        if ($validated['is_confirmed']) {
+            $validated['is_baptized'] = true;
+        }
 
         $churchGroupIds = $validated['church_groups'] ?? [];
         unset($validated['church_groups']);
@@ -396,10 +439,11 @@ class MemberController extends Controller
             'name' => 'required|string|max:255',
             'sex' => 'required|in:Male,Female',
             'dob' => 'nullable|date',
-            'marital_status' => 'required|in:Single,Married,Divorced,Widowed',
+            'marital_status' => 'required|in:Single,Married,Divorced,Widowed,Living Together',
             'parental_status' => 'nullable|in:Orphan,Living with both parents,Living with one parent,Under guardian/Caregiver,Not Applicable',
             'parent_names' => 'nullable|string|max:255',
-            'baptism_status' => 'required|in:Baptized,Confirmed,None',
+            'is_baptized' => 'nullable|boolean',
+            'is_confirmed' => 'nullable|boolean',
             'church_group' => 'nullable|string',
             'education_level' => 'nullable|string',
             'disability' => 'nullable|string|max:255',
@@ -412,6 +456,14 @@ class MemberController extends Controller
             'church_groups' => 'nullable|array',
             'church_groups.*' => 'exists:church_groups,id',
         ]);
+
+        // Ensure is_baptized/is_confirmed are set as booleans (unchecked checkboxes are not sent)
+        $validated['is_baptized'] = $request->has('is_baptized') ? true : false;
+        $validated['is_confirmed'] = $request->has('is_confirmed') ? true : false;
+        // Confirmed implies baptized
+        if ($validated['is_confirmed']) {
+            $validated['is_baptized'] = true;
+        }
 
         $churchGroupIds = $validated['church_groups'] ?? [];
         unset($validated['church_groups']);

@@ -50,7 +50,8 @@ class Member extends Model
         'marital_status',
         'parental_status',
         'parent_names',
-        'baptism_status',
+        'is_baptized',
+        'is_confirmed',
         'church_group',
         'education_level',
         'disability',
@@ -111,7 +112,23 @@ class Member extends Model
         'extra_attributes' => 'array',
         'inactive_date' => 'date',
         'deceased_date' => 'date',
+        'is_baptized' => 'boolean',
+        'is_confirmed' => 'boolean',
     ];
+
+    /**
+     * Get a human-readable baptism display string.
+     */
+    public function getBaptismDisplayAttribute()
+    {
+        if ($this->is_confirmed) {
+            return 'Baptized & Confirmed';
+        }
+        if ($this->is_baptized) {
+            return 'Baptized';
+        }
+        return 'None';
+    }
 
     public function church()
     {

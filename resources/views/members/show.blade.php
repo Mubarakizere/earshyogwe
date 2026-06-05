@@ -84,7 +84,7 @@
                                     <dt class="text-sm font-medium text-blue-600">Baptism Status</dt>
                                     <dd class="text-sm font-bold text-gray-900 col-span-2">
                                         <span class="px-2 py-1 rounded-full text-xs bg-white text-blue-800 border border-blue-100">
-                                            {{ $member->baptism_status }}
+                                            {{ $member->baptism_display }}
                                         </span>
                                     </dd>
                                 </div>

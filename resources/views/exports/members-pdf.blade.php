@@ -88,9 +88,15 @@
                     @endif
                 </td>
                 <td style="color: #44403c; font-size: 8px;">
-                     Baptism: {{ $member->baptism_status }}
+                     Baptism: {{ $member->baptism_display }}
                      @if($member->education_level)
                         <br>Ed: {{ $member->education_level }}
+                     @endif
+                     @if($member->churchGroups && $member->churchGroups->count() > 0)
+                        <br>Groups: {{ $member->churchGroups->pluck('name')->implode(', ') }}
+                     @endif
+                     @if($member->parental_status)
+                        <br>Parents: {{ $member->parental_status }}
                      @endif
                 </td>
                 <td class="text-center">

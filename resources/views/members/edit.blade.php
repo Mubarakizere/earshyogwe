@@ -79,6 +79,7 @@
                                 <select name="marital_status" required class="w-full px-4 py-3 border border-gray-300 rounded-lg">
                                     <option value="Single" {{ $member->marital_status == 'Single' ? 'selected' : '' }}>Single</option>
                                     <option value="Married" {{ $member->marital_status == 'Married' ? 'selected' : '' }}>Married</option>
+                                    <option value="Living Together" {{ $member->marital_status == 'Living Together' ? 'selected' : '' }}>Living Together</option>
                                     <option value="Divorced" {{ $member->marital_status == 'Divorced' ? 'selected' : '' }}>Divorced</option>
                                     <option value="Widowed" {{ $member->marital_status == 'Widowed' ? 'selected' : '' }}>Widowed</option>
                                 </select>
@@ -88,12 +89,18 @@
                         <!-- Church Details -->
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-6 pt-4 border-t">
                             <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-2">Baptism Status <span class="text-red-500">*</span></label>
-                                <select name="baptism_status" required class="w-full px-4 py-3 border border-gray-300 rounded-lg">
-                                    <option value="None" {{ $member->baptism_status == 'None' ? 'selected' : '' }}>None</option>
-                                    <option value="Baptized" {{ $member->baptism_status == 'Baptized' ? 'selected' : '' }}>Baptized</option>
-                                    <option value="Confirmed" {{ $member->baptism_status == 'Confirmed' ? 'selected' : '' }}>Confirmed</option>
-                                </select>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Baptism Status</label>
+                                <div class="space-y-2 mt-2">
+                                    <label class="inline-flex items-center">
+                                        <input type="checkbox" id="is_baptized" name="is_baptized" value="1" class="rounded border-gray-300 text-blue-600 shadow-sm focus:border-blue-300 focus:ring focus:ring-blue-200 focus:ring-opacity-50" x-model="isBaptized">
+                                        <span class="ml-2">Baptized</span>
+                                    </label>
+                                    <br>
+                                    <label class="inline-flex items-center">
+                                        <input type="checkbox" id="is_confirmed" name="is_confirmed" value="1" class="rounded border-gray-300 text-blue-600 shadow-sm focus:border-blue-300 focus:ring focus:ring-blue-200 focus:ring-opacity-50" x-model="isConfirmed" @change="if(isConfirmed) isBaptized = true">
+                                        <span class="ml-2">Confirmed</span>
+                                    </label>
+                                </div>
                             </div>
                              <div>
                                 <label class="block text-sm font-medium text-gray-700 mb-2">Parental Status (Optional)</label>
@@ -116,13 +123,15 @@
                         </div>
                         
                          <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                            <div>
+                             <div>
                                 <label class="block text-sm font-medium text-gray-700 mb-2">Education Level</label>
                                 <select name="education_level" class="w-full px-4 py-3 border border-gray-300 rounded-lg">
                                     <option value="">Select Level</option>
                                     <option value="Primary" {{ $member->education_level == 'Primary' ? 'selected' : '' }}>Primary</option>
                                     <option value="Secondary" {{ $member->education_level == 'Secondary' ? 'selected' : '' }}>Secondary</option>
                                     <option value="University" {{ $member->education_level == 'University' ? 'selected' : '' }}>University</option>
+                                    <option value="Master" {{ $member->education_level == 'Master' ? 'selected' : '' }}>Master</option>
+                                    <option value="PhD" {{ $member->education_level == 'PhD' ? 'selected' : '' }}>PhD</option>
                                     <option value="None" {{ $member->education_level == 'None' ? 'selected' : '' }}>None</option>
                                     <option value="Other" {{ $member->education_level == 'Other' ? 'selected' : '' }}>Other</option>
                                 </select>
@@ -278,6 +287,8 @@
                 dobYears: Array.from({ length: currentYear - 1900 + 1 }, (_, i) => currentYear - i),
                 parentalStatus: '{{ $member->parental_status ?? '' }}',
                 showParentNames: {{ ($member->is_child || in_array($member->parental_status, ['Living with both parents', 'Living with one parent', 'Orphan', 'Under guardian/Caregiver'])) ? 'true' : 'false' }},
+                isBaptized: {{ $member->is_baptized ? 'true' : 'false' }},
+                isConfirmed: {{ $member->is_confirmed ? 'true' : 'false' }},
                 fields: [
                     @if($member->extra_attributes)
                         @foreach($member->extra_attributes as $key => $value)

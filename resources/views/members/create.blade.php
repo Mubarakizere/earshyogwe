@@ -90,6 +90,7 @@
                             <select id="marital_status" name="marital_status" class="block mt-1 w-full border-gray-300 focus:border-brand-500 focus:ring-brand-500 rounded-lg shadow-sm">
                                 <option value="Single">Single</option>
                                 <option value="Married">Married</option>
+                                <option value="Living Together">Living Together</option>
                                 <option value="Divorced">Divorced</option>
                                 <option value="Widowed">Widowed</option>
                             </select>
@@ -112,13 +113,20 @@
 
                         <!-- Baptism Status -->
                         <div>
-                            <x-input-label for="baptism_status" :value="__('Baptism Status')" />
-                            <select id="baptism_status" name="baptism_status" class="block mt-1 w-full border-gray-300 focus:border-brand-500 focus:ring-brand-500 rounded-lg shadow-sm">
-                                <option value="Baptized">Baptized</option>
-                                <option value="Confirmed">Confirmed</option>
-                                <option value="None">None</option>
-                            </select>
-                            <x-input-error :messages="$errors->get('baptism_status')" class="mt-2" />
+                            <x-input-label :value="__('Baptism Status')" />
+                            <div class="mt-2 space-y-2">
+                                <label class="inline-flex items-center">
+                                    <input type="checkbox" id="is_baptized" name="is_baptized" value="1" class="rounded border-gray-300 text-brand-600 shadow-sm focus:border-brand-300 focus:ring focus:ring-brand-200 focus:ring-opacity-50" x-model="isBaptized">
+                                    <span class="ml-2">Baptized</span>
+                                </label>
+                                <br>
+                                <label class="inline-flex items-center">
+                                    <input type="checkbox" id="is_confirmed" name="is_confirmed" value="1" class="rounded border-gray-300 text-brand-600 shadow-sm focus:border-brand-300 focus:ring focus:ring-brand-200 focus:ring-opacity-50" x-model="isConfirmed" @change="if(isConfirmed) isBaptized = true">
+                                    <span class="ml-2">Confirmed</span>
+                                </label>
+                            </div>
+                            <x-input-error :messages="$errors->get('is_baptized')" class="mt-2" />
+                            <x-input-error :messages="$errors->get('is_confirmed')" class="mt-2" />
                         </div>
 
                         <!-- Parent Names (shown for children) -->
@@ -137,6 +145,8 @@
                                 <option value="Primary">Primary</option>
                                 <option value="Secondary">Secondary</option>
                                 <option value="University">University</option>
+                                <option value="Master">Master</option>
+                                <option value="PhD">PhD</option>
                                 <option value="None">None</option>
                                 <option value="Other">Other</option>
                             </select>
@@ -230,6 +240,8 @@
                 dobYears: Array.from({ length: currentYear - 1900 + 1 }, (_, i) => currentYear - i),
                 parentalStatus: '',
                 showParentNames: false,
+                isBaptized: false,
+                isConfirmed: false,
 
                 get dobCombined() {
                     if (this.dobYear && this.dobMonth && this.dobDay) {
